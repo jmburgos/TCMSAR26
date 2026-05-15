@@ -1,0 +1,586 @@
+---
+title: "Interactive plots"
+output:
+  html_document:
+    fig_height: 4
+    fig_width: 8
+    highlight: haddock
+    theme: united
+    toc: yes
+    toc_float: yes
+    toc_depth: 4
+---
+
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+```
+
+
+```{r setup}
+library(rnaturalearth)
+library(sf)
+library(htmltools)
+library(leaflet)
+library(tidyverse)
+liibrary(sf)
+
+```
+
+
+```{r, echo = FALSE}
+theme_set(theme_grey(base_size = 16))
+cl = function(x, color = "blue"){
+  outputFormat = knitr::opts_knit$get("rmarkdown.pandoc.to")
+  if(outputFormat == 'latex')
+    paste("\\textcolor{",color,"}{", x ,"}",sep="")
+  else if(outputFormat == 'html')
+    paste("<font color='",color,"'>", x ,"</font>",sep="")
+  else
+    x
+}
+```
+
+In recent years there has been a proliferation of packages that allow one to generate JavaScript applications using R syntax and data. The interactive visualizations can be used in rmarkdown reports, presentations, Shiny applications or as standalone webpages.
+
+## leaflet
+___
+
+### Introduction
+
+[Package homepage](https://rstudio.github.io/leaflet)
+
+#### The basic construct
+
+Of the various interactive map packages available in R, the `leaflet`-package is the most mature in terms of features and controls. Generating a leaflet map is as simple as:
+
+```{r, fig.height = 3}
+leaflet() %>% 
+  addTiles() %>% 
+  addPopups(lng = 12.575754,
+            lat = 55.671455, 
+            popup = "ICES HQ")
+```
+
+Here:
+
+* a map widget is created by calling `r cl("leaflet")`
+* a background map is created by calling `r cl("addTiles")`
+* a spatial point is added, here using `r cl("addPopups")`
+
+Leaflet works similar as ggplot, in that one can compile multiple layers by calling `r cl("add****")`-functions. The difference, besides difference in the layer-function names, is that in ggplot we use the "+", while in leaflet one uses "%>%".
+
+
+
+<div class="panel panel-info">
+<div class="panel-heading">Exercise</div>
+<div class="panel-body">
+
+Repeat the above command using your favorite location
+
+</div>
+</div>
+
+
+#### Data input
+
+Leaflet can take as data input one of the following forms:
+
+* data.frames containing coordinates
+* sp or sf objects such as points, lines and polygons
+* objects of class "map" as return from the map-package
+
+Lets use the minke-dataset to demonstrate the basic leaflet components:
+
+```{r}
+minke <- 
+  read.csv("ftp://ftp.hafro.is/pub/data/csv/minke.csv",
+           stringsAsFactors = FALSE) %>% 
+  as_tibble()
+```
+
+A simple plot of the sample locations can be obtained by using the `r cl("addCircles")`-function:
+
+```{r, fig.height = 3, fig.width = 4}
+leaflet() %>% 
+  addTiles() %>% 
+  addCircles(data = minke,
+             lng = ~lon,
+             lat = ~lat,
+             radius = 10000)  # radius in meters
+```
+
+If the object is an **sf**-object:
+```{r}
+minke.sf <- 
+  minke %>% 
+  st_as_sf(coords = c("lon", "lat"),
+           crs = 4326)
+```
+
+we do not need to specify the xy-coordinates in the function call:
+```{r, eval = FALSE}
+# NOT RUN
+leaflet() %>% 
+  addTiles() %>% 
+  addCircles(data = minke.sf,
+             radius = 10000)  # radius in meters
+```
+
+#### Layer calls and arguements
+
+The syntax used to call a variable in leaflet differs from that done in ggplot, in leaflet one always needs the prefix "~" in front of the variable name. And, instead of having the x,y argument pairs in ggplot, in leaflet the pairs are lng,lat.
+
+The main layer functions in leaflet and corresponding sister argument in ggplot are: 
+```
+leaflet       ggplot2
+-------       -------
+addCircles    geom_point
+addPolylines  geom_path
+addPolygons   geom_polygon
+```
+
+
+The main argument in leaflet and corresponding sister argument in ggplot are:
+```
+leaflet               ggplot2
+-------               -------
+lng                   x
+lat                   y
+color                 color, colour
+fillColor             fill
+weight                lwd
+radius                size
+opacity, fillOpacity  alpha       
+label                 label
+dashArray             type
+```
+
+Like in ggplot these arguments can either be a fixed value or one may attempt to use a value of a variable in the data to dictate the aesthetics.
+
+<div class="panel panel-info">
+<div class="panel-heading">Exercise</div>
+<div class="panel-body">
+
+Emulate the following plot where:
+
+* The radius is controlled by the values of the stomach.volume
+* The label is controlled by sex.
+* The default colour value ("#03F") is overridden (you can use standard English R colour names)
+* The default weight (of the outer "ring") is overridden/suppressed.
+
+As usual it is best to read the help-file and/or check what are the arguments for the `r cl("addCirles")`-function (call args(addCircle)).
+
+```{r, fig.height = 3, fig.width = 4, echo = FALSE}
+leaflet() %>% 
+  addTiles() %>% 
+  addCircles(data = minke.sf,
+             radius = ~stomach.volume * 250,
+             label = ~sex,
+             color = "red",
+             weight = 0)
+```
+
+</div>
+</div>
+
+#### Mapping variables to colours
+
+Lets try to distinguish the samples by sex using the argument color. A spoiled ggplot-user may try this:
+
+```{r, fig.height = 3, fig.width = 4}
+minke %>% 
+  leaflet() %>% 
+  addTiles() %>% 
+  addCircles(lng = ~lon,
+             lat = ~lat,
+             color = ~sex,
+             radius = 10000)  # radius in meters
+```
+
+The above will however not work as anticipated because leaflet is not as user-friendly as ggplot that provides some default colouring for free.
+
+We hence need first to specify a colour palette (more on this later):
+```{r}
+pal <- colorFactor(palette = c("navy", "red"), 
+                   domain = c("Male", "Female"))
+```
+
+and then:
+```{r, fig.height = 3, fig.width = 4}
+m <- 
+  minke %>% 
+  leaflet() %>% 
+  addTiles() %>% 
+  addCircles(lng = ~lon,
+             lat = ~lat,
+             color = ~pal(sex),
+             radius = 10000)
+m
+```
+
+This plot however does not give us indication about which colour corresponds to which sex. Again, legends that come free in ggplot need to be specifically provided in leaflet using the `r cl("addLegend")`-function:
+
+```{r, fig.height = 3, fig.width = 4}
+m %>% 
+  addLegend("bottomleft",
+            title  = 'Sex',
+            pal = pal,
+            values = ~sex)
+```
+
+If the object is of class `sf` (or `sp`) one does not need to specify the lng or lat (so same as when generating sf-plots or geom_sf-plots):
+
+```{r, fig.height = 3, fig.width = 4}
+minke.sf <- 
+  minke %>% 
+  st_as_sf(coords = c("lon", "lat"),
+           crs = 4326,
+           remove = FALSE)
+```
+
+```{r, fig.height = 3, fig.width = 4, eval = FALSE}
+# NOT RUN
+minke.sf %>% 
+  leaflet() %>% 
+  addTiles() %>% 
+  # note: no arguement lng nor lat used
+  addCircles(color = ~pal(sex),
+             radius = 10000) %>% 
+  addLegend("bottomleft",
+            title  = 'Sex',
+            pal = pal, 
+            values = ~sex)
+```
+
+As with ggplot, one can specify the data used from within a layer-call:
+```{r, fig.height = 3, fig.width = 4, eval = FALSE}
+# NOT RUN
+leaflet() %>% 
+  addTiles() %>% 
+  addCircles(data = minke.sf,
+             color = ~pal(sex),
+             radius = 10000) %>% 
+  addLegend("bottomleft",
+            title  = 'Sex',
+            pal = pal, 
+            values = c("Male", "Female"))
+```
+
+Note however that one needs to specify explicitly the "domain" within the `r cl("addLegend")`-function (NOTE: check if there is not an alternative to this).
+
+### Basemaps
+
+
+The `r cl("addTiles")`-function provides a reference background to spatial maps, the default being [openstreetmap](https://www.openstreetmap.org)-tiles. That background may not be the most suitable for oceanographic data we are most likely confronted with. The `r cl("addProviderTiles")`-function provides a quick access to some free third-party basemaps that are encapsulated in the "providers"-list, a data object in the leaflet-package. 
+
+#### Leaflet build-in alternatives
+
+Some potential ocean background could be (for a full sneak-preview see [here](http://leaflet-extras.github.io/leaflet-providers/preview)):
+
+```{r}
+m <- leaflet() %>% setView(lng = -12, lat = 64, zoom = 6)
+```
+
+```{r, fig.height = 1}
+m %>% addProviderTiles(providers$Esri.WorldImagery)
+```
+
+```{r, fig.height = 1}
+m %>% addProviderTiles(providers$Esri.OceanBasemap)
+```
+
+#### Alternatives
+
+Some recent maps tiles of potential use as backgrounds for marine data can be found on [NOAA map homepage](https://noaa.maps.arcgis.com/home). Example for calling these tiles are:
+
+```{r}
+# Create a function, just a wrapper around a long url
+addTiles_noaa2 <- function(map) {
+  map %>%
+    addTiles(url = "https://tiles.arcgis.com/tiles/C8EMgrsFcRFL6LrL/arcgis/rest/services/GEBCO_2019_basemap_ncei/MapServer/tile/{z}/{y}/{x}")
+}
+addTiles_noaa3 <- function(map) {
+  map %>%
+    addTiles(url = "https://tiles.arcgis.com/tiles/C8EMgrsFcRFL6LrL/arcgis/rest/services/web_mercator_gebco_2019_contours/MapServer/tile/{z}/{y}/{x}")
+}
+m <- leaflet() %>% setView(lng = 0, lat = 60, zoom = 3)
+m %>% 
+  addTiles_noaa2() %>% 
+  addTiles_noaa3()
+```
+
+#### Own tiles - and layer control
+
+If one has access to a server one could even attempt to provide ones own tiles, like this bottom topography shaded relief map:
+
+```{r, fig.height = 4}
+m <- 
+  m %>% 
+  addProviderTiles(providers$Esri.WorldImagery,
+                   group = "World Image") %>% 
+  # Multiple calls to disparate tile sets
+  addTiles(urlTemplate = "http://www.hafro.is/~einarhj/tiles2/olex-rayshaded/{z}/{x}/{y}.png",
+           options = tileOptions(minZoom = 5, maxZoom = 12),
+           group = "Crowd sourced (Olex)") %>%
+  addTiles(urlTemplate = "http://www.hafro.is/~einarhj/tiles2/mb-rayshaded/{z}/{x}/{y}.png",
+           options = tileOptions(minZoom = 5, maxZoom = 12),
+           group = "MRI multibeam") %>%
+  addTiles(urlTemplate = "http://www.hafro.is/~einarhj/tiles2/mb2-rayshaded/{z}/{x}/{y}.png",
+           options = tileOptions(minZoom = 5, maxZoom = 12),
+           group = "MRI multibeam")
+```
+
+The above script includes some options, here the minimum and the maximum zoom of 5 and 12 specifies the zoom level that the tiles are made visible to the user. The argument group comes in handy when allowing the user to control what layers are shown/hidden. For that we use the `r cl("addLayersControl")`-function:
+
+```{r}
+m %>% 
+  addLayersControl(overlayGroups = c("World Image", "Crowd sourced (Olex)", "MRI multibeam"),
+                   options = layersControlOptions(collapsed = FALSE)) %>% 
+  setView(lng = -19, lat = 65, zoom = 5)
+```
+
+### Polygons
+
+
+```{r, fig.height = 3, fig.width = 4}
+iceland <- 
+  ne_countries(country = "Iceland",
+               scale = 10,
+               returnclass = "sf")
+class(iceland)
+
+leaflet() %>% 
+  addPolygons(data = iceland,
+              color = "grey90",
+              weight = 0) %>% 
+  addCircles(data = minke)
+```
+
+Note that in the above no call was made to background tile. This may often be the best option, because colourful background may create a distraction from the main data that supposedly contains the message for the reader.
+
+### Lines
+
+Lets take the cruise track from the Icelandic spring survey in 2019 as an example.
+
+```{r}
+trail <- 
+  read.csv("ftp://ftp.hafro.is/pub/data/csv/is_smb_vms2019.csv",
+           stringsAsFactors = FALSE) %>% 
+  as_tibble() %>% 
+  st_as_sf(coords = c("lon", "lat"),
+           crs = 4326) %>% 
+  group_by(vessel) %>% 
+  summarise(do_union = FALSE) %>% 
+  st_cast("LINESTRING")
+```
+
+
+```{r}
+pal <-
+  colorFactor(palette = RColorBrewer::brewer.pal(n = 5, name = "Set1"),
+              domain = trail$vessel)
+trail %>% 
+  leaflet() %>% 
+  addTiles_noaa2() %>% 
+  addPolylines(#data = trail,
+    color = ~pal(vessel),
+    group = ~vessel,
+    opacity = 1,
+    weight = 3) %>% 
+  addLegend("bottomleft",
+            title  = 'Vessels',
+            pal = pal,
+            values = ~vessel) %>% 
+  addLayersControl(overlayGroups = c(trail$vessel),
+                   options = layersControlOptions(collapsed = FALSE))
+```
+
+### Line-segments
+
+Lets use all the tows in the DATRAS database from 2018 as and example:
+
+```{r}
+hh <- 
+  read.csv("ftp://ftp.hafro.is/pub/data/csv/datras_2018_haul.csv",
+           stringsAsFactors = FALSE) %>% 
+  as_tibble() 
+hh %>% 
+  mutate(id = paste(id = paste0(survey, "_", id))) %>% 
+  select(id,
+         lon_start = shootlong,
+         lat_start = shootlat,
+         lon_end = haullong,
+         lat_end = haullat) %>% 
+  pivot_longer(-id, 
+               names_to = c(".value", "action"), 
+               names_sep = "_") %>% 
+  st_as_sf(coords = c("lon", "lat"),
+           crs = 4326) %>% 
+  group_by(id) %>% 
+  summarise(do_union = FALSE) %>% 
+  st_cast("LINESTRING") %>% 
+  leaflet() %>% 
+  addTiles() %>% 
+  addPolylines(weight = 3,
+               opacity = 1,
+               label = ~id)
+```
+
+
+
+<div class="panel panel-info">
+<div class="panel-heading">Exercise</div>
+<div class="panel-body">
+
+Use the data of your liking and experiment with various basemaps of choice. Give some thought on:
+
+* The use of colours for the data, given the different backgrounds chosen.
+* What backgrounds are useful vs those that act as a distraction from the message you are trying to convey.
+
+
+</div>
+</div>
+
+### Multiple layers
+
+Example is the abundance mackerel from the DATRAS 2018 survey plotted over ecoregions.
+
+```{r}
+egos <- 
+  read_sf("ftp://ftp.hafro.is/pub/data/shapes/ices_ecoregions.gpkg")
+hl <- 
+  read.csv("ftp://ftp.hafro.is/pub/data/csv/datras_2018_length.csv",
+           stringsAsFactors = FALSE) %>% 
+  as_tibble()
+
+# some common species
+mysp <- c("Scomber scombrus")
+hh %>% 
+  select(id, lon = shootlong, lat = shootlat) %>% 
+  left_join(hl %>% filter(latin == mysp)) %>% 
+  group_by(id, lon, lat) %>% 
+  summarise(n = sum(n, na.rm = TRUE)) %>% 
+  mutate(nr = ifelse(n > 1000, 1000, n)) %>% 
+  st_as_sf(coords = c("lon", "lat"),
+           crs = 4326) %>% 
+  leaflet() %>% 
+  addTiles() %>% 
+  addPolygons(data = egos,
+              color = ~colorFactor("viridis", ecoregion)(ecoregion),
+              weight = 1, 
+              group = ~ecoregion,
+              smoothFactor = 0.5,
+              opacity = 1.0,
+              fillOpacity = 0.3) %>% 
+  addCircles(radius = 1000,
+             color = "blue",
+             weight = 0,
+             fillOpacity = 1) %>% 
+  addCircles(radius = ~nr * 100,
+             label = ~as.character(round(n)),
+             weight = 0,
+             color = "red") %>% 
+  addLayersControl(overlayGroups = c(egos$ecoregion))
+```
+
+### Raster image
+
+```{r}
+nephrops  <- raster::raster("ftp://ftp.hafro.is/pub/data/rasters/nephrops.tif")
+inf <- viridis::inferno(12, alpha = 1, begin = 0, end = 1, direction = -1)
+pal <- leaflet::colorNumeric(inf, raster::values(nephrops), na.color = "transparent")
+r <- 
+  leaflet() %>%
+  setView(lng = -15, lat = 64, zoom = 7) %>%
+  addProviderTiles(providers$Esri.WorldImagery) %>% 
+  addRasterImage(nephrops, colors = pal, opacity = 1, group = "Nephrops trawl",
+                 maxBytes = Inf)
+r
+```
+
+[The real thing](https://heima.hafro.is/~einarhj/vms2)
+
+### Saving as html
+
+```{r, eval = FALSE}
+library(htmltools)
+saveWidget(r, "nephrops.html")
+```
+
+### VMS ICES
+
+The following is available on somewhere on ices.dk (I lost the link):
+
+```{r}
+d <- 
+  read_sf("ftp://ftp.hafro.is/pub/data/shapes/OSPAR_intensity_Otter_2015.gpkg")
+glimpse(d)
+```
+
+The data contains among other things the 2018 fishing hours of Otter trawls using a 0.05 x 0.05 decimal degree grid
+
+```{r, eval = FALSE}
+# NOTRUN: This is a bit too much for leaflet
+pal <- leaflet::colorNumeric(inf, d$FishingH, na.color = "transparent")
+leaflet() %>% 
+  addProviderTiles(provider = providers$Esri.WorldImagery) %>% 
+  addPolygons(data = d,
+              fillColor = ~pal(FishingH),
+              stroke = 0,
+              fillOpacity = 1)
+```
+
+So lets try mapdeck:
+
+## mapdeck
+
+___
+
+
+```{r}
+library(mapdeck)
+```
+```{r, echo = FALSE}
+key <- "ADD KEY HERE"
+set_token(key)
+```
+
+```{r}
+mapdeck() %>%
+  add_polygon(data = d %>% 
+                filter(FishingH > 0) %>% 
+                mutate(FishingH = round(FishingH),
+                       FishingHc = ifelse(FishingH > 300, -300, -FishingH)),
+              tooltip = "FishingH",
+              fill_colour = "FishingHc",
+              palette = "inferno",
+              legend = TRUE)
+```
+
+The mapdeck package points to the future of what will be do-able in R when it comes to visualizing data interactively. Below is an example of almost 1 million records of AIS/VMS-data in the first quarter of 2018. The colour indicates vessel speed, yellow being high (cruising) and darker meaning slower speed.
+
+```{r}
+vms <- 
+  read_rds("/net/hafkaldi/export/home/haf/einarhj/prj2/vms/2019_ices-datacall/dataIS/is_vms_visir2018.rds") %>% 
+  filter(!is.na(mobileid),
+         lubridate::month(time)  <= 3) %>% 
+  mutate(speed = ifelse(speed > 10, 10, speed)) 
+glimpse(vms)
+m <- 
+  vms %>% 
+  mapdeck() %>% 
+  add_scatterplot(fill_colour = "speed",
+                  palette = "inferno")
+m
+```
+
+Rudimentary [mapdeck documents](https://symbolixau.github.io/mapdeck/articles/mapdeck.html)
+
+## Other packages
+
+Among the many:
+
+* [mapview](https://r-spatial.github.io/mapview)
+* [mapedit](https://www.r-spatial.org/r/2017/06/09/mapedit_0-2-0.html)
+* ...

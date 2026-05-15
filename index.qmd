@@ -1,0 +1,21 @@
+
+---
+title: "Introduction to mapping and spatial analysis with R"
+---
+![](./img/old_map.jpg)
+
+### This page: <https://heima.hafro.is/~julian/ftp/index.html>
+
+### Datasets: <https://heima.hafro.is/~julian/ftp/data.zip>
+
+## Contents
+
+* [Introduction](intro.qmd)
+
+
+## Contact info
+Julian M. Burgos
+
+MFRI - Demersal Division
+
+Email: julian.burgos(at)hafogvatn.is
