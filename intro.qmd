@@ -2,219 +2,206 @@
 title: "Introduction"
 ---
 
-## Preamble
+# About this course
 
-------------------------------------------------------------------------
+This course provides a practical introduction to mapping and spatial analysis using R. It is aimed at researchers and analysts in fisheries and marine science who already have some familiarity with R and want to work effectively with spatial data — reading and writing spatial files, manipulating vector and raster data, making maps, and applying spatial analysis methods.
 
-### The announcement
+The course material is open source. The source code and datasets are available at:
 
-[THE CALL](http://www.ices.dk/news-and-events/Training/Pages/R.aspx)
+- **Course website**: <https://heima.hafro.is/~julian/TCMSAR26/index.html>
+- **Datasets**: <https://heima.hafro.is/~julian/ftp/data.zip>
 
-### The course material
+https://github.com/jmburgos/TCMSAR26
 
-The course material is open source, meaning that the source code is made freely available and may be redistributed and modified.
+---
 
-- The source code for the course material is located at: <https://github.com/fishvice/spatialr>
-- The course product is rendered at: <http://www.hafro.is/~einarhj/spatialr>
+# What this course covers
 
-### Typical science project
+Spatial analysis fits naturally into the standard data science workflow of import → tidy → transform → visualise → model → communicate. This course focuses on all of these steps as they apply to **spatial** data specifically.
 
-```{r out.width = "75%", fig.cap = "From: Grolemund and Wickham"}
+```{r out.width="75%", fig.cap="From: Grolemund and Wickham (R for Data Science)", echo=FALSE}
 knitr::include_graphics("img/data_science.png")
 ```
 
-- Import
-  - Import data stored in a file, database, or web API, and load it into R
-- Tidy
-  - Each column is a variable, and each row is an observation
-- Transform
-  - Narrowing in on observations of interest
-  - Creating new variables that are functions of existing variables
-  - Calculating a set of summary statistics (like counts or means)
-  - ...
-- Visualize
-  - May show unexpected things
-  - May raise new questions about the data
-  - A powerful communication platform
-  - ...
-- Model
-  - Once questions made sufficiently precise, one can use a model to answer them
-  - Model cannot question its "own" assumptions!
-- Communicate
-  - Presentation and documentation
+By the end of the course you will be able to:
 
-This short course will primarily focus on **transforming** and **visualizing** **spatial** data. Other elements mentioned above will though be touch upon, albeit in less details.
+- Understand the key concepts behind spatial data: vector and raster data models, coordinate reference systems, and projections.
+- Read and write spatial data in common formats (GeoPackage, shapefile, GeoTIFF, CSV).
+- Create and manipulate vector data using the **sf** package: points, lines, and polygons.
+- Perform geometric operations on sf objects: buffers, centroids, intersections, spatial joins.
+- Work with raster data using the **terra** package: reading, cropping, resampling, and raster algebra.
+- Make publication-quality static maps with **ggplot2**.
+- Build interactive web maps with **leaflet**.
+- Apply basic spatial interpolation methods.
 
-We are, where possible, going to use a set of recently developed tools that fall under the **tidyverse** and **sf** umbrella. These are basic set of **generic** tools that are integrated to work seamlessly with one another.
+## Course outline
 
-## Getting started
+The chapters follow a logical progression from concepts to tools to applications:
 
-------------------------------------------------------------------------
+| Chapter | Topic |
+|---|---|
+| Spatial data | What spatial data is; vector and raster models; the R package ecosystem |
+| Simple features | The sf class; reading files; creating sf objects from coordinates |
+| Geometries in sf | Geometric operations: buffers, centroids, convex hulls, grids |
+| Spatial operations | Spatial joins, subsetting, and binary predicates |
+| Coordinate reference systems | Ellipsoids, datums, projections; reprojecting data |
+| Rasters | The terra package; reading, manipulating, and analysing raster data |
+| Reading and writing spatial data | File formats and GDAL; reading and writing with sf and terra |
+| Mapping with ggplot2 | Static maps; layers, projections, colour scales, facetting |
+| Interactive maps | leaflet; basemaps, markers, polygons, layer control |
+| Interpolation | Voronoi polygons, IDW, kriging, GAMs |
 
-For this course you need to have R (and Rtools), RStudio and a sweep of packages.
+---
 
-### R
+# Datasets used in this course
 
-#### What is R?
+The same datasets reappear across multiple chapters, so it is worth knowing what they are from the start. All data files are available in the course data archive linked above.
 
-- R is command line driven programming language
-  - its biggest appeal is one can **reuse** commands
-  - its biggest hurdle in widespread use
-- R is open-source:
-  - Other statistical software packages can be extremely expensive
-  - Large user base with almost all statistical methods implemented
+## Icelandic bottom trawl survey (SMB)
 
-#### Why R?
+The spring groundfish survey (*Spawning groundfish survey*, SMB) conducted annually by the Marine and Freshwater Research Institute (MFRI) of Iceland. The main files used are:
 
-R has become the *lingua franca* of statistical analysis and data wrangling
+- `is_smb.csv` — station data including tow positions, duration, and catch by species.
+- `is_smb_stations.csv` — station metadata.
+- `is_smb_biological.csv` — biological data (length, weight) by species and station.
+- `is_smb_vms2019.csv` — Vessel Monitoring System (VMS) positions for the 2019 survey, giving detailed vessel tracks.
+- `is_smb_cod_rbya.csv` — cod abundance by year, age, and station.
 
-- Its free! If you are a teacher, a student or a user, the benefits are obvious
-- It runs on a variety of platforms including Windows, Unix and MacOS
-- It provides an unparalleled platform for programming new statistical methods in an easy and straightforward manner
-- It offers powerful tools for data exploration and presentation
-- Encompasses reproducible workflow
+This dataset is used to illustrate tow tracks, abundance mapping, spatial interpolation, and facetted maps across years.
 
-#### Download R
+## ICES DATRAS surveys
 
-- Latest version of **R**: see [The Comprehensive R Archive Network](https://cran.r-project.org/) \* If your platform is Windows, also install [Rtools](https://cran.r-project.org/bin/windows/Rtools)
-  - If your platform is Mac, install **XCode** via AppStore.
+Trawl survey data from the ICES Database of Trawl Surveys (DATRAS), covering multiple European surveys in 2018:
 
-### RStudio
+- `datras_2018_haul.csv` — haul (station) data including positions.
+- `datras_2018_length.csv` — length frequency data by species and haul.
 
-#### What is RStudio?
+Used to illustrate spatial operations, interactive maps, and working with data from multiple surveys across a broad geographic area.
 
-- [RStudio](https://www.rstudio.com) allows the user to run R in a user-friendly IDE environment.
+## Minke whale sightings
 
-- It is open-source (i.e. free) and available at www.rstudio.com
+- `minke.csv` — positions and biological measurements of minke whales sampled in Icelandic waters.
 
-- Built to help you write R code, run R code, and analyze data with R
+Used in mapping examples throughout the ggplot2 chapter.
 
-- Text editor, project handling, markdown support, keyboard shortcuts, debugging tools, version control, ...
+## Spatial boundary files
 
-- Within RStudio one can achieve almost all that is needed to complete a typical science project
+Several vector boundary files are used as reference layers:
 
-#### Download RStudio
+- `iceland_coastline.gpkg` — Iceland coastline.
+- `iceland_contours.gpkg` — depth contours around Iceland.
+- `bormicon.gpkg` — Bormicon reporting areas for Icelandic fisheries.
+- `nephrops_fu.gpkg` — Nephrops functional units (ICES assessment areas).
+- `ices_ecoregions.gpkg` — ICES ecoregion boundaries.
+- `ices_rectangles.gpkg` — ICES statistical rectangles.
+- `helcom.gpkg` and `ospar.gpkg` — HELCOM and OSPAR regional sea boundaries.
 
-- Latest version of **RStudio**: see [RStudio Desktop](https://www.rstudio.com/products/rstudio/download/)
-  - If you are adventurous install the latest [developmental version](https://www.rstudio.com/products/rstudio/download/preview)
+## Raster data
 
-### Running R
+- `Iceland_minbtemp.tif`, `Iceland_maxbtemp.tif` — minimum and maximum near-bottom temperature around Iceland (from the NISE project).
+- `Iceland_currentsp.tif` — near-bottom current speed (from Bio-ORACLE).
+- `nephrops.tif` — Nephrops trawl effort raster.
+- Bottom depth data accessed via the `marmap` package from NOAA's ETOPO1 database.
 
-#### Our environment - RStudio
+---
 
-A typical RStudio window may look something like this:
+# Getting started
 
-```{r out.width = "75%"}
-knitr::include_graphics("img/rstudio.png")
+## Software
+
+You will need a recent version of R and an IDE. We recommend RStudio (now distributed by Posit):
+
+- **R**: download from [CRAN](https://cran.r-project.org/). If you are on Windows, also install [Rtools](https://cran.r-project.org/bin/windows/Rtools). On macOS, install the Command Line Tools via `xcode-select --install` in a terminal.
+- **RStudio**: download from [posit.co](https://posit.co/download/rstudio-desktop/).
+
+## RStudio projects
+
+We strongly recommend doing all your work inside an **RStudio project**. Projects keep your files, working directory, and settings organised and isolated from other work. To create one: *File → New Project → New Directory → New Project*.
+
+A sensible directory structure for this course might look like:
+
+```
+spatial_course/
+├── data/               # Downloaded course data files
+├── R/                  # Your R scripts
+├── spatial_course.Rproj
+└── my_analysis.qmd     # Your own Quarto documents
 ```
 
-- **Console**: One can type R commands directly into the console to perform calculations
-- **Script editor**: An R script is basically a series of stored R commands that can be run in the console
-  - To generate a new script do: New file -\> R Script (ctrl-shift-N)
-- **Environment**: Contains a list of all declared variables. If you have a dataset you can double click the variable to view the data.
-- **History** Contains a list of previous commands entered into the console
-- **Other items**:
-  - Files: List of object in a directory
-  - Plots: Graphical output from R. The user can export these the figures to file (as jpeg, png or pdf) or to clipboard
-  - Help: Gives a brows-able interface to R’s in-line help pages. The user can search for a topic or a specific function
+::: {.callout-warning}
+## Do not save your workspace
+When RStudio asks whether to save your workspace (`.RData`) on exit, always say **No**. Saving the workspace causes hard-to-diagnose bugs by carrying objects from one session into the next. Instead, keep your code in scripts so you can always recreate your results from scratch.
 
-#### RStudio project
-
-- RStudio allows us to make things a little bit easier by isolating various tasks within specific projects (**read**: directory/folder on your computer).
-- Projects save the state between sessions. This includes:
-  - Working directories
-  - Open files/scripts
-  - Workspaces (.RData file - do not save this)
-- One can have multiple RStudio projects open at any one time
-  - The modern call for multitasking :-)
-
-We strongly urge you to get into the habit of splitting your various tasks into specific RStudio projects.
-
-A typical directory structure of a project (here called dummy) may be something like:
-
-```         
-einarhj/edu/spatialr/dummy                   # project directory
-├── data                                     # tidy data as R binary files
-│   └── is_smb_stations.rds
-├── data-raw                                 # raw data, often untidy
-│   └── is_smb_stations.csv
-├── dummy.Rproj                              # RStudio file
-├── R                                        # Directory containing scripts
-│   └── addition.R
-└── survey_explorations.Rmd                  # A markdown report template
-```
-
-::::: {.panel .panel-warning}
-::: panel-heading
-Hands on exercise - Projects and some basic R
+To turn this off permanently: *Tools → Global Options → General → Save workspace to .RData on exit → Never*.
 :::
 
-::: panel-body
-1.  Open R-studio and create a new project: File -\> New project ... -\> New directory --\> Empty project --\> ...
-2.  Create a new R script: File -\> New file -\> R Script
-3.  Copy the content of [this code](http://www.hafro.is/~einarhj/tcrenv/R/exercise1.R) into the R script.
-4.  Save the script, e.g. exercise1.R: File -\> Save
-5.  Run each line of code, observe, change, add, and most importantly learn while doing (this is just a refresher of some elementary base R operations).
-6.  Once you have gone through the whole script, try: File -\> Compile Report ..., choosing the output according to your liking :-)
+## Installing packages
+
+Install all the packages used in this course by running the following. You only need to do this once:
+
+```{r install, eval=FALSE}
+install.packages(c(
+  # Core spatial packages
+  "sf",          # Vector spatial data
+  "terra",       # Raster spatial data
+  "stars",       # Spatiotemporal data cubes
+
+  # Tidyverse
+  "tidyverse",   # Data wrangling and visualisation
+
+  # Mapping
+  "ggplot2",     # Static maps (installed with tidyverse)
+  "ggspatial",   # Scale bars, north arrows
+  "leaflet",     # Interactive maps
+  "mapview",     # Quick interactive map previews
+  "rnaturalearth",   # Country and region boundaries
+  "rnaturalearthdata",
+
+  # Raster data access
+  "marmap",      # NOAA bathymetry data
+
+  # Interpolation
+  "gstat",       # Geostatistics and interpolation
+  "mgcv",        # GAMs
+  "concaveman",  # Concave hulls
+
+  # Utilities
+  "crsuggest",   # CRS selection helper
+  "patchwork",   # Combining ggplot figures
+  "units"        # Physical units for spatial measurements
+))
+```
+
+::: {.callout-note}
+## A note on raster packages
+This course uses **terra** for raster data. Some chapters also reference the older **raster** package, which you may encounter in existing code. The two packages have similar functionality but different syntax. If you see a function like `raster()` or `stack()`, it is from the raster package; the terra equivalents are `rast()` and `c()`.
 :::
-:::::
 
-## Packages
+## Verify your installation
 
-------------------------------------------------------------------------
+Once packages are installed, check that the key spatial ones load correctly:
 
-### What are packages?
-
-- Packages are a collection of functions and data with documentations.
-- Numerous basic packages come with R but the strength of the R-environment comes from the huge amount of packages that are provided by third sources.
-
-```{r out.width="75%"}
-url <- "https://gist.githubusercontent.com/daroczig/3cf06d6db4be2bbe3368/raw/8e970fad675d443813be2c98c508e6224491495e/number-of-submitted-packages-to-CRAN.png"
-knitr::include_graphics(url)
+```{r verify, eval=FALSE}
+library(sf)
+library(terra)
+library(tidyverse)
+library(leaflet)
 ```
 
-### Installing packages
+If these load without errors, you are ready to begin.
 
-If you have not already done so, or it is a long time since you have done so, run the following:
+::: {.callout-note}
+## Setup exercise
+1. Create a new RStudio project for this course.
+2. Download the course data archive from <https://heima.hafro.is/~julian/ftp/data.zip> and unzip it into a `data/` folder inside your project.
+3. Install the packages above and verify they load.
+4. Open a new Quarto document (*File → New File → Quarto Document*) and write a short code chunk that reads `is_smb.csv` from your data folder and prints the first few rows with `head()`. Render the document to make sure everything works end to end.
+:::
 
-```{r cran-installation, eval = FALSE, echo = TRUE}
-install.packages("tidyverse")
-```
+---
 
-This will install among other things the **core** tidyverse packages:
+# A note on reproducibility
 
-- [ggplot2](http://ggplot2.tidyverse.org), for data visualization.
-- [dplyr](http://dplyr.tidyverse.org), for data manipulation.
-- [tidyr](http://tidyr.tidyverse.org), for data tidying.
-- [readr](http://readr.tidyverse.org), for data import.
-- [purrr](http://purrr.tidyverse.org), for functional programming.
-- [tibble](http://tibble.tidyverse.org), for "tibbles", a modern re-imagining of data frames.
-- [stringr](http://stringr.tidyverse.org), for strings
-- [forcats](http://forcats.tidyverse.org), for factors
+One of R's biggest advantages over point-and-click GIS tools is that your entire analysis — from reading raw data to producing a final map — can be written as a script and re-run exactly by anyone, on any machine. This course is written in **Quarto** (`.qmd` files), which weaves code, output, and prose into a single reproducible document. All the examples in this course are self-contained: if you have the data and the packages installed, you can run any chapter from top to bottom and get the same results.
 
-`library(tidyverse)` will load the core tidyverse packages.
-
-In addition, this also installs a selection of other tidyverse packages that you're likely to use frequently, but probably not in every analysis. This includes packages for:
-
-- Working with specific types of vectors:
-
-  - [lubridate](http://lubridate.tidyverse.org), for date/times.
-
-- Importing other types of data:
-
-  - DBI, for databases (..., this may create a problem)
-  - haven, for SPSS, SAS and Stata files.
-  - httr, for web apis.
-  - [jsonlite](https://github.com/jeroenooms/jsonlite) for JSON.
-  - readxl, for `.xls` and `.xlsx` files.
-  - rvest, for web scraping.
-  - xml2, for XML.
-
-- Modelling
-
-  - modelr, for modelling within a pipeline
-  - [broom](https://github.com/dgrtwo/broom), for turning models into tidy data
-
-These packages you'll load explicitly with `library()`.
-
-Additional packages (there will be plenty) we will install as we progress through the course.
+We encourage you to work the same way: keep your code in scripts or Quarto documents, and avoid manually editing data files or saving plots by hand. Everything should flow from code.

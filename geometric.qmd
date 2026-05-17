@@ -4,356 +4,513 @@ execute:
   enabled: false
 ---
 
-
-#### These are the packages needed for this tutorial:
 ```{r setup}
 library(tidyverse)
 library(sf)
 ```
 
-## Operating with single geometries in sf object
-The package **sf** provides a large set of functions to query properties of sf objects and to combine sf objects to form new geometries.
+The **sf** package provides a large set of functions to operate on the geometries of sf objects. This chapter covers the most useful ones, organised by what they do:
 
-Geometric operations (and the **sf** functions that implement them) can be classified as:
+- **Validity**: checking and fixing geometry problems.
+- **Generators**: creating new geometries from existing ones (buffers, centroids, hulls, grids, type casting, set operations).
+- **Simplification**: reducing geometric complexity.
+- **Measurements**: areas, lengths, and distances.
+- **Aggregation**: dissolving and combining features.
+- **Attribute-geometry relationships**: understanding what happens to attributes when geometries change.
 
-- predicates: they return a logical value (TRUE or FALSE)
-- measures: they return a value
-- geometry generator operations: they return new geometries.
+We will use the Nephrops functional units as our main example dataset throughout, projected to World Mercator for accurate distance and area calculations:
 
-Operations can also be classified as unary, binary, or n-ary, depending if they need one, two or more *sf* objects.
-
-#### Remember to use projected data
-- We want to get areas in m2...not square degrees!
-- For geometric operations:
-  - Make sure that they are in a *projected* crs.
-  - Make sure that all layers have the *same* crs.
-
-## Extracting basic information
-**sf** has several functions to extract basic information from objects of class *sf*:
-
-```{r }
+```{r}
 nfu <- read_sf("ftp://ftp.hafro.is/pub/data/shapes/nephrops_fu.gpkg") %>%
- st_transform(3395) # Transform to World Mercator
-
-st_is_simple(nfu)
-
-st_is_valid(nfu)
-
-st_is_empty(nfu)
-
-st_is_longlat(nfu)
-
-st_dimension(nfu) # 0=points, 1=linear, 2=polygon
-
-st_geometry_type(nfu)
-
-st_crs(nfu) # Query (or set) the coordinate reference system
-
-st_bbox(nfu) # Bounding  box
-
+  st_transform(3395)
 ```
 
-## Generating new geometries
+::: {.callout-important}
+## Always use projected data for geometric operations
+Geometric operations (areas, distances, buffers) assume planar (Cartesian) coordinates. If your data is in geographic coordinates (latitude/longitude), results will be wrong or meaningless — areas come out in square degrees, distances in degrees, and buffers become ellipses. Always project your data before doing geometric calculations, and make sure all layers share the same CRS.
 
-#### Sampling
-The function **st_sample()** can be used to sample locations from polygons or linestrings.  The result is an *sfc* object with the sampled POINT geometries.
+Use `st_is_longlat(x)` to check, and `st_transform(x, crs)` to reproject.
+:::
 
-```{r }
+---
 
-nfu <- read_sf("ftp://ftp.hafro.is/pub/data/shapes/nephrops_fu.gpkg") %>%
- st_transform(3395) # Transform to World Mercator
+# Validity
 
+Real-world spatial data frequently contains geometry errors: self-intersecting polygons, duplicate vertices, rings that don't close properly. These cause cryptic errors in spatial operations. It is good practice to check validity before doing any analysis.
+
+```{r}
+st_is_valid(nfu)        # Is each geometry valid?
+st_is_simple(nfu)       # Is each geometry simple (no self-intersections)?
+st_is_empty(nfu)        # Are any geometries empty?
+```
+
+If geometries are invalid, `st_make_valid()` attempts to repair them automatically:
+
+```{r}
+nfu_fixed <- st_make_valid(nfu)
+all(st_is_valid(nfu_fixed))
+```
+
+::: {.callout-tip}
+It is good practice to run `st_make_valid()` on any spatial data you read from an external source before doing operations on it, especially if the data comes from a shapefile or an older GIS system.
+:::
+
+---
+
+# Generating new geometries
+
+## Sampling
+
+`st_sample()` generates random points within polygons or along linestrings. The result is an *sfc* object (a geometry column without attributes). Use `st_as_sf()` to convert it to a full sf object if you need to attach data.
+
+```{r}
 set.seed(100)
+
+# Random points within polygons
 pts1 <- st_sample(nfu, size = 100, type = "random")
 
-nfu_lines <- st_cast(nfu, "LINESTRING")
+# Random points along the boundary of polygons
+nfu_lines <- st_cast(nfu, "MULTILINESTRING")
 pts2 <- st_sample(nfu_lines, size = 100, type = "random")
 
 ggplot() +
-  geom_sf(data = nfu) +
-  geom_sf(data = pts1, color = "red") +
-  geom_sf(data = pts2, color = "blue")
-
+  geom_sf(data = nfu, fill = "grey90") +
+  geom_sf(data = pts1, colour = "red", size = 0.8) +
+  geom_sf(data = pts2, colour = "blue", size = 0.8) +
+  labs(title = "Random points inside (red) and on boundary of (blue) polygons") +
+  theme_bw()
 ```
 
-#### Centroids
-The mean position of geometries (LINESTRING OR POLYGONS) can be obtained by the *st_centroid()* function.
+## Centroids
 
-```{r }
-centr <- st_centroid(nfu)
-centr2 <- st_point_on_surface(nfu) # Not exactly the centroid, but always in the polygon
+`st_centroid()` returns the geometric centre of each feature. For irregular or concave polygons the centroid can fall outside the polygon itself. `st_point_on_surface()` guarantees a point that is always inside (or on the boundary of) the polygon, which is often more useful for labelling.
+
+```{r}
+centr  <- st_centroid(nfu)
+centr2 <- st_point_on_surface(nfu)
 
 ggplot() +
-  geom_sf(data = nfu) +
-  geom_sf(data = centr, color = "red") +
-  geom_sf(data = centr2, color = "blue")
-
+  geom_sf(data = nfu, fill = "grey90") +
+  geom_sf(data = centr,  colour = "red",  size = 2) +
+  geom_sf(data = centr2, colour = "blue", size = 2, shape = 17) +
+  labs(title = "Centroids (red circles) vs point on surface (blue triangles)") +
+  theme_bw()
 ```
 
-#### Buffers
-The function *st_buffer()* can be used for points, linestrings or polygons.
+## Buffers
 
-```{r }
-buf <- st_buffer(pts1, dist = 100000) # 100 km buffer
-ggplot() +
-  geom_sf(data = buf, linetype = "dashed") +
-  geom_sf(data = pts1)
+`st_buffer()` creates a zone around a geometry at a given distance (in the units of the CRS — metres for most projected CRS). It works on points, lines, and polygons.
 
-buf <- st_buffer(nfu_lines, dist = 50000)
-ggplot() +
-  geom_sf(data = buf, aes(fill = name))
-
-
-buf <- st_buffer(nfu, dist = 20000)
-ggplot() +
-  geom_sf(data = buf, aes(fill = name))
-
-# Negative buffers are allowed for polygons!
-buf <- st_buffer(nfu, dist = -20000)
-ggplot() +
-  geom_sf(data = buf, aes(fill = name))
-
-```
-#### Convex hull
-A convex hull is the smallest convex polygon that includes a group of points.  We can use the *st_convex_hull()* function to get it, but first we need to join the POINT geometries into a single MULTIPOINT geometry.  Otherwise we get a "convex hull" for each individual point.
-
-```{r }
-
-pts1_u <- st_union(pts1)
-
-chull <- st_convex_hull(pts1_u)
+```{r}
+# Buffer around points: creates circles
+buf_pts <- st_buffer(pts1, dist = 100000)  # 100 km
 
 ggplot() +
-  geom_sf(data = chull) +
-  geom_sf(data = pts1)
-
+  geom_sf(data = buf_pts, linetype = "dashed", fill = NA) +
+  geom_sf(data = pts1, colour = "red") +
+  theme_bw()
 ```
 
-*st_union()*  can be used to simplify features.  For polygons, it will combine multiple polygons into a single polygon.  For points, it clusters individual points into a MULTIPOINT geometry.
-
-#### Concave hulls
-Concave hulls are similar to convex hull, but they are concave (duh!).  To compute a concave hull we need the package **concaveman**  Note that the *concaveman* takes an *sf* object, but it does not accept an *sfc* object. (i.e. a geometry)
-
-```{r }
-library(concaveman)
-
-conc1 <- concaveman(st_as_sf(pts1), concavity = 1)
-conc2 <- concaveman(st_as_sf(pts1), concavity = 2.5)
+```{r}
+# Buffer around lines: creates a corridor
+buf_lines <- st_buffer(nfu_lines, dist = 50000)  # 50 km either side
 
 ggplot() +
-  geom_sf(data = conc1, color = "red", fill= NA) +
-  geom_sf(data = conc2, color = "blue", fill = NA) +
-  geom_sf(data = pts1)
-
+  geom_sf(data = buf_lines, aes(fill = name), alpha = 0.5) +
+  geom_sf(data = nfu, fill = NA, colour = "black") +
+  theme_bw()
 ```
-With high values for the *concavity* parameter we get a convex hull.
 
-#### Grids
-The function *st_grid* provides rectangular or hexagonal grids.  You can get polygons, nodes or centroids.
+```{r}
+# Buffer around polygons: expands the polygon outward
+buf_poly <- st_buffer(nfu, dist = 20000)  # 20 km outward
 
-```{r }
+ggplot() +
+  geom_sf(data = buf_poly, aes(fill = name), alpha = 0.4) +
+  geom_sf(data = nfu, fill = NA, colour = "black") +
+  theme_bw()
+```
 
-sq_grid <- st_make_grid(nfu, n = c(10, 15))
+```{r}
+# Negative buffers shrink a polygon inward (only valid for polygons)
+buf_neg <- st_buffer(nfu, dist = -20000)  # 20 km inward
 
+ggplot() +
+  geom_sf(data = nfu, fill = "grey90") +
+  geom_sf(data = buf_neg, aes(fill = name), alpha = 0.6) +
+  theme_bw()
+```
+
+## Convex and concave hulls
+
+A **convex hull** is the smallest convex polygon that encloses a set of points — think of stretching a rubber band around the outermost points. To get a single hull for a set of points, first union them into a MULTIPOINT with `st_union()`, then apply `st_convex_hull()`.
+
+```{r}
+pts1_u <- st_union(pts1)        # Combine into a single MULTIPOINT
+chull  <- st_convex_hull(pts1_u)
+
+ggplot() +
+  geom_sf(data = chull, fill = "lightblue", alpha = 0.5) +
+  geom_sf(data = pts1, colour = "red", size = 0.8) +
+  theme_bw()
+```
+
+::: {.callout-note}
+`st_union()` is also used more generally to dissolve internal boundaries between polygons (merging multiple polygons into one) and to cluster individual points into a MULTIPOINT geometry. Without calling `st_union()` first, `st_convex_hull()` would return a degenerate "hull" for each individual point.
+:::
+
+A **concave hull** fits more tightly around a point cloud, following the actual shape of the data rather than just the outermost extent. Modern sf (version 1.0-14 and later) includes `st_concave_hull()` directly:
+
+```{r}
+# ratio controls how tight the hull is (0 = very tight, 1 = convex hull)
+conc1 <- st_concave_hull(pts1_u, ratio = 0.1)
+conc2 <- st_concave_hull(pts1_u, ratio = 0.5)
+
+ggplot() +
+  geom_sf(data = chull,  colour = "black", fill = NA, linetype = "dashed") +
+  geom_sf(data = conc2, colour = "blue",  fill = NA) +
+  geom_sf(data = conc1, colour = "red",   fill = NA) +
+  geom_sf(data = pts1, size = 0.8) +
+  labs(title = "Convex hull (dashed), concave ratio=0.5 (blue), ratio=0.1 (red)") +
+  theme_bw()
+```
+
+## Grids
+
+`st_make_grid()` creates rectangular or hexagonal grids over the extent of an sf object. Hexagonal grids are increasingly popular for spatial analysis because each cell has equal distance to all its neighbours.
+
+```{r}
+sq_grid  <- st_make_grid(nfu, n = c(10, 15))
 hex_grid <- st_make_grid(nfu, n = c(10, 15), square = FALSE)
 
 ggplot() +
-  geom_sf(data = sq_grid, fill = NA, color = "gray") +
-  geom_sf(data = hex_grid, fill = NA, color = "red") +
+  geom_sf(data = sq_grid,  fill = NA, colour = "grey60") +
+  geom_sf(data = hex_grid, fill = NA, colour = "red", alpha = 0.5) +
+  geom_sf(data = nfu, fill = NA, colour = "black") +
   theme_bw()
-
 ```
-Sometimes we want to make a polygon of the bounding box of a geometry.  For this, we can make a grid with a single cell.
 
-```{r }
-box <- st_make_grid(nfu, n = 1)
+To get just the bounding box of an sf object as a polygon, use `st_as_sfc()` on the bounding box:
 
+```{r}
+bbox_poly <- st_as_sfc(st_bbox(nfu))
+
+ggplot() +
+  geom_sf(data = bbox_poly, fill = NA, colour = "red", linetype = "dashed") +
+  geom_sf(data = nfu, fill = "grey90") +
+  theme_bw()
 ```
-The *st_graticule()* can be used to create a set of lines with constant latitude or longitude, which can be added to maps as reference.
 
-#### Simplification
+## Geometry type casting
 
-Sometimes it is necessary to simplify vector data, reducing the memory, disk space and bandwidth they require, and speeding up geometrical operations.  For this we use the *st_simplify()* function.
+`st_cast()` converts geometries from one type to another. Common uses include converting POLYGON to LINESTRING (to get the boundary as a line), splitting MULTIPOLYGON into individual POLYGONs, or combining POINTs into a LINESTRING for a track.
 
-```{r }
+```{r}
+# Convert polygons to their boundary lines
+nfu_lines <- st_cast(nfu, "MULTILINESTRING")
+st_geometry_type(nfu_lines)
 
+# Split MULTIPOLYGON features into individual POLYGONs
+# (warning: this duplicates attribute rows for each part)
+nfu_poly <- st_cast(nfu, "POLYGON")
+nrow(nfu)       # Original number of features
+nrow(nfu_poly)  # May be more if any features are multipart
+```
+
+::: {.callout-warning}
+## Casting from MULTI to single geometry types
+When casting from MULTIPOLYGON to POLYGON (or MULTILINESTRING to LINESTRING, etc.), each part of a multi-geometry becomes a separate row. Attribute values are duplicated across all resulting rows. Be careful when doing this before area or length calculations, as you may end up double-counting.
+:::
+
+## Set operations on geometries
+
+These binary operations take two sf objects and return new geometries based on their spatial relationship. They are among the most powerful tools in sf.
+
+```{r}
+# Load a second polygon layer to work with
+ices_er <- read_sf("ftp://ftp.hafro.is/pub/data/shapes/ices_ecoregions.gpkg") %>%
+  st_transform(3395)
+
+# Select just a couple of areas to keep examples clear
+north_sea <- ices_er %>% filter(ecoregion == "Greater North Sea")
+celtic_sea <- ices_er %>% filter(ecoregion == "Celtic Seas")
+```
+
+**`st_intersection()`** returns the overlapping part of two geometries. This is equivalent to a spatial "AND" — give me everything that is in both A and B.
+
+```{r}
+# Which Nephrops functional units fall within the Greater North Sea ecoregion?
+nfu_north_sea <- st_intersection(nfu, north_sea)
+
+ggplot() +
+  geom_sf(data = north_sea, fill = "lightblue", alpha = 0.3) +
+  geom_sf(data = nfu_north_sea, aes(fill = name)) +
+  theme_bw() +
+  labs(title = "NFUs intersecting the Greater North Sea ecoregion")
+```
+
+**`st_difference()`** returns the part of the first geometry that does not overlap with the second — spatial "A minus B".
+
+```{r}
+# Parts of the Greater North Sea that are NOT covered by any NFU
+north_sea_no_nfu <- st_difference(north_sea, st_union(nfu))
+
+ggplot() +
+  geom_sf(data = north_sea, fill = "grey90") +
+  geom_sf(data = north_sea_no_nfu, fill = "red", alpha = 0.5) +
+  theme_bw() +
+  labs(title = "Parts of the Greater North Sea not covered by any NFU")
+```
+
+**`st_union()`** combines geometries, dissolving internal boundaries. Applied to a whole layer it returns a single merged polygon.
+
+```{r}
+# Dissolve all NFUs into a single polygon
+nfu_dissolved <- st_union(nfu)
+
+ggplot() +
+  geom_sf(data = nfu_dissolved, fill = "lightgreen") +
+  theme_bw() +
+  labs(title = "All NFUs dissolved into one polygon")
+```
+
+**`st_sym_difference()`** returns everything that is in either A or B but not in both — the spatial "XOR".
+
+::: {.callout-note}
+## A note on CRS in set operations
+Both objects in a binary set operation must share the same CRS. sf will throw an error if they do not. Always check with `st_crs(a) == st_crs(b)` or transform one to match the other before proceeding.
+:::
+
+---
+
+# Simplification
+
+Complex geometries with many vertices are slow to plot, slow to process, and large on disk. Simplification reduces the number of vertices while preserving the overall shape.
+
+`st_simplify()` uses the Douglas-Peucker algorithm. The `dTolerance` argument sets the maximum allowable deviation from the original shape in CRS units (metres for projected data).
+
+```{r}
 helcom <- read_sf("ftp://ftp.hafro.is/pub/data/shapes/helcom.gpkg") %>%
   st_transform(3395)
 
-helcom_simple <- st_simplify(helcom, dTolerance = 5000)
+helcom_simple <- st_simplify(helcom, dTolerance = 5000)  # 5 km tolerance
 
-object.size(helcom)
-object.size(helcom_simple)
+# Compare sizes
+format(object.size(helcom),        units = "Kb")
+format(object.size(helcom_simple), units = "Kb")
 
-ggplot() + geom_sf(data = helcom)
-ggplot() + geom_sf(data = helcom_simple)
+p1 <- ggplot() + geom_sf(data = helcom)        + labs(title = "Original") + theme_bw()
+p2 <- ggplot() + geom_sf(data = helcom_simple) + labs(title = "Simplified (5 km)") + theme_bw()
 
+library(patchwork)
+p1 + p2
 ```
 
+::: {.callout-tip}
+## rmapshaper for better simplification
+The `rmapshaper` package offers `ms_simplify()`, which uses the Visvalingam-Whyatt algorithm. This often produces cleaner results than Douglas-Peucker for geographic data, particularly for coastlines, as it avoids the "spiking" artifacts that `st_simplify()` can introduce at high levels of simplification.
 
-## Measurements
-#### Areas and lengths
-The **sf** package provides a series of unary measures that return a single values describing some properties of geometries.
-
-```{r }
-
-st_area(nfu)
-
-st_length(nfu) # Polygons have no length!
-
-st_length(nfu_lines)
-
-
+```r
+library(rmapshaper)
+helcom_ms <- ms_simplify(helcom, keep = 0.05)  # Keep 5% of vertices
 ```
-#### Distances between objects
-The function *st_distance()* returns a dense numeric matrix with distances between geometries.
+:::
 
-Let's get a few points, lines and polygons:
+---
 
-```{r }
+# Measurements
+
+## Area and length
+
+`st_area()` returns the area of polygon geometries, and `st_length()` returns the length of linestring geometries. Results are returned as `units` objects with their measurement unit attached, preventing unit confusion.
+
+```{r}
+areas <- st_area(nfu)
+areas         # In square metres (the unit of the CRS)
+
+# Convert to km²
+units::set_units(areas, km^2)
+
+# Polygons have no meaningful length; linestrings do
+st_length(nfu)        # Returns 0 or NA for polygons
+st_length(nfu_lines)  # Returns length in metres for linestrings
+```
+
+You can add calculated areas or lengths back as attribute columns:
+
+```{r}
+nfu <- nfu %>%
+  mutate(area_km2 = units::set_units(st_area(.), km^2))
+```
+
+## Distance
+
+`st_distance()` returns a matrix of pairwise distances between two sets of geometries. Rows correspond to features in the first object, columns to features in the second. Results are `units` objects.
+
+```{r}
 set.seed(100)
-poly <- nfu[1:3, ]
+poly  <- nfu[1:3, ]
+pts_a <- st_sample(poly, 5) %>% st_as_sf() %>% mutate(lab = 1:5)
+pts_b <- st_sample(poly, 2) %>% st_as_sf()
 
-pts_a <- st_sample(poly, 5) %>%
-  st_as_sf()%>%
-  mutate(lab = 1:5)
-
-pts_b <- st_sample(poly, 2)
-
+# All pairwise distances between pts_a and pts_b
 st_distance(pts_a, pts_b)
 
+# Distance from each point to each polygon
+# Note: distance is 0 when the point is inside the polygon
 st_distance(pts_a, poly)
 
 ggplot() +
-  geom_sf(data = poly, aes(fill = name)) +
+  geom_sf(data = poly, aes(fill = name), alpha = 0.3) +
   geom_sf(data = pts_a) +
-  geom_sf_text(data = pts_a,
-               nudge_x = 20000,
-               aes(label = lab))
-
-
-```
-The function returns a distance matrix with all pairwise distances (but see the *by_element* argument).  The matrix is of class *units*, for numerical data with their associated measurement unit.
-
-Note that we get a distance of 0 when the point is inside the polygon.
-
-
-
-## Aggregation
-Aggregation involves summarising a dataset by a grouping variables, usually one of the attribute columns.  The *sf* package provides methods for stats::aggregate and dplyr::summarise. When used, they:
-
-- take a groping predicate (e.g. from *group_by()*)
-- take one or more aggregation functions
-- aggregate the attributes per group
-- aggregate the geometries
-- if *do_union==TRUE*, union the aggregated geometries.
-
-Let's look again to our small vms dataset:
-
-```{r }
-vms <- read_csv("ftp://ftp.hafro.is/pub/data/csv/small_vms.csv") %>%
-  st_as_sf(coords = c("lon", "lat"), crs = 4326)
-
-vms # It is geometry type POINT.
-
-vms_gr <- vms %>%
-  group_by(id) %>%
-  summarise(n = n())
-
-vms_gr # It is geometry MULTIPOINT!
-
-vms_tr <- vms %>%
-  group_by(id) %>%
-  summarise(n = n()) %>%
-  st_cast("LINESTRING")
-
-vms_tr # It is now a LINESTRING.
+  geom_sf_text(data = pts_a, aes(label = lab), nudge_x = 20000) +
+  theme_bw()
 ```
 
-Note that the order of the points in the LINESTRING changed.  This is because by default the geometries are combined using *st_union()*  In this case though it is better to use *st_combine(), by adding * do_union = FALSE*.
+For nearest-neighbour distances — the distance from each feature in one layer to its closest feature in another — use the `by_element` argument together with `st_nearest_feature()`:
 
-```{r }
-plot(vms_tr %>% st_geometry())
+```{r}
+# Index of the nearest polygon for each point in pts_a
+nearest_idx <- st_nearest_feature(pts_a, poly)
 
-vms_tr <- vms %>%
-  group_by(id) %>%
-  summarise(n = n(),
-            do_union = FALSE) %>%
-  st_cast("LINESTRING")
-
-plot(vms_tr %>% st_geometry())
-
+# Distance from each point to its nearest polygon
+st_distance(pts_a, poly[nearest_idx, ], by_element = TRUE)
 ```
 
-Let's aggregate the ICES ecoregions into our three groups:
+---
 
+# Aggregation
 
-```{r }
+Aggregation in sf combines features by a grouping variable, summarising both attributes and geometries. This is done with `group_by()` and `summarise()`, exactly as in dplyr, with sf handling the geometry automatically.
+
+## Dissolving polygon boundaries
+
+A common task is merging polygons that share a grouping variable, dissolving the internal boundaries between them.
+
+```{r}
 ices_er <- read_sf("ftp://ftp.hafro.is/pub/data/shapes/ices_ecoregions.gpkg") %>%
-   mutate(zone = c(1, 2, 2, 3, 3, 3, 3, 3, 2, 2, 2, 1, 1, 1, 1, 1, 2)) # Add a grouping variable: 1=Arctic & subarctic, 2=North Atlantic, 3=Mediterranean & Black Sea
+  st_transform(3395) %>%
+  mutate(zone = case_when(
+    ecoregion %in% c("Arctic Ocean", "Barents Sea") ~ "Arctic & Subarctic",
+    ecoregion %in% c("Bay of Biscay and the Iberian Coast",
+                     "Mediterranean Sea", "Black Sea") ~ "Mediterranean & Black Sea",
+    TRUE ~ "North Atlantic"
+  ))
 
-ices_er_zones <- ices_er %>%
+ices_zones <- ices_er %>%
   group_by(zone) %>%
-  summarize(area = sum(area_km2))
+  summarise(area_km2 = sum(area_km2))  # do_union = TRUE is the default
 
 ggplot() +
-  geom_sf(data = ices_er_zones,
-          aes(fill = area))
-
+  geom_sf(data = ices_zones, aes(fill = zone), alpha = 0.7) +
+  theme_bw()
 ```
 
-When aggregating polygons, it is better to allow the default *do_union=TRUE* to dissolve internal boundaries.  Otherwise we get invalid polygons (and internal divisions in our plots).
+::: {.callout-note}
+The default `do_union = TRUE` in `summarise()` uses `st_union()` to dissolve internal boundaries between merged polygons. This is what you want for polygon aggregation. Using `do_union = FALSE` would keep internal boundaries and can produce invalid geometries.
+:::
 
-We can use rbind to join spatial objects, but the column names and coordinate reference system need to be the same.
+## Aggregating points into tracks
 
-```{r }
-sm_ices_er <- ices_er %>%
-  filter(area_km2 < 100)
+When aggregating point data into lines (e.g. GPS positions into a vessel track), use `do_union = FALSE` to preserve the original point order. With `do_union = TRUE` the points would be spatially reordered, scrambling the track.
 
-lg_ices_er <- ices_er %>%
-  filter(area_km2 >= 100)
+```{r}
+vms <- read_csv("ftp://ftp.hafro.is/pub/data/csv/is_smb_vms2019.csv") %>%
+  st_as_sf(coords = c("lon", "lat"), crs = 4326) %>%
+  st_transform(3395)
 
-all_ices_er <- rbind(sm_ices_er, lg_ices_er)
+# Sort by time first to ensure correct track order
+vms_tracks <- vms %>%
+  arrange(time) %>%
+  group_by(vid) %>%
+  summarise(do_union = FALSE) %>%
+  st_cast("LINESTRING")
 
+ggplot() +
+  geom_sf(data = vms_tracks, aes(colour = as.factor(vid))) +
+  theme_bw() +
+  theme(legend.position = "none")
 ```
-## Relationship between attributes and geometry
-Most **sf** objects contain attributes and geometry.  Because geometric operations do not change existing attributes, we need to be careful about if the attributes *make sense* in terms of the new geometries.
 
-Example:
+## Combining sf objects by row
 
-- We take some trawls within a polgyon representing our study area.
-- We calculate the total abundance of some species (say cod) in that polygon.  This is an attribute of the polygon (POP_COD)
-- We split the polygon into three areas based on bottom depth.
-- The attribute POP_COD is assigned to the three depthbased polygons... but it is not "right" anymore.
+To stack two sf objects with the same columns and CRS, use `bind_rows()` (tidyverse) or `rbind()` (base R):
 
-We need to distinguish between three attributegeometry relationships (AGR)
+```{r}
+sm_ices_er <- ices_er %>% filter(area_km2 <  500)
+lg_ices_er <- ices_er %>% filter(area_km2 >= 500)
 
-1. **Constant attributes**.  They are valid everywhere within a geometry.  Examples: bottom type, depth class.
-2. **Aggregate attributes**. They are a summary value over the geometry.  Examples: total abundance, mean abundance.
-3. **Identity attributes**. They identify uniquely the *entire* geometry.  Example: EEZs, ICES ecoregions.  A sample of this geometry has not the identity property anymore.  It becomes a constant attribute.
-
-When we operate with geometries, the **sf** package gives a warning that attributes assumed to be constant over a geometry (which may be true or not).
-
-```{r }
-st_centroid(ices_er) %>%
-  head(1)
-
+all_ices_er <- bind_rows(sm_ices_er, lg_ices_er)
+nrow(all_ices_er) == nrow(ices_er)  # Should be TRUE
 ```
-We can specify the AGR like this:
 
-```{r }
-st_agr(ices_er) # None of the variables have a set AGR.
+---
 
-st_agr(ices_er) <- c(ecoregion = "identity",
-                     area_km2 = "aggregate",
-                     zone = "constant")
+# Attribute-geometry relationships
 
-st_agr(ices_er) # Now they do.
+When we change geometries, we need to think carefully about whether the associated attributes still make sense. This is one of the subtler aspects of working with spatial data.
 
+Consider a worked example:
+
+- We have a polygon representing a survey area, with an attribute `total_cod` giving the total cod caught in that area.
+- We split the polygon into three sub-areas by depth zone.
+- sf copies the `total_cod` attribute to all three sub-polygons — but now each one claims the entire survey total. The attribute is no longer meaningful.
+
+The **sf** package formalises this through **attribute-geometry relationships (AGR)**:
+
+| AGR type | Meaning | Examples |
+|---|---|---|
+| `constant` | The attribute is the same everywhere within the geometry | Bottom type, depth class |
+| `aggregate` | The attribute is a summary over the whole geometry | Total abundance, mean temperature |
+| `identity` | The attribute uniquely identifies the entire geometry | EEZ name, ecoregion name |
+
+By default sf does not know which type applies to each column, and warns you when doing operations that might make attributes inconsistent. You can suppress these warnings by setting the AGR explicitly:
+
+```{r}
+st_agr(ices_er)  # Currently NA for all columns
+
+st_agr(ices_er) <- c(
+  ecoregion = "identity",
+  area_km2  = "aggregate",
+  zone      = "constant"
+)
+
+st_agr(ices_er)  # Now set
+
+# sf now knows that 'ecoregion' identifies the whole polygon,
+# so it won't carry it over unchanged to a sub-geometry
 ices_ct <- st_centroid(ices_er)
-
-st_agr(ices_er)
-st_agr(ices_ct)
-
+st_agr(ices_ct)  # 'identity' becomes NA for the centroid
 ```
+
+In practice, setting AGR is more useful for suppressing false-positive warnings than for catching real errors — but understanding the concept helps you reason about whether your attribute values still make sense after geometric operations.
+
+---
+
+# Summary
+
+| Task | Function |
+|---|---|
+| Check geometry validity | `st_is_valid(x)` |
+| Fix invalid geometries | `st_make_valid(x)` |
+| Sample random points | `st_sample(x, size, type)` |
+| Centroid | `st_centroid(x)` |
+| Point guaranteed inside polygon | `st_point_on_surface(x)` |
+| Buffer | `st_buffer(x, dist)` |
+| Convex hull | `st_convex_hull(st_union(x))` |
+| Concave hull | `st_concave_hull(st_union(x), ratio)` |
+| Rectangular or hex grid | `st_make_grid(x, n, square)` |
+| Bounding box as polygon | `st_as_sfc(st_bbox(x))` |
+| Convert geometry type | `st_cast(x, "TYPE")` |
+| Intersection (A AND B) | `st_intersection(a, b)` |
+| Difference (A minus B) | `st_difference(a, b)` |
+| Union (dissolve boundaries) | `st_union(x)` |
+| Symmetric difference (XOR) | `st_sym_difference(a, b)` |
+| Simplify geometry | `st_simplify(x, dTolerance)` |
+| Area | `st_area(x)` |
+| Length | `st_length(x)` |
+| Distance matrix | `st_distance(a, b)` |
+| Nearest feature index | `st_nearest_feature(a, b)` |
+| Dissolve polygons by group | `group_by() %>% summarise()` |
+| Check/set AGR | `st_agr(x)`, `st_agr(x) <- c(...)` |
 

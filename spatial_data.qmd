@@ -3,168 +3,194 @@ title: "Introduction to Spatial Data"
 ---
 
 # What is spatial data?
-- In simple terms, spatial data refers to data associated to specific geographical locations (e.g. latitude and longitude).
-- More specifically, is the data where the associated locations *matter* for the purposes of what we want to do.
-- Very often we distinguish between the geographic locations themselves (the "geometry" or "shape") and the data associated to that geometry ("attributes").
 
-What would be the geometry and attributes of data collected during a bottom trawl?
+Spatial data is data associated with specific geographical locations — but more than that, it is data where those locations *matter* for the purposes of what we want to do with it.
 
+A table of fish lengths collected at sea is just a table until you ask: where were they caught? Are catches higher in certain areas? How does distribution shift with season? The moment location becomes relevant to your question, you are working with spatial data.
+
+We typically distinguish between two components:
+
+- **Geometry** (or "shape"): the geographic location(s) themselves — coordinates, boundaries, tracks.
+- **Attributes**: the data associated with those locations — species, abundance, temperature, depth.
+
+::: {.callout-note}
+## Think about it
+Consider data collected during a bottom trawl survey. What would be the geometry? What would be the attributes? Could the same data serve as geometry in one analysis and attributes in another?
+:::
+
+In marine and fisheries science, spatial data appear constantly: species distribution maps, trawl tracks, fishing effort grids, oceanographic model output, habitat polygons, EEZ boundaries. Getting comfortable with spatial data in R will make all of these more tractable.
+
+---
 
 # Geographic information systems (GIS)
-Typically when we think about analysing spatial data we think about Geographic Information Systems (GIS).
 
-GIS are specialised sofware for the management, analysis and display of spatial data.  The big player here is ArcGIS, which is widely used, but is proprietary (and very costly): http://www.esri.com/arcgis/about-arcgis.
+When people think of analysing spatial data, they often think of Geographic Information Systems (GIS) — specialised software for the management, analysis and display of spatial data.
 
-Now, thanks to free and open source software for geospatial (FOSS4G) analysis we can have easy access to powerful tools.  For example, there are excellent open source GIS, including QGIS (http://www.qgis.org/en/site/) and GRASS (https://grass.osgeo.org/).
+The dominant commercial platform is **ArcGIS** (ESRI), which is widely used in government and industry but is proprietary and expensive. On the open-source side, **QGIS** (<https://www.qgis.org>) and **GRASS** (<https://grass.osgeo.org>) provide powerful alternatives at no cost, and both are worth knowing about.
 
-In general, GIS are used through graphical interfaces (GUIs), which discourages reproducibility (although GIS functions can be accessed from the command line.)
+The limitation of traditional GIS is that they are primarily graphical (point-and-click) tools. This makes ad-hoc exploration easy, but it discourages reproducibility: if you can't write down exactly what you did, someone else (or future you) can't repeat it. R addresses this directly.
 
+---
 
-# Using R for spatial analysis and mapping
-In recent years, R has been gaining strength as a full-fledge tool for the analysis of spatial data:
-  - Development of classes for spatial data
-  - Inteaction with GIS (Geographic Information System).
-  - Interaccion with geographical databases.
+# Why use R for spatial analysis?
 
-Now R has much of the functionality that was available previously only on GIS software:
-  - Read, manipulate and save spatial data.
-  - Perform operations with spatial data like a GIS: selections, overlays, clipping and making buffers.
-  - Sophisticated statistical methods (e.g. geographically weighted regression, spatial interaction models) can be built around your spatial data.
+R has become a fully capable environment for spatial analysis and mapping, with mature support for:
 
+- Reading, writing and manipulating spatial data in dozens of formats.
+- Spatial operations: selections, overlays, buffers, clipping, joins.
+- Coordinate reference systems and reprojection.
+- Raster analysis and processing.
+- Sophisticated spatial statistics (e.g. geostatistics, geographically weighted regression, spatial autocorrelation).
+- High-quality maps for publication, and interactive web maps.
+
+Crucially, R integrates spatial work with the rest of a typical analysis pipeline — data wrangling, statistical modelling, and visualisation all in one reproducible script or document (like this one, written in Quarto).
+
+---
 
 # Spatial data models
 
-Spatial phenomena can be thought in two basic ways:
+Spatial phenomena can be thought of in two fundamental ways:
 
-1) As discrete objects or events with clear boundaries.  Examples: locations of cities, rivers, national boundaries.
+1. As **discrete objects** with clear boundaries: a fish survey station, a vessel track, an EEZ boundary, a marine protected area.
+2. As **continuous fields** without clear boundaries: sea surface temperature, bottom depth, current speed.
 
-2) As continuous properties without clear boundaries.  Examples: bottom depth, temperature.
+These two ways of thinking lead to two distinct data models.
 
-These two types take us to two distinct data models:
+---
 
 ## Vector data model
-- The main vector data types are points, lines and polygons (there are others).
-- In all cases, the geometry consists of sets of coordinate pairs.
 
+Vector data represents discrete objects using **points**, **lines**, and **polygons**. In all cases, the geometry is made up of coordinate pairs (x, y), and usually additional attributes are attached.
 
 ### Points
-- Points are the simplest case of vector data.
-- Each point has a set of coordinate values and may include other attributes.
-- Multiple points can be considered as a single geometry (sometimes called multipoints) that could be associated to a single set of attributes.
+
+Points are the simplest vector type. Each point has a location (one coordinate pair) and can have any number of associated attributes.
+
+Examples in fisheries/marine science: trawl station positions, whale sighting locations, CTD cast positions, vessel AIS pings.
+
+Multiple points can be grouped into a single **MULTIPOINT** geometry — for example, all stations in a survey represented as a single feature.
 
 <center>
 ![](./img/example_points.png){width=25%}
 </center>
 
 ### Lines
-- Lines are sets of points connected by straight segments.
-- Lines are similar to multipoints, but with a particular *order*.  We need to know which point should be connected.
-- We can have multilines, mulitple lines forming a single geometry (e.g. a river system).
+
+Lines are sequences of points connected by straight segments, in a specific order.
+
+Examples: vessel tracks, river networks, depth contour lines, cable routes.
+
+Multiple line segments can be grouped into a **MULTILINESTRING** geometry (e.g. a branching river system, or a vessel track interrupted by port calls).
 
 <center>
 ![](./img/example_lines.png){width=25%}
 </center>
 
-- Networks are a special class of line geometry where information is stored about the links between the nodes, for example flow direction or volume.  We will not deal with these on this course.
-
+Networks are a special class of line geometry where additional information is stored about how lines connect at nodes (e.g. flow direction, capacity). We will not cover networks in this course.
 
 ### Polygons
-- Polygons refers to a line in which the last coordinate pair coincides with the first one.
-- Polygons can have holes: smaller polygons that remove parts of the enclosing polygons (e.g. an island within a lake).
-- Valid polygons do not self-intersect.
-- Again, we can have multipolygons: multiple polygons that form a single geometry (e.g. a single country with many islands).
+
+Polygons are closed rings: a sequence of points where the last coordinate coincides with the first. They represent areas.
+
+Examples: EEZ boundaries, ICES rectangles, marine protected areas, habitat zones, Nephrops functional units.
+
+Polygons can have **holes** (e.g. an island within a lake). They can be grouped into **MULTIPOLYGON** geometries (e.g. a country with many islands, or a fishing area with exclusion zones).
+
+A key rule: valid polygons do not self-intersect.
 
 <center>
 ![](./img/example_polygons.png){width=25%}
 </center>
 
+---
+
 ## Raster data model
 
-Raster data is used to represent parameters that vary continuously in space.
-
-In the most common case, a raster represents some area as a regular grid of equally sized rectangles, known as cells or pixels (cell widths in the x and y direction can be different).  Each cell can hold one or more data values (i.e. single-layer and multi-layer rasters).  Data can be continuous (e.g. depth, temperature) or discrete/categorical (e.g. land types)
+Raster data represents continuous fields by dividing space into a regular grid of equally-sized rectangles, called **cells** or **pixels**. Each cell holds one or more values.
 
 <center>
 ![](./img/raster1.png){width=50%}
 </center>
 
-
-Each cell has an individual ID.  The raster does not stores the coordinates (corners) of individual cells.  Instead, is implicitly set by knowing the spatial extent of the raster (i.e. its size), the resolution (cell size), and the origin (the coordinates of the first corner).
-
+The raster does not store the coordinates of every cell explicitly. Instead, the grid is defined implicitly by three things: the **spatial extent** (overall bounding box), the **resolution** (cell size), and the **origin** (coordinates of the corner). This makes rasters very memory-efficient for large continuous datasets.
 
 <center>
 ![](./img/raster2.png){width=50%}
 </center>
 
+Raster data can be continuous (e.g. depth, temperature, current speed, chlorophyll concentration) or categorical (e.g. substrate type, habitat class). Satellite imagery, oceanographic model output, and interpolated survey grids are all typically stored as rasters.
 
-Although here we will focus on rasters as regular grids, the raster model is more flexible.  We can have rasters with rotated, sheared, irregular and curvilinear grids.
+Multi-layer rasters (sometimes called **raster stacks** or **data cubes**) store multiple variables or time steps in the same grid — for example, monthly sea surface temperature across a year.
 
-Continuous data can be stored in other ways, for example in triangulated irregular networks (TINs).  We will not deal with these in this course.
+Although regular grids are most common, the raster concept extends to rotated, sheared, and curvilinear grids, which appear in some oceanographic model outputs. The **stars** package (discussed below) handles these more flexible grid types.
 
+Other representations of continuous data exist — triangulated irregular networks (TINs) and point clouds, for example — but we will not cover these in this course.
 
-# The ecosystem of packages for spatial data in R.
-As we know, the capabilities of R are extended through the use of *packages*.  In R there are two main groups of ecosystems of packages to deal with spatial data:
+---
 
-## The "old"" ecosystem
+## Common spatial file formats
 
-In the old days (early 2000's) several R had several packages for the analysis of spatial data, including *akima* for interpolation, and *spatstat* for point pattern analysis.  R did not have a way to tell coordinates from other numbers, and these packages did not have a uniform way to represent spatial data.
+| Format | Type | Notes |
+|---|---|---|
+| Shapefile (`.shp` + others) | Vector | Very common but outdated; multiple files required; column name limits |
+| GeoPackage (`.gpkg`) | Vector (and raster) | Modern open standard; single file; preferred over shapefile |
+| GeoJSON (`.geojson`) | Vector | Human-readable; widely used in web mapping |
+| GeoTIFF (`.tif`) | Raster | Standard format for raster data; supports CRS metadata |
+| Cloud-Optimized GeoTIFF (COG) | Raster | GeoTIFF structured for efficient access over the web |
+| NetCDF (`.nc`) | Raster / datacube | Common in oceanography and climate science |
+| CSV (`.csv`) | Points (informal) | Works for point data with lat/lon columns; no geometry standard |
 
-For example the **geoR** package defined the class *geodata*, which is a list with objects named *coords* and *data*, while the **gstat** package defined the class *gstat*, a list with objects named *data*, *model* and *set*.  Things were messy.
+The reading and writing of these formats is covered in detail in the [Reading and writing spatial data](input_output.qmd) chapter.
 
-In 2005, the **sp** package was created to unify the treatment of spatial data in R and to
+---
 
-  - provide classes for vector spatial data: **SpatialPoint**, **SpatialLine**, **SpatialPolygon**, etc. (with or without attribute data)
-  - provide (limited) support for raster data: **SpatialPixel**, **SpatialGrid**
-  - share methods (e.g. *plot*, *summary*)
-  - provide conversions to other representations (one-to-many, many-to-one).
+# The R ecosystem for spatial data
 
-In addition to **sp**, the package **rgdal** (released in 2003) was used to read/write spatial data (using the powerful GDAL libraries, https://gdal.org/), and the package **rgeos** (released in 2010) was used to perform spatial operations (using the GEOS library, https://trac.osgeo.org/geos).  Transformation of geographic projections are done use the external library PROJ (https://proj.org/).
+R's capabilities for spatial analysis have grown substantially over the past two decades, and the ecosystem has gone through one major transition. Here is a brief history, followed by practical guidance on what to use today.
 
-In parallel, the package **raster** was released in 2010 to provide better support for raster data.
+## A brief history
 
-The **sp/rgdal/rgeos/raster** ecosystem made R a powerful tool for spatial analysis.  Today more than 500 R packages rely on **sp**.
+In the early 2000s, several R packages handled spatial data, but each defined its own data structures. There was no common language.
 
+In **2005**, the **sp** package introduced a unified set of classes for vector spatial data (`SpatialPoints`, `SpatialLines`, `SpatialPolygons`, etc.), accompanied by **rgdal** for reading/writing data and **rgeos** for geometric operations. The **raster** package (2010) added solid raster support. This **sp / rgdal / rgeos / raster** ecosystem made R genuinely powerful for spatial work, and hundreds of packages were built on top of it.
 
-# The need for a new framework
+However, sp pre-dated the *simple feature access* open standard, didn't integrate well with the tidyverse, and required multiple packages for what should be a coherent workflow.
 
-- When **sp** was written there was no standard for simple features.  Shapefiles was the dominant format for exchanging vector data, but there was no standard, which brought all kinds of problems.
+In **2016**, the **sf** package introduced a new class for vector data built directly on the simple feature standard, integrated with GDAL and GEOS, and designed to work naturally with tidyverse tools like dplyr and ggplot2. It effectively replaced sp, rgdal, and rgeos in one package.
 
-- The *simple feature access* standard is now widely accepted, but **sp** has to do conversions to load it.
+In **2020**, the **terra** package was released as a modern, fast replacement for raster, with a cleaner API and better performance.
 
-- The external libraries used by R to read/write spatial data (GDAL) and for geometrical operations (GEOS) have developed a strong support for the simple feature standard.
+::: {.callout-important}
+## What to use today
+**Use `sf` for vector data and `terra` for raster data.** These are the current standard tools. The older `sp` and `raster` packages still work and you will encounter them in existing code and some packages that have not yet migrated, but you should not start new work with them.
+:::
 
-- The **tidyverse** cluster of packages (which includes **dplyr** and **ggplot2**) does not work well with spatial classes of **sp**.
-  - The **tidyverse** requires that objects are dataframes.  **sp** objects are not.
-  - Converting **sp** objects into dataframes (for example by using *fortify*) is nor robust or efficient.
+## The current ecosystem
 
+| Task | Package | Notes |
+|---|---|---|
+| Vector data | **sf** | The standard; integrates with tidyverse |
+| Raster data | **terra** | Replaced **raster**; faster and more capable |
+| Spatiotemporal data cubes | **stars** | Flexible raster/datacube model; works with sf |
+| Interactive maps | **leaflet**, **mapview** | JavaScript-based web maps from R |
+| Static maps | **ggplot2** + `geom_sf()` | Vector maps; integrates with sf |
 
-# The new framework: the sf package
-
-Recently a new package ecosystem was developed for the analysis of spatial data in R.  It is centred around the *sf* package (sf = "simple features"), first released in 2016.
-
-The **sf** package provides a new class for vector spatial data, essentially replacing **sp**.
-
-It also has functions to read/write data, and to do operations on vector data.  So it also replaces the **rgdal** and **rgeos** packages.
-
-The **sf** package has a more modern data structure (more on this later), and also works well with packages of the "tidyverse".
-
+The diagram below shows how these packages relate to each other and to the external libraries (GDAL, GEOS, PROJ) that do much of the underlying work:
 
 <center>
 ![](./img/dependency.png){width=100%}
 </center>
 
-# More developments.
+## What about sp and raster?
 
-The very new **stars** package (released in 2018) provides datacubes. Datacubes are dense arrays used to store spatio-temporal data.  Space (2D or 3D) and time are the array dimensions.  **stars** is not a direct replacement for **rasters**, but it provides much of its functionality.
+You will encounter `sp` and `raster` in older code, Stack Overflow answers, and packages that haven't been updated. It's worth knowing they exist. Conversion between `sf` and `sp` is straightforward (`st_as_sf()` and `as(obj, "Spatial")`), and between `terra` and `raster` similarly so. But for any new analysis, start with `sf` and `terra`.
 
-https://r-spatial.github.io/stars/
+Note that `rgdal` and `rgeos` were formally retired from CRAN at the end of 2023. Code that depends on them will no longer install cleanly on current R versions.
 
+---
 
-In early development, the package **terra** is intended to be a replacement of **raster**
-https://github.com/rspatial/terra
+# Further reading
 
-There are many more.  For an overview look at the CRAN Task view on analysis of spatial data:
-
-https://cran.r-project.org/web/views/Spatial.html
-
-
+- [Geocomputation with R](https://r.geocompx.org/) — a free, comprehensive online book covering sf, terra, and spatial analysis in R. The most useful single reference for this course.
+- [Spatial Data Science with R and terra](https://rspatial.org/) — documentation and tutorials focused on terra.
+- [CRAN Task View: Analysis of Spatial Data](https://cran.r-project.org/web/views/Spatial.html) — a curated list of spatial packages in R.

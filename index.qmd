@@ -1,6 +1,6 @@
 
 ---
-title: "Introduction to mapping and spatial analysis with R"
+title: "Home"
 ---
 ![](./img/old_map.jpg)
 
@@ -8,14 +8,70 @@ title: "Introduction to mapping and spatial analysis with R"
 
 ### Datasets: <https://heima.hafro.is/~julian/ftp/data.zip>
 
-## Contents
+## Schedule
 
-* [Introduction](intro.qmd)
+### Monday — 10:00 to 17:00
 
+| Time | Session | Topics |
+|------|---------|--------|
+| 10:00 – 11:30 | [Introduction](intro.qmd) | Course overview, R & RStudio setup, tidyverse, Quarto |
+| 11:30 – 11:45 | *Break* | |
+| 11:45 – 13:00 | [Spatial data concepts](spatial_data.qmd) | Vector vs raster models, points/lines/polygons, sp vs sf ecosystem |
+| 13:00 – 14:00 | *Lunch* | |
+| 14:00 – 15:30 | [Simple features (sf)](sf.qmd) | sfg / sfc / sf class structure, building sf objects, POINT & LINESTRING geometries |
+| 15:30 – 15:45 | *Break* | |
+| 15:45 – 17:00 | [Simple features — continued](sf.qmd) | Making sf objects from data frames, operating with attributes, class Spatial |
+
+### Tuesday — 09:00 to 17:00
+
+| Time | Session | Topics |
+|------|---------|--------|
+| 09:00 – 10:30 | [Working with geometries](geometric.qmd) | Sampling, centroids, buffers, convex/concave hulls, grids, simplification |
+| 10:30 – 10:45 | *Break* | |
+| 10:45 – 12:00 | [Working with geometries — continued](geometric.qmd) | Measurements, distances, aggregation, attribute-geometry relationships |
+| 12:00 – 13:00 | *Lunch* | |
+| 13:00 – 14:30 | [Spatial operations](spatial_ops.qmd) | Binary predicates, DE-9IM model, spatial subsetting, spatial joins |
+| 14:30 – 14:45 | *Break* | |
+| 14:45 – 17:00 | [Coordinate reference systems](crs.qmd) | Ellipsoids, datums, projections, PROJ/EPSG, st_transform(), CRS in ggplot |
+
+### Wednesday — 09:00 to 17:00
+
+| Time | Session | Topics |
+|------|---------|--------|
+| 09:00 – 10:30 | [Rasters](rasters.qmd) | Raster data model, RasterLayer / Brick / Stack, reading files, metadata |
+| 10:30 – 10:45 | *Break* | |
+| 10:45 – 12:00 | [Rasters — continued](rasters.qmd) | Extraction, masks, raster algebra, focal & zonal statistics |
+| 12:00 – 13:00 | *Lunch* | |
+| 13:00 – 14:30 | [Rasters — continued](rasters.qmd) | Resampling, reprojecting, rasterization, ggplot with rasters, stars package |
+| 14:30 – 14:45 | *Break* | |
+| 14:45 – 16:00 | [Reading & writing spatial data](input_output.qmd) | GDAL, shapefiles, GeoPackages, CSVs, st_read() / st_write() |
+| 16:00 – 17:00 | [Mapping with ggplot — introduction](ggplot.qmd) | Key components, reference maps, projections, adding layers |
+
+### Thursday — 09:00 to 17:00
+
+| Time | Session | Topics |
+|------|---------|--------|
+| 09:00 – 10:30 | [Mapping with ggplot — continued](ggplot.qmd) | geom_segment, geom_point, geom_tile, geom_raster, geom_contour, facetting |
+| 10:30 – 10:45 | *Break* | |
+| 10:45 – 12:00 | [Mapping with ggplot — continued](ggplot.qmd) | Colour scales, ICES rectangles, scalebars, north arrows, customization |
+| 12:00 – 13:00 | *Lunch* | |
+| 13:00 – 14:30 | [Interactive maps](interactive.qmd) | leaflet basics, data input, layer calls, colour mapping, basemaps |
+| 14:30 – 14:45 | *Break* | |
+| 14:45 – 17:00 | [Interactive maps — continued](interactive.qmd) | Polygons, lines, rasters, layer controls, mapdeck for large datasets |
+
+### Friday — 09:00 to 14:00
+
+| Time | Session | Topics |
+|------|---------|--------|
+| 09:00 – 10:30 | [Interpolation](interpolation.qmd) | Voronoi polygons, nearest-neighbour, inverse distance weighting (IDW) |
+| 10:30 – 10:45 | *Break* | |
+| 10:45 – 12:00 | [Interpolation — continued](interpolation.qmd) | Kriging with variogram fitting, GAMs |
+| 12:00 – 13:00 | *Lunch* | |
+| 13:00 – 14:00 | Wrap-up & open exercises | Participants work on data of their choice; instructors available for questions |
 
 ## Contact info
 Julian M. Burgos
+Email: julian.burgos(at) hafogvatn.is
 
-MFRI - Demersal Division
-
-Email: julian.burgos(at)hafogvatn.is
+Einar Hjorleifsson
+Email: einar.hjorleifsson (at) hafogvatn.is

@@ -1,254 +1,337 @@
 ---
-title: "Spatial operations with *sf* objects"
+title: "Spatial operations with sf objects"
 execute:
   enabled: false
 ---
 
-#### These are the packages needed for this tutorial:
 ```{r setup}
 library(tidyverse)
 library(sf)
 library(units)
 ```
 
-#### Nephrops data
-First, lets load some data.  The files datras_2018_haul.csv and datras_2018_length.csv contain data from ICES's DATRAS (the Database of Trawl Surveys) from 2018. We will create an sf object with the total number of *Nephrops* sampled per tow.
+This chapter covers three closely related but distinct types of spatial operation:
 
-```{r message=FALSE }
+1. **Binary predicates** — testing the topological relationship between two sets of geometries (does A contain B? does A intersect B?). These return TRUE/FALSE.
+2. **Spatial subsetting** — filtering one sf object by its spatial relationship to another (keep only the points that fall inside this polygon).
+3. **Spatial joins** — attaching attributes from one sf object to another based on their spatial relationship (add the name of the ecoregion to each survey station).
 
-# Load nephrops data from ICES
-## get station data
+All three are built on the same underlying concept: topological relationships between geometries. Understanding how they differ — and when to use each — is the main goal of this chapter.
+
+---
+
+# Data
+
+We will use two main datasets throughout: Nephrops survey data from ICES DATRAS, and the Nephrops functional unit boundaries.
+
+```{r load-data, message=FALSE}
+# DATRAS haul data (station positions)
 survey <- read_csv("ftp://ftp.hafro.is/pub/data/csv/datras_2018_haul.csv",
-                   guess_max = 2000) %>%
+                   guess_max = 2000) %>%  # guess_max prevents type-guessing errors
   filter(year == 2018) %>%
-  select(id,
-         survey,
-         lat = shootlat, # Get starting point
-         lon = shootlong)
+  select(id, survey, lat = shootlat, lon = shootlong)
 
-## get length data
+# Nephrops catch per haul
 nephrops <- read_csv("ftp://ftp.hafro.is/pub/data/csv/datras_2018_length.csv") %>%
   filter(latin == "Nephrops norvegicus") %>%
   left_join(survey, by = "id") %>%
   group_by(id) %>%
   summarise(survey = first(survey),
-            lat = first(lat),
-            lon = first(lon),
-            num = sum(n)) %>%
-  ungroup()
-
-head(nephrops)
-
-```
-Next, let's convert it into an sf object so we can do spatial operations.
-
-```{r }
-nephrops <- nephrops %>%
+            lat    = first(lat),
+            lon    = first(lon),
+            num    = sum(n)) %>%
+  ungroup() %>%
   st_as_sf(coords = c("lon", "lat"), crs = 4326)
 
-class(nephrops)
-
-```
-Note that we need to specify which columns have the x and y coordinates (always list the x coordinate first), and the coordinate reference system (CRS).  The number 4326 is the ESPG code for unprojected data using the WSG84 datum.  Use this CRS for latitude and longitude data, unless you know the data has some other CRS.
-
-Now, let's load the Nephrops functional units.  These are spatial regions used for assessment and reporting.
-
-```{r }
+# Nephrops functional units (NFUs) — ICES assessment regions
 nfu <- read_sf("ftp://ftp.hafro.is/pub/data/shapes/nephrops_fu.gpkg")
 
+# Quick overview of both layers
+ggplot() +
+  geom_sf(data = nfu, aes(fill = name), alpha = 0.4) +
+  geom_sf(data = nephrops, size = 0.3) +
+  theme_bw() +
+  theme(legend.position = "none") +
+  labs(title = "Nephrops survey stations and functional units")
 ```
-Note that the CRS in the *nfu* object is **the same** as in the *np* object.  This is a fundamental requirement.  If we want to do spatial operations between two datasets, they need to be in the same coordinate system.
 
-Let's take a look at both objects:
+::: {.callout-important}
+## CRS must match for spatial operations
+Any spatial operation between two sf objects requires them to share the same coordinate reference system. sf will throw an error or give wrong results if they do not. Always check with `st_crs(a) == st_crs(b)` before combining layers, and use `st_transform()` to align them if needed.
 
-```{r }
+In this chapter both `nephrops` and `nfu` are in EPSG:4326 (geographic WGS84). For topological operations (within, intersects, etc.) this is acceptable, though sf will warn you that it is assuming planar geometry. For distance-based operations, you must project first — see the distance subsetting section below.
+:::
+
+---
+
+# Binary predicates
+
+Binary predicates test the topological relationship between two geometries and return TRUE or FALSE. In sf, each predicate takes two sf objects and returns either:
+
+- A **sparse index list** (`sgbp` class): for each feature in the first object, the indices of features in the second that satisfy the relationship. Memory-efficient for large datasets.
+- A **logical matrix**: one row per feature in the first object, one column per feature in the second, with TRUE/FALSE at each cell. Use `sparse = FALSE` to get this form.
+
+The key predicates you will use most often are:
+
+| Function | Returns TRUE when... | Typical use |
+|---|---|---|
+| `st_intersects()` | Geometries share any point | Most common; any overlap |
+| `st_within()` | A is completely inside B | Point-in-polygon; A fully inside B |
+| `st_contains()` | B is completely inside A | Reverse of `st_within()` |
+| `st_overlaps()` | A and B overlap but neither contains the other | Partial overlap, same geometry type |
+| `st_touches()` | A and B share only boundary points | Adjacent polygons |
+| `st_disjoint()` | A and B share no points | No spatial relationship |
+| `st_covers()` | Every point of B is in A (including boundary) | Like `st_contains()` but includes boundary |
+| `st_covered_by()` | Every point of A is in B (including boundary) | Like `st_within()` but includes boundary |
+| `st_equals()` | A and B have identical geometry | Exact geometric equality |
+| `st_is_within_distance()` | A is within a given distance of B | Proximity filtering (requires projected CRS) |
+| `st_nearest_feature()` | — | Returns index of nearest feature (not TRUE/FALSE) |
+
+## Example: which NFU does each station fall within?
+
+```{r predicates-example, message=FALSE}
+# Sparse result: for each station, the index of the NFU it falls within
+result_sparse <- st_within(nephrops, nfu)
+class(result_sparse)
+result_sparse[1:5]  # First 5 stations; each entry is a vector of matching NFU indices
+
+# Dense result: a logical matrix (stations x NFUs)
+result_matrix <- st_within(nephrops, nfu, sparse = FALSE)
+dim(result_matrix)  # rows = stations, columns = NFUs
+
+# Which NFU does the first station fall within?
+nfu$name[which(result_matrix[1, ])]
+```
+
+The sparse form is more practical for large datasets. The dense matrix form is mainly useful when you want to use the result directly inside `filter()` — though `st_filter()` (covered next) is now the preferred approach for that.
+
+---
+
+# Spatial subsetting
+
+Spatial subsetting filters one sf object by its spatial relationship to another — the spatial equivalent of `filter()` on an attribute column.
+
+## Using `st_filter()`
+
+`st_filter()` is the modern, recommended approach for spatial subsetting. It is cleaner and more readable than the older `filter(st_within(., y, sparse = FALSE))` pattern.
+
+```{r st-filter-basic, message=FALSE}
+nfu_kattegat <- nfu %>% filter(name == "Kattegat")
+
+# Keep only stations within the Kattegat NFU
+nephrops_kattegat <- st_filter(nephrops, nfu_kattegat,
+                                .predicate = st_within)
 
 ggplot() +
-  geom_sf(data = nfu, aes(fill = name), alpha = 0.5) +
-  geom_sf(data = nephrops, size = 0.3)
-
-```
-## About binary predicates
-Binary predicates are operations that *test* the topological relationship between two geometries, resulting in a TRUE or FALSE for every combination of features in the two *sf* objects used as input.
-
-The **sf** package provides a family of functions to implement several binary predicates:
-
-```{r out.width = "100%", echo= FALSE}
-knitr::include_graphics("./img/binary_predicates.png")
-
+  geom_sf(data = nfu, fill = "grey90", colour = "grey60") +
+  geom_sf(data = nfu_kattegat, fill = "lightblue") +
+  geom_sf(data = nephrops_kattegat, colour = "red", size = 0.8) +
+  theme_bw() +
+  labs(title = "Stations within the Kattegat NFU")
 ```
 
-Each function tests a relationship between the interior, boundary or exterior of one object with one of the same attributes of the other object.  This is based on what is known as the Dimensionally Extended nine-Intersection Model (DE-9IM).
+Change `.predicate` to use any binary predicate. The default is `st_intersects`:
 
-```{r out.width = "100%", echo= FALSE}
-knitr::include_graphics("./img/de9im.png")
+```{r st-filter-disjoint, message=FALSE}
+# Stations with no overlap with the Kattegat NFU
+nephrops_outside <- st_filter(nephrops, nfu_kattegat,
+                               .predicate = st_disjoint)
+
+ggplot() +
+  geom_sf(data = nfu, fill = "grey90", colour = "grey60") +
+  geom_sf(data = nfu_kattegat, fill = "lightblue") +
+  geom_sf(data = nephrops_outside, colour = "red", size = 0.5) +
+  theme_bw() +
+  labs(title = "Stations outside the Kattegat NFU")
 ```
 
-The functions can return either a sparse index list (class `sgbp`), or if we use the 'sparse = FALSE' argument, we obtain a logical matrix.
+## Distance-based subsetting
 
-Let's find out in which Nephrops functional unit are located the records in the nephrops data:
+`st_is_within_distance()` selects features within a given distance of a reference geometry. Because distance measurement requires planar coordinates, you must project your data first.
 
-```{r message=FALSE}
-test1 <- st_within(nephrops, nfu)
-class(test1)
-test1
+```{r distance-filter, message=FALSE}
+# Project to EPSG:3035 (ETRS89-LAEA, standard equal-area CRS for Europe)
+nephrops_proj     <- st_transform(nephrops, 3035)
+nfu_kattegat_proj <- st_transform(nfu_kattegat, 3035)
 
-test2 <- st_within(nephrops, nfu, sparse = FALSE)
-class(test2)
-dim(test2)
+# Stations within 200 km of the Kattegat boundary
+nephrops_near <- st_filter(nephrops_proj, nfu_kattegat_proj,
+                            .predicate = st_is_within_distance,
+                            dist = set_units(200, km))
 
-test2[1, ]
-
-
-```
-As you can see, in both ways we find out that for example the first record in the Nephrops data is located in the 25th functional unit (which is the Kattegat).
-
-
-If we use the `sparse = FALSE` argument, we can combine the binary predicate functions with `filter()` to filter records according to the spatial relation with another spatial object.
-
-
-## Spatial subsetting and binary predicates
-As a reminder, we can subset data frames (and sf objects) by using a logical vector, or an expression that generates a logical vector.  For example
-
-```{r }
-nephrops_bits <- nephrops[nephrops$survey == "BITS", ]
-
+ggplot() +
+  geom_sf(data = st_transform(nfu, 3035), fill = "grey90", colour = "grey60") +
+  geom_sf(data = nfu_kattegat_proj, fill = "lightblue") +
+  geom_sf(data = nephrops_near, colour = "red", size = 0.5) +
+  theme_bw() +
+  labs(title = "Stations within 200 km of the Kattegat NFU")
 ```
 
-Or using the tidiverse
+::: {.callout-warning}
+## Distance operations require projected data
+If you use `st_is_within_distance()` (or any distance measurement) on geographic coordinates (EPSG:4326), distances are computed in degrees, not metres or kilometres, and the results will be meaningless. Always project to an appropriate CRS before measuring distance. Here we use EPSG:3035 (ETRS89-LAEA), a standard equal-area projection for European waters.
+:::
 
-```{r }
-nephrops_bits <- nephrops %>%
-  filter(survey == "BITS")
+## The older filter() approach
 
-```
-In a similar way, we can subset a sf object by asking if they relate or not in some way to another sf object.  In other words, we can do a spatial subsetting.
+For reference, the older pattern using `filter()` with `sparse = FALSE` still works and appears in older code:
 
-
-```{r message=FALSE}
-
-nfu_kattegat<- nfu %>% filter(name == "Kattegat")
-
-# Within the Kattegat
-nephrops_kattegat <- nephrops %>%
+```{r filter-old, message=FALSE, eval=FALSE}
+# Equivalent to st_filter() with .predicate = st_within
+nephrops_kattegat_old <- nephrops %>%
   filter(st_within(x = ., y = nfu_kattegat, sparse = FALSE))
-
-ggplot() +
-  geom_sf(data = nfu, aes(fill = name), alpha = 0.5) +
-  geom_sf(data = nephrops_kattegat, size = 0.3) +
-  theme(legend.position = "none")
-
-
-# Outside the Kattegat
-nephrops_no_kattegat <- nephrops %>%
-  filter(st_disjoint(x = ., y = nfu_kattegat, sparse = FALSE))
-
-ggplot() +
-  geom_sf(data = nfu, aes(fill = name), alpha = 0.5) +
-  geom_sf(data = nephrops_no_kattegat, size = 0.3) +
-  theme(legend.position = "none")
-
-# At least 200 km from Kattegat
-distance <- set_units(200, km)
-
-nephrops_near_kattegat <- nephrops %>%
-  filter(st_is_within_distance(x = ., y = nfu_kattegat, sparse = FALSE, dist = distance))
-
-
-ggplot() +
-  geom_sf(data = nfu, aes(fill = name), alpha = 0.5) +
-  geom_sf(data = nephrops_near_kattegat, size = 0.3) +
-  theme(legend.position = "none")
-
 ```
 
+Prefer `st_filter()` for new code — it is more readable and works correctly with both the magrittr (`%>%`) and native (`|>`) pipes.
 
-## Spatial (and non-spatial) joins
+---
 
-We can join two sf objects based on areas of shared geographic space (spatial join, as opposed to shared variables as in non-spatial joins).  For this, we use the `st_join` function.
+# Spatial joins
 
-```{r }
+A spatial join attaches attributes from one sf object to another based on their spatial relationship rather than a shared key column. The function is `st_join()`.
 
-nephrops <- nephrops %>%
-  st_join(nfu %>% select(nfu = name),
-          join = st_intersects)
+## Points into polygons
+
+The most common case: assign a polygon attribute (such as a region name) to each point that falls within it.
+
+```{r point-in-polygon-join, message=FALSE}
+# Add the NFU name to each Nephrops station
+nephrops_joined <- nephrops %>%
+  st_join(nfu %>% select(nfu_name = name),
+          join = st_within)
+
+# Stations outside all NFUs get NA
+nephrops_joined %>%
+  st_drop_geometry() %>%
+  count(nfu_name, sort = TRUE)
 
 ggplot() +
-  geom_sf(data = nephrops, aes(color = nfu), size = 0.3) +
-  theme(legend.position = "none")
-
+  geom_sf(data = nfu, fill = "grey90", colour = "grey60") +
+  geom_sf(data = nephrops_joined, aes(colour = nfu_name), size = 0.5) +
+  theme_bw() +
+  theme(legend.position = "none") +
+  labs(title = "Stations coloured by NFU")
 ```
-And an example with two sets of polygons:
 
-```{r }
-ier <- read_sf("ftp://ftp.hafro.is/pub/data/shapes/ices_ecoregions.gpkg") %>%
-  select(ecoregion)  # 17 polygons
+::: {.callout-note}
+## Left join behaviour and boundary points
+`st_join()` performs a **left join** by default: all features from the left object are kept, even if they match nothing in the right object. Unmatched features get `NA` in the joined columns. Set `left = FALSE` for an inner join that drops unmatched features.
+
+Note also that a point sitting exactly on the boundary between two polygons may match both, producing a duplicate row in the result. This is rare in practice but worth being aware of when you see unexpected duplicates after a join.
+:::
+
+## Nearest feature join
+
+When points don't fall neatly inside any polygon — for example when survey stations lie just outside a boundary due to GPS error or coastline generalisation — you can assign each point to its nearest polygon instead:
+
+```{r nearest-join, message=FALSE}
+# Assign each station to the nearest NFU, regardless of containment
+nephrops_nearest <- nephrops %>%
+  st_join(nfu %>% select(nfu_name = name),
+          join = st_nearest_feature)
+
+# Compare coverage: how many stations got assigned with each approach?
+cat("Stations assigned with st_within:       ",
+    sum(!is.na(nephrops_joined$nfu_name)), "\n")
+cat("Stations assigned with st_nearest_feature:",
+    sum(!is.na(nephrops_nearest$nfu_name)), "\n")
+```
+
+`st_nearest_feature` assigns every point to exactly one polygon, so there are never NA values or duplicate rows in the result.
+
+## Polygon-to-polygon joins
+
+Joining two polygon layers is more complex because a polygon from one layer may overlap with multiple polygons from another, producing a one-to-many result.
+
+```{r polygon-join-setup, message=FALSE}
+ier   <- read_sf("ftp://ftp.hafro.is/pub/data/shapes/ices_ecoregions.gpkg") %>%
+  select(ecoregion)  # 17 ecoregion polygons
 
 ospar <- read_sf("ftp://ftp.hafro.is/pub/data/shapes/ospar.gpkg") %>%
-  select(subregion)  # 50 polygons
-
-ospar_ier <- st_join(ospar, ier) %>%
-  mutate(label = str_c(subregion,"-", ecoregion))
+  select(subregion)  # 5 OSPAR subregion polygons
 
 ggplot() +
-  geom_sf(data = ospar, col = "red", fill = NA) +
-  geom_sf(data = ier, col = "blue", fill = NA)
-
-ospar_ier <- st_join(ospar, ier) %>%
-  mutate(label = str_c(subregion,"-", ecoregion)) # 92 polygons!!!
-
-ggplot() +
-  geom_sf(data = ospar_ier, aes(fill = subregion))
-
-ggplot() +
-  geom_sf(data = ospar_ier, aes(fill = ecoregion))
-
-ospar_ier <- st_join(ospar, ier, largest = TRUE) # 50 polygons
-
-
+  geom_sf(data = ier,   colour = "blue", fill = NA, linewidth = 0.5) +
+  geom_sf(data = ospar, colour = "red",  fill = NA, linewidth = 0.8) +
+  theme_bw() +
+  labs(title = "ICES ecoregions (blue) and OSPAR subregions (red)")
 ```
 
-The default predicate in the *st_join()* function is *st_intersects*.  But others could be used, included:
+```{r polygon-join-many, message=FALSE}
+ospar_ier <- st_join(ospar, ier)
 
-st_contains_properly
-
-st_contains
-
-st_covered_by
-
-st_covers
-
-st_crosses
-
-st_disjoint
-
-st_equals_exact
-
-st_equals
-
-st_is_within_distance
-
-st_nearest_feature
-
-st_overlaps
-
-st_touches
-
-st_within
-
-Note the warning *although coordinates are longitude/latitude, st_intersects assumes that they are planar*.  This is because the polygons are **not** in a coordinate projected system.
-
-
-## Counting
-Number of Nephrops records per nfu
-
-```{r }
-
-nephrops_count <- nephrops %>%
-  st_join(nfu) %>%
-  count(name)
-
-nephrops_count
-
+nrow(ospar)     # Original OSPAR subregions
+nrow(ospar_ier) # More rows — each OSPAR region appears once per overlapping ecoregion
 ```
-Note that the result of this is another *sf* object, with geometry type MULTIPOINT.
+
+::: {.callout-important}
+## One-to-many joins with polygons
+
+When one OSPAR subregion overlaps with several ecoregions, `st_join()` creates one result row for each overlapping pair. This is correct behaviour, not an error — but it means you cannot simply sum areas or count features on the result without double-counting.
+
+There are two common strategies:
+
+**Option 1 — Keep only the largest overlap** using `largest = TRUE`. Each OSPAR region is matched to whichever ecoregion it overlaps most. The result has the same number of rows as the input.
+
+```{r polygon-join-largest, message=FALSE}
+ospar_ier_largest <- st_join(ospar, ier, largest = TRUE)
+nrow(ospar_ier_largest)  # Same as nrow(ospar)
+```
+
+**Option 2 — Keep all matches and work with them explicitly.** This is appropriate when you need to know all overlapping ecoregions, for example to compute area-weighted summaries. In that case, use `st_intersection()` (from the Geometries chapter) to actually clip the polygons before calculating areas.
+:::
+
+```{r polygon-join-plot, message=FALSE}
+ggplot() +
+  geom_sf(data = ospar_ier_largest, aes(fill = ecoregion)) +
+  theme_bw() +
+  labs(title = "Each OSPAR subregion assigned to its dominant ecoregion")
+```
+
+## Counting points in polygons
+
+A very common task is counting how many points from one layer fall within each polygon of another. Spatial join followed by `count()` is the cleanest approach:
+
+```{r count-points, message=FALSE}
+station_counts <- nephrops %>%
+  st_join(nfu %>% select(nfu_name = name), join = st_within) %>%
+  st_drop_geometry() %>%           # Drop geometry before summarising
+  count(nfu_name, name = "n_stations") %>%
+  filter(!is.na(nfu_name)) %>%     # Remove stations not in any NFU
+  arrange(desc(n_stations))
+
+station_counts
+
+# Join counts back to NFU polygons for mapping
+nfu_counts <- nfu %>%
+  left_join(station_counts, by = c("name" = "nfu_name"))
+
+ggplot() +
+  geom_sf(data = nfu_counts, aes(fill = n_stations)) +
+  scale_fill_viridis_c(option = "B", direction = -1, na.value = "grey90") +
+  theme_bw() +
+  labs(title = "Number of Nephrops survey stations per NFU",
+       fill = "Stations")
+```
+
+::: {.callout-note}
+## Why use st_drop_geometry() before summarising?
+Calling `st_drop_geometry()` before `count()` converts the sf object to a plain tibble. This prevents sf from trying to aggregate the geometry column alongside the attributes, which would produce a MULTIPOINT for each NFU — technically valid but not what we want here, and slower. Summarising on the plain tibble and then joining back to the polygon layer for mapping is the cleanest pattern.
+:::
+
+---
+
+# Summary
+
+| Task | Recommended approach |
+|---|---|
+| Test spatial relationship | `st_intersects()`, `st_within()`, etc. |
+| Filter by spatial relationship | `st_filter(x, y, .predicate = st_within)` |
+| Filter by distance | `st_filter(x, y, .predicate = st_is_within_distance, dist = ...)` |
+| Assign polygon attributes to points | `st_join(points, polygons, join = st_within)` |
+| Assign nearest polygon to points | `st_join(points, polygons, join = st_nearest_feature)` |
+| Polygon join — one dominant match | `st_join(a, b, largest = TRUE)` |
+| Polygon join — all matches | `st_join(a, b)` — result has more rows than input |
+| Count points per polygon | `st_join() %>% st_drop_geometry() %>% count()` |
+| Check CRS match | `st_crs(a) == st_crs(b)` |
+| Align CRS before operations | `st_transform(x, crs)` |

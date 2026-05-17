@@ -4,96 +4,139 @@ execute:
   enabled: false
 ---
 
-A fundamental aspect of spatial data is defining its Coordinate Reference System (CRS). Briefly, a CRS defines how to represent the Earth's surface on the plane. Until we define a projection, coordinates are just numbers.
+A fundamental aspect of spatial data is defining its Coordinate Reference System (CRS). A CRS defines how coordinates relate to actual locations on the Earth's surface. Without a CRS, coordinates are just numbers — a latitude of 65 and a longitude of -18 mean nothing unless we know *which* CRS they are expressed in.
 
-A CRS is a combination of an *ellipsoid*, a *datum*, and a *projection*.
+A CRS is built from three components: an *ellipsoid*, a *datum*, and a *projection*.
+
+---
+
+# The components of a CRS
 
 ## Ellipsoid
 
-In reality, Earth has a irregular shape. An ellipsoid is a 3D simplified model that approximates the shape of the Earth.
+The Earth is not a perfect sphere — it bulges at the equator and is flattened at the poles, and its surface is irregular. An **ellipsoid** is a smooth mathematical model that approximates the Earth's shape.
 
-Some ellipsoids are global, i.e. they try to model the entire globe. Among these, WGS84 is the most recent and more widely used global reference system. GRS80 is also widely used.
+Some ellipsoids are fitted globally, trying to minimise error across the whole planet. **WGS84** is the most widely used global ellipsoid — it underpins GPS and most modern datasets. **GRS80** is nearly identical and underlies many national systems.
 
-But global ellipsoids have larger errors than ellipsoids fitted locally. Local ellipsoids are used when higher precision is needed. Examples: ED50 (Europe), OSGB36 (United Kingdom).
+Local ellipsoids are fitted to a specific region and can be more accurate there. Examples include ED50 (fitted to Europe) and OSGB36 (Great Britain). You may encounter these in older national datasets.
 
-![](img/global_local.jpg) \## Datum
+![](img/global_local.jpg)
 
-The datum provides the information needed to "anchor" coordinates to the surface of the Earth. Defines the origin point and the direction of the coordinate axes.
+## Datum
 
-The datum always specifies the ellipsoid, and sometimes have the same name.
+The **datum** anchors the ellipsoid to the actual surface of the Earth by defining an origin point and the orientation of the coordinate axes. The datum always specifies which ellipsoid it uses, and sometimes shares its name (e.g. WGS84 is both an ellipsoid and a datum).
+
+Importantly, the same latitude/longitude values can refer to *different physical locations* depending on which datum is used. For most marine science work the differences are small enough to ignore, but they matter for precise navigation or cadastral work.
+
+When the datum is unknown, it is generally safe to assume WGS84.
 
 ## Projection
 
-Finally, the projection indicates how we represent locations on the surface of the earth. Basically we have two options:
+Finally, the **projection** specifies how we represent the curved surface of the Earth on a flat plane. There are two broad approaches:
 
-a)  Use latitude and longitude, which are spherical coordinates that represent locations on a 3D globe defined by the datum and ellipsoid used. But remember:
+**a) Geographic coordinates (unprojected):** Latitude and longitude are spherical coordinates that describe positions on the 3D ellipsoid. When plotted directly on screen, they are treated as Cartesian (x, y) pairs — this is an implicit Equidistant Cylindrical projection and is fine for many purposes but distorts distances and areas, especially at high latitudes.
 
-- A set of latitude and longitude values can indicate different places when using different datums/ellipsoids. Differences can be important depending on the application.
-- When we plot latitude/longitude values into a flat surface (like a computer screen or a piece of paper) there is an *implicit* transformation where we take them as Cartesian coordinates (x=longitude, y=latitude). This is the Equidistant Cylindrical projection.
-- When we do not know the datum/ellipsoid, it is usually safe to assume it is WGS84. In particular for large scale mapping, when the differences among datums are not noticeable.
-
-```{r out.width = "70%", echo= FALSE}
+```{r out.width = "70%", echo=FALSE}
 knitr::include_graphics("./img/latlong.jpg")
 ```
 
-global_local.jpg
+**b) Projected coordinates:** An explicit mathematical transformation converts spherical coordinates into planar (Cartesian) coordinates in metres (or feet). Projected CRS are essential for accurate distance and area calculations, and for geometric operations.
 
-b)  Use an *explicit* transformation to project spherical coordinates into planar coordinates. These transformations are known as *spatial projections*.
+---
 
 # Spatial projections
 
-Different combinations of ellipsoid, datum and transformation result in *many* different spatial projections. They can be classified as planar, conical or cylindrical.
+Different combinations of ellipsoid, datum, and transformation produce many different projections, broadly classified as planar (azimuthal), conical, or cylindrical.
 
 ![](img/projections.jpg)
 
-All map projections introduce distortions in area, shape or distance. These properties are mutually exclusive: a map projection that preserves one will distort the other two.
+All projections introduce distortions — no flat map can perfectly represent a curved surface. The key properties that projections trade off against each other are:
 
-For example, the *Mercator* projection is well-know for preserving shapes and exaggerating the area of objects near the poles. South America in, in reality, much larger than Greenland. In the Mercator projection, the loxodromes (or rhumb lines) are straight lines, so it is good for navigation.
+- **Area** (equal-area projections preserve area)
+- **Shape** (conformal projections preserve local shape)
+- **Distance** (equidistant projections preserve distances from a reference point)
+
+A projection cannot preserve all three simultaneously.
+
+The **Mercator** projection is conformal (preserves shapes locally) but greatly exaggerates areas near the poles. Greenland appears similar in size to South America, but in reality South America is about eight times larger. Mercator is well-suited for navigation because straight lines on the map are lines of constant bearing (rhumb lines).
 
 ![](img/proj1.jpg)
 
-On the other hands, the Azimuthal Equidistant projection does not preserve shapes (can you see Australia?). But it preserves distances to and from the center of the projection (it is an equidistant projection).
+The **Azimuthal Equidistant** projection preserves distances to and from the centre of the projection, but distorts shapes away from the centre.
 
 ![](img/proj2.png)
 
-The Cylindrical Equal Area is an example of a projection that does not distort the areas (i.e is an equal area projection). Here the proportion between the areas of Greenland and South America is right... although the shapes are distorted near the poles.
+The **Cylindrical Equal Area** projection preserves area — the proportions of Greenland and South America are correct — but distorts shapes near the poles.
 
 ![](img/proj4.jpg)
 
-Conformal projections preserve local shapes.
+**Conformal projections** (like the Lambert Conformal Conic) preserve local shapes across the map, making them good for general-purpose mapping of mid-latitude regions.
 
 ![](img/proj3.png)
 
+---
+
 # Which projection to use?
 
-- Do not simply ignore CRSs. Select an appropriate projection for your map/project.
-- Projections are not wrong nor right. They simply have different properties and are used for different purposes.
-- For densities (points per grid cell), use equal-area projections. For example, use the Lambert azimuthal equal-area (LAEA) with center in your study area (select the lon_0 and lat_0 parameteres). LAEA maintains the area of the objects, but distorts the shape away from the center.
-- Azimuthal equidistant (AEQD) projections if you need accurate straight-line distance between a point and the center point of the local projection.
-- Lambert conformal conic (LCC) projections are useful for large areas (1000's km). They preserve the shape of objects, so they are good for general mapping.
-- Stereographic (STERE) projections for polar regions, but area and distances get distorted away from the centre.
-- Many countries have "official" coordinate system. For example, Iceland's ISN2004 uses a LAEA projection, centered in Iceland, and the GRS1980 ellipsoid.
-- Use a projected CRS when doing geometric operations (polygon overlays, etc.), as the algorithms assume planar coordinates.
-- http://spatialreference.org/ lists many, many projections
-- http://projectionwizard.org/ and http://www.radicalcartography.net/index.html?projectionref may be useful to select a projection.
+There is no single right answer — projections have different properties suited to different purposes. The key questions to ask are:
 
-... or select one based on your personality: https://imgs.xkcd.com/comics/map_projections.png
+**1. What geographic scale am I working at?**
+
+- Global or hemispheric: use a projection designed for large extents (Mollweide, Robinson, Winkel Tripel for display; Equal Earth for thematic maps).
+- Regional (e.g. Icelandic waters, the North Atlantic): use a projection centred on your study area. Lambert Azimuthal Equal Area (LAEA) centred on your region is a robust choice for most analytical work.
+- National: use the official national projection if one exists. Iceland's official system is **ISN2016** (EPSG:8088), a LAEA projection using the GRS1980 ellipsoid, centred on Iceland.
+
+**2. What property do I need to preserve?**
+
+- **Area measurements or density maps** (points per grid cell, biomass per km²): use an **equal-area** projection. LAEA centred on your study area is a good default.
+- **Shape and general mapping**: use a **conformal** projection such as Lambert Conformal Conic (LCC). Transverse Mercator (the basis of UTM) is conformal and widely used.
+- **Distance from a central point**: use an **equidistant** projection (AEQD).
+- **Polar regions**: use a **Stereographic** projection (e.g. EPSG:3995 for Arctic, EPSG:3031 for Antarctic), but note that area and distance are distorted away from the pole.
+
+**3. Am I doing geometric calculations?**
+
+Always use a **projected CRS** (not geographic lat/lon) for geometric operations like area calculations, buffering, and polygon overlays. The sf package will warn you when you run operations on unprojected data.
+
+::: {.callout-tip}
+## Useful tools for choosing a CRS
+- <https://epsg.io> — search for CRS by name, location, or code
+- <https://projectionwizard.org> — suggests projections based on the extent and purpose of your map
+- The `crsuggest` package in R — suggests appropriate CRS options for an sf object based on its geographic extent (see below)
+:::
+
+...or choose based on your personality: <https://xkcd.com/977/>
+
+---
 
 # CRS in R
 
-The **sf** package links directly to the external library PROJ, a very complete cartographic projection library (http://trac.osgeo.org/proj/). In the PROJ library, projections are defined using projstring, a text string defining the projection, datum and associated parameters. Here are some examples:
+The **sf** package links to the external **PROJ** library (<https://proj.org/>) for all CRS operations. Modern versions of PROJ (6+) and sf use **WKT2** (Well-Known Text, 2nd edition) as the standard internal representation of CRS. This is more complete and less ambiguous than the older proj4string format.
 
-For unprojected (geographical) data: "+proj=longlat +datum=WGS84"
+## How to specify a CRS
 
-For data in the UTM projection, zone 28: "+proj=utm +zone=28 +datum=WGS84"
+There are two main ways to specify a CRS in sf:
 
-For a Lamberts Equal Area projection centred in the Nordic Seas: "+proj=laea +lat_0=69 +lon_0=-4 +datum=WGS84"
+**1. EPSG codes** — the preferred approach for common CRS. These are integer codes from the EPSG Geodetic Parameter Dataset that identify a specific CRS unambiguously.
 
-Many common projections are included in the European Petroleum Survey Group (EPSG) database (http://www.epsg.org/), and can be specified only by using a reference number. For example, the EPSG code 4326 indicates urprojected data, so it is equivalent to the projstring "+proj=longlat +datum=WGS84".
+```{r}
+# EPSG:4326  — geographic coordinates, WGS84 (the GPS standard)
+# EPSG:32628 — UTM zone 28N, WGS84
+# EPSG:3035  — ETRS89-LAEA, the standard equal-area CRS for Europe
+# EPSG:8088  — ISN2016 / LAEA Iceland (Iceland's official CRS)
+```
 
-When we read a spatial object into, if the projection is included in the metadata then the projection will be included in the object. We can use the *st_crs()* function to extract it.
+**2. Authority:code notation** — equivalent to EPSG codes but more explicit:
 
-```{r }
+```{r}
+# "EPSG:4326" is equivalent to the integer 4326
+st_transform(mysf, "EPSG:3035")
+```
+
+**3. Proj4 strings** (legacy) — strings like `"+proj=longlat +datum=WGS84"`. These still work for basic cases but are deprecated in modern PROJ. They cannot represent all CRS parameters and may produce warnings. You will encounter them in older code and documentation; prefer EPSG codes for new work.
+
+## Querying the CRS of an object
+
+```{r}
 library(rnaturalearth)
 library(tidyverse)
 library(sf)
@@ -101,123 +144,159 @@ library(sf)
 iceland <- ne_countries(returnclass = "sf", country = "Iceland", scale = 10) %>%
   st_geometry()
 
-st_crs(iceland) # Find out the CRS
-
+st_crs(iceland)        # Full CRS information (WKT2 representation)
+st_crs(iceland)$epsg   # Just the EPSG code
+st_crs(iceland)$Name   # Human-readable name
+st_is_longlat(iceland) # Is it geographic (unprojected)?
 ```
 
-If the metadata does not includes the CRS, or if we create our own sf object, the CRS will not be defined.
+## Setting vs. transforming: a critical distinction
 
-```{r }
-mysf <- data.frame(lat = c(66,65.5), lon = c(-20, -19)) %>%
+There are two very different operations that both involve CRS, and confusing them is one of the most common mistakes in spatial analysis:
+
+::: {.callout-important}
+## Setting a CRS vs. transforming a CRS
+
+**Setting** (`st_set_crs()`) tells R what coordinate system the data is *already in*. It only changes the metadata — the coordinate values themselves do not change. Use this when you have data without CRS information attached.
+
+**Transforming** (`st_transform()`) actually *recalculates* all coordinates from one CRS to another. Use this when you want to change the projection.
+
+Applying `st_set_crs()` to data that is already correctly tagged will produce a warning and give wrong results. Applying `st_transform()` to data with no CRS will fail.
+:::
+
+```{r}
+# Creating an sf object without a CRS
+mysf <- data.frame(lat = c(66, 65.5), lon = c(-20, -19)) %>%
   st_as_sf(coords = c("lon", "lat"))
 
-st_crs(mysf)
+st_crs(mysf) # NA — no CRS defined
 
-```
-
-We can define it with *st_crs()* (or with *st_set_crs()* if we use it in a pipe)
-
-```{r }
-mysf <- data.frame(lat = c(66,65.5), lon = c(-20, -19)) %>%
-  st_as_sf(coords = c("lon", "lat")) %>%
+# STEP 1: Set the CRS (we know these are WGS84 lat/lon)
+mysf <- mysf %>%
   st_set_crs(4326)
 
-st_crs(mysf)
+st_crs(mysf)$Name # Now it has a CRS
 
+# STEP 2: Transform to a projected CRS (LAEA Iceland)
+mysf_projected <- mysf %>%
+  st_transform(8088)
+
+st_crs(mysf_projected)$Name
+st_is_longlat(mysf_projected) # FALSE — now it's projected
 ```
 
-If I change the CRS of an object that already has it, I get a warning:
+Calling `st_set_crs()` on an object that already has a CRS will produce a warning — this is intentional, to guard against accidentally overwriting correct metadata:
 
-```{r }
-st_set_crs(mysf, 5325)
-
+```{r}
+# This produces a warning — the CRS is being replaced, not transformed
+st_set_crs(mysf, 32628)
 ```
 
-By doing this we are changing the metadata of the object, but we are *not* reprojecting the data.
+## Finding the right CRS with crsuggest
 
-# Changing the projection of vector data
+The `crsuggest` package can help you identify appropriate projected CRS options for your data based on its geographic extent:
 
-Vector data is comprised of points and combination of points into lines and polygons. Reprojecting vector data consists on transforming the coordinates of these points.
+```{r}
+library(crsuggest)
 
-In most cases we use the *st_transform()* function to project sf objects. This function can receive the proj4 string or the EPSG code of the target projection.
+suggest_crs(iceland)        # Returns a ranked list of suitable CRS options
+suggest_top_crs(iceland)    # Returns just the top suggestion
+```
 
-```{r }
+---
 
-europe <- ne_countries (returnclass = "sf", continent = "Europe")  %>%
+# Transforming vector data
+
+Reprojecting vector data means recalculating the coordinates of every point from one CRS to another. Use `st_transform()`:
+
+```{r}
+europe <- ne_countries(returnclass = "sf", continent = "Europe") %>%
   st_geometry()
 
-# Transform to the Mollweide projection
-europe_moll <- europe %>% st_transform("+proj=moll")
+# Transform to Mollweide (equal-area, good for world maps)
+europe_moll <- europe %>% st_transform("ESRI:54009")
 
-europe_moll <- europe %>% st_transform("+proj=moll")
+# Transform to ETRS89-LAEA (standard equal-area CRS for Europe, EPSG:3035)
+europe_laea <- europe %>% st_transform(3035)
 
-plot(europe, axes = TRUE)
-plot(europe_moll, axes = TRUE)
-
-st_crs(europe)
-st_crs(europe_moll)
-
+plot(europe, axes = TRUE, main = "Geographic (WGS84)")
+plot(europe_moll, axes = TRUE, main = "Mollweide")
+plot(europe_laea, axes = TRUE, main = "ETRS89-LAEA")
 ```
 
-Additional projections are available using the *st_transform_proj()* in the **lwgeom** package. The lwgeom package provides bindings to the liblwgeom library (part of the PostGis).
+You can customise projections by building a CRS definition with specific parameters. The modern way to do this uses `st_crs()` with a proj4-style string or WKT — but EPSG codes cover the vast majority of practical needs:
 
-```{r }
+```{r}
+# LAEA centred on Paris
+europe_laea_paris <- st_transform(europe,
+  crs = "+proj=laea +lon_0=-2.35 +lat_0=48.8 +datum=WGS84")
 
-europe_win <- lwgeom::st_transform_proj(europe, "+proj=wintri")
+# LAEA centred on Moscow
+europe_laea_moscow <- st_transform(europe,
+  crs = "+proj=laea +lon_0=37.6 +lat_0=55.7 +datum=WGS84")
 
-plot(europe_win, axes = TRUE)
+# Winkel Tripel (common in atlases; no EPSG code, proj string needed)
+europe_wintri <- st_transform(europe,
+  crs = "+proj=wintri +datum=WGS84")
+
+plot(europe_laea_paris, axes = TRUE, main = "LAEA centred on Paris")
+plot(europe_laea_moscow, axes = TRUE, main = "LAEA centred on Moscow")
+plot(europe_wintri, axes = TRUE, main = "Winkel Tripel")
 ```
 
-We can modify the projections by passing the required parameters. For example:
+::: {.callout-note}
+The `lwgeom::st_transform_proj()` function was previously needed for some projections not supported by sf directly. This is no longer generally required — modern sf and PROJ handle a very wide range of projections via `st_transform()`.
+:::
 
-```{r }
+---
 
-# Centred in Paris
-europe_laea1 <- st_transform(europe,
-                            crs = "+proj=laea +lon_0=-2.35 +lat_48.8")
+# Projections in ggplot2
 
-# Centred in Moscow
-europe_laea2 <- st_transform(europe,
-                            crs = "+proj=laea +lon_0=37.6 +lat_0=55.7")
+When plotting sf objects with `geom_sf()`, ggplot2 uses `coord_sf()` to manage the coordinate system. `coord_sf()` ensures all layers are displayed in a common CRS, which it takes automatically from the first layer that defines one. You can override this with the `crs` argument.
 
-
-plot(europe_laea1, axes = TRUE)
-plot(europe_laea2, axes = TRUE)
-
-```
-
-# Projections in ggplot
-
-One of the advantages of using the *sf* objects is that we can utilise the *geom_sf()* function when plotting with ggplot. *geom_sf()* uses by default the *coord_sf()* function to control the coordinate system of the plot. *coord_sf()* ensures that all layers use a common CRS (otherwise it is not possible to place them together in the same graph). You can either specify it using the CRS argument, or coord_sf() will take it from the first layer that defines a CRS.
-
-Let's load two *sf* objects with different CRS's.:
-
-```{r }
-
+```{r}
 coast <- read_sf("ftp://ftp.hafro.is/pub/data/shapes/iceland_coastline.gpkg")
 st_crs(coast)
 
 depth <- read_sf("ftp://ftp.hafro.is/pub/data/shapes/iceland_contours.gpkg")
 st_crs(depth)
-
 ```
 
-Note the differences:
+The two objects have different CRS. Watch how `coord_sf()` handles this depending on layer order — it always adopts the CRS of the first layer:
 
-```{r }
+```{r}
+# Uses CRS of coast (first layer)
 ggplot() +
   geom_sf(data = coast, fill = "darkgray") +
   geom_sf(data = depth)
 
-
+# Uses CRS of depth (first layer)
 ggplot() +
   geom_sf(data = depth) +
   geom_sf(data = coast, fill = "darkgray")
 
+# Explicitly set the display CRS — best practice when mixing layers
 ggplot() +
   geom_sf(data = depth) +
   geom_sf(data = coast, fill = "darkgray") +
-  coord_sf(crs = 4087) # World Equidistant Cylindrical projection
-
-
+  coord_sf(crs = 8088) # ISN2016 / LAEA Iceland
 ```
+
+::: {.callout-tip}
+## Best practice
+When combining sf layers with different CRS, always set `coord_sf(crs = ...)` explicitly rather than relying on layer order. This makes your code's intent clear and avoids hard-to-spot errors if you later reorder layers.
+:::
+
+---
+
+# Summary
+
+| Task | Function |
+|---|---|
+| Check the CRS of an object | `st_crs(x)` |
+| Check if data is geographic (unprojected) | `st_is_longlat(x)` |
+| Set the CRS (metadata only, no reprojection) | `st_set_crs(x, crs)` |
+| Reproject to a new CRS | `st_transform(x, crs)` |
+| Get EPSG code | `st_crs(x)$epsg` |
+| Find a suitable CRS for your data | `crsuggest::suggest_crs(x)` |
+| Look up CRS by code or location | <https://epsg.io> |
