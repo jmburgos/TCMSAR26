@@ -26,7 +26,7 @@ library(marmap)             # bathymetry data
 
 **Data used**:
 ```{r}
-minke <- read_csv("https://ftp.hafro.is/pub/data/csv/minke.csv")
+minke <- read_csv("https://media.githubusercontent.com/media/jmburgos/TCMSAR26/refs/heads/main/data/minke.csv")
 glimpse(minke)
 ```
 
@@ -145,7 +145,7 @@ ggplot() +
 ## Labels with `geom_sf_text()` and `geom_sf_label()`
 
 ```{r}
-nfu <- read_sf("https://ftp.hafro.is/pub/data/shapes/nephrops_fu.gpkg")
+nfu <- read_sf("data/nephrops_fu.gpkg")
 nfu_centroids <- st_centroid(nfu)
 
 ggplot() +
@@ -191,7 +191,7 @@ Prefer `geom_sf()` for new code. The `geom_polygon()` / `map_data()` approach re
 # More layers with survey data
 
 ```{r}
-smb    <- read_csv("https://ftp.hafro.is/pub/data/csv/is_smb.csv")
+smb <- read_csv("data/smb_summary.csv")
 smb2019 <- filter(smb, year == 2019)
 
 # A reusable basemap — build it once, add layers as needed
@@ -240,11 +240,13 @@ Recreate the bubble plot above for a different species. Add `geom_segment()` for
 `geom_path()` connects points **in the order they appear in the data**, making it ideal for time-ordered GPS tracks:
 
 ```{r}
-track <- read_csv("https://ftp.hafro.is/pub/data/csv/is_smb_vms2019.csv")
+#| eval: false
+#track <- read_csv("data/is_smb_vms2019.csv")
+#track <- read_csv("data/small_vms.csv")
 
 basemap +
   geom_path(data = track,
-            aes(x = lon, y = lat, colour = vessel),
+            aes(x = lon, y = lat, colour = factor(id)),
             linewidth = 0.4, alpha = 0.8) +
   scale_colour_brewer(name = "Vessel", palette = "Set1")
 ```
@@ -254,6 +256,7 @@ basemap +
 `geom_tile()` draws rectangles centred on each (x, y) coordinate, useful for pre-gridded data. Note the layer order: draw tiles first, then the coastline on top:
 
 ```{r}
+#| eval: false
 s <- smb2019 %>%
   group_by(ir_lon, ir_lat) %>%
   summarise(Cod = mean(cod_n), .groups = "drop")
@@ -276,6 +279,7 @@ Exercise
 Repeat the tile plot above but use the `grade()` function to bin at double the resolution of ICES rectangles (0.5° longitude × 0.25° latitude):
 
 ```{r}
+#| eval: false
 grade <- function(x, dx) {
   brks <- seq(floor(min(x)), ceiling(max(x)), dx)
   ints <- findInterval(x, brks, all.inside = TRUE)
@@ -292,17 +296,19 @@ For regular raster grids (equal-resolution cells), `geom_raster()` is faster tha
 ```{r}
 xlim <- c(-28, -10)
 ylim <- c(62.5, 67.5)
+depth <- 
+  getNOAA.bathy(lon1 = xlim[1], lon2 = xlim[2],
+                lat1 = ylim[1], lat2 = ylim[2],
+                resolution = 1) |> 
+  fortify()  # turn the object into a data.frame
+glimpse(depth)
 
-depth_bathy <- getNOAA.bathy(lon1 = xlim[1], lon2 = xlim[2],
-                              lat1 = ylim[1], lat2 = ylim[2],
-                              resolution = 1)
-
-depth_df <- as.data.frame(depth_bathy, xy = TRUE) %>%
-  rename(x = lon, y = lat, z = depth) %>%
-  filter(z <= 0)
+#depth_df <- as.data.frame(depth_bathy, xy = TRUE) %>%
+#  rename(x = lon, y = lat, z = depth) %>%
+#  filter(z <= 0)
 
 ggplot() +
-  geom_raster(data = depth_df, aes(x = x, y = y, fill = z)) +
+  geom_raster(data = depth, aes(x = x, y = y, fill = z)) +
   geom_sf(data = iceland_sf, fill = "grey70") +
   scale_fill_viridis_c(option = "D", name = "Depth (m)") +
   coord_sf(xlim = xlim, ylim = ylim) +
@@ -315,8 +321,8 @@ Add depth contour lines with `geom_contour()`:
 
 ```{r}
 ggplot() +
-  geom_raster(data = depth_df, aes(x = x, y = y, fill = z)) +
-  geom_contour(data = depth_df,
+  geom_raster(data = depth, aes(x = x, y = y, fill = z)) +
+  geom_contour(data = depth,
                aes(x = x, y = y, z = z),
                breaks = c(-50, -100, -200, -400, -1000),
                linewidth = 0.3, colour = "white") +
@@ -333,7 +339,7 @@ ggplot() +
 The **tidyterra** package provides `geom_spatraster()`, which accepts `SpatRaster` objects directly — no manual conversion to a data frame needed:
 
 ```{r}
-mintemp <- rast("https://ftp.hafro.is/pub/data/rasters/Iceland_minbtemp.tif")
+mintemp <- rast("data/Iceland_minbtemp.tif")
 
 ggplot() +
   geom_spatraster(data = mintemp) +
@@ -384,7 +390,7 @@ ggplot() +
 `facet_grid()` creates a matrix of panels defined by two variables. Here, cod abundance is shown by year class (columns) and age (rows):
 
 ```{r fig.height=7}
-rbya <- read_csv("https://ftp.hafro.is/pub/data/csv/is_smb_cod_rbya.csv") %>%
+rbya <- read_csv("data/is_smb_cod_rbya.csv") %>%
   filter(yc %in% c(1984, 1985, 1996, 1997))
 
 ggplot() +

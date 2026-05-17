@@ -26,3 +26,14 @@ rast("https://heima.hafro.is/~einarhj/data/Iceland_maxbtemp.tif")   |> writeRast
 rast("https://heima.hafro.is/~einarhj/data/Iceland_minbtemp.tif")   |> writeRaster("data/Iceland_minbtemp.tif")
 rast("https://heima.hafro.is/~einarhj/data/nephrops.tif")           |> writeRaster("data/nephrops.tif")
 
+read_csv("data/smb_utbrteg.csv") |>
+  rename(year = ar, sq = reitur, tow_nr = tog_nr, towtime = togtimi,
+         cod_kg = torskur_kg, cod_n = torskur_stk,
+         saithe_kg = ufsi_kg, saithe_n = ufsi_stk,
+         haddock_kg = ysa_kg, haddock_n = ysa_stk,
+         lumpfish_kg = hrognkelsi_kg, lumpfish_n = hrognkelsi_stk) |>
+  mutate(ir_lon = ramb::rb_grade(lon1, 1),
+         ir_lat = ramb::rb_grade(lat1, 0.5),
+         .before = towtime) |>
+  write_csv("data/smb_summary.csv")
+

@@ -1,0 +1,571 @@
+---
+title: "Data"
+---
+
+This page describes the datasets available in the `data/` directory. Datasets are organised into tabular (CSV), spatial vector (GeoPackage), and raster (GeoTIFF) files.
+
+## Downloading the data
+
+Run the code chunk below once to download all course datasets into a local `data/` directory. Files that already exist are skipped.
+
+```{r}
+#| eval: false
+options(timeout = 300)  # large files may need extra time
+
+base_url <- "https://raw.githubusercontent.com/jmburgos/TCMSAR26/main/data"
+
+files <- c(
+  # Tabular
+  "datras_2018_haul.csv",
+  "datras_2018_length.csv",
+  "is_smb_biological.csv",
+  "is_smb_stations.csv",
+  "minke.csv",
+  "small_vms.csv",
+  "smb_summary.csv",
+  "smb_utbrteg.csv",
+  # Spatial vector
+  "helcom.gpkg",
+  "ice_lines.gpkg",
+  "ice_points.gpkg",
+  "ice_polygon.gpkg",
+  "iceland_coastline.gpkg",
+  "iceland_contours.gpkg",
+  "ices_ecoregions.gpkg",
+  "ices_rectangles.gpkg",
+  "nephrops_fu.gpkg",
+  "OSPAR_intensity_Otter_2015.gpkg",
+  # Rasters
+  "Faroes_minbtemp.tif",
+  "Iceland_currentsp.tif",
+  "Iceland_maxbtemp.tif",
+  "Iceland_minbtemp.tif",
+  "nephrops.tif"
+)
+
+dir.create("data", showWarnings = FALSE)
+
+for (f in files) {
+  dest <- file.path("data", f)
+  if (!file.exists(dest)) {
+    message("Downloading ", f, " ...")
+    download.file(paste(base_url, f, sep = "/"), destfile = dest, mode = "wb", quiet = TRUE)
+  } else {
+    message("Skipping ", f, " (already exists)")
+  }
+}
+
+message("Done.")
+```
+
+## Tabular data
+
+---
+
+### `datras_2018_haul.csv`
+
+**Description:** Haul-level data from the DATRAS trawl survey database for 2018, covering multiple European surveys (e.g. BITS, IBTS). Each row represents a single tow with associated metadata on gear, position, environmental conditions, and data quality.
+
+Read with: `read_csv("data/datras_2018_haul.csv")`
+
+Rows: 3,145 | Columns: 62
+
+| Variable | Type | Description |
+|---|---|---|
+| id | chr | Unique haul identifier (concatenation of survey, year, quarter, country, ship, gear, stno, haulno) |
+| survey | chr | Survey name (e.g. "BITS", "IBTS") |
+| quarter | dbl | Quarter of the year (1–4) |
+| country | chr | Country code of the vessel |
+| ship | chr | Vessel identifier |
+| gear | chr | Gear type code |
+| sweeplngt | dbl | Sweep length (m) |
+| gearexp | chr | Gear experience code |
+| doortype | chr | Type of trawl door |
+| stno | chr | Station number |
+| haulno | dbl | Haul number within station |
+| year | dbl | Year of survey |
+| month | dbl | Month of survey |
+| day | dbl | Day of survey |
+| timeshot | time | Time the gear was shot |
+| stratum | chr | Stratum identifier |
+| hauldur | dbl | Haul duration (minutes) |
+| daynight | chr | Whether tow was during day or night |
+| shootlat | dbl | Latitude at gear deployment |
+| shootlong | dbl | Longitude at gear deployment |
+| haullat | dbl | Latitude at gear retrieval |
+| haullong | dbl | Longitude at gear retrieval |
+| statrec | chr | ICES statistical rectangle |
+| depth | dbl | Bottom depth (m) |
+| haulval | chr | Haul validity code |
+| hydrostno | chr | Hydrographic station number |
+| stdspecreccode | dbl | Standard species recording code |
+| bycspecreccode | dbl | Bycatch species recording code |
+| datatype | dbl | Data type code |
+| netopening | dbl | Net opening height (m) |
+| rigging | chr | Rigging details |
+| tickler | dbl | Tickler chain indicator |
+| distance | dbl | Distance towed (nautical miles) |
+| warplngt | dbl | Warp length (m) |
+| warpdia | dbl | Warp diameter (mm) |
+| warpden | dbl | Warp density |
+| doorsurface | dbl | Door surface area (m²) |
+| doorwgt | dbl | Door weight (kg) |
+| doorspread | dbl | Door spread (m) |
+| wingspread | dbl | Wing spread (m) |
+| buoyancy | dbl | Buoyancy (kg) |
+| kitedim | dbl | Kite dimension |
+| wgtgroundrope | dbl | Groundrope weight (kg) |
+| towdir | dbl | Tow direction (degrees) |
+| groundspeed | dbl | Speed over ground (knots) |
+| speedwater | dbl | Speed through water (knots) |
+| surcurdir | dbl | Surface current direction (degrees) |
+| surcurspeed | dbl | Surface current speed (knots) |
+| botcurdir | dbl | Bottom current direction (degrees) |
+| botcurspeed | dbl | Bottom current speed (knots) |
+| winddir | dbl | Wind direction (degrees) |
+| windspeed | dbl | Wind speed (m/s) |
+| swelldir | dbl | Swell direction (degrees) |
+| swellheight | dbl | Swell height (m) |
+| surtemp | dbl | Surface temperature (°C) |
+| bottemp | dbl | Bottom temperature (°C) |
+| sursal | dbl | Surface salinity |
+| botsal | dbl | Bottom salinity |
+| thermocline | chr | Thermocline presence indicator |
+| thclinedepth | dbl | Thermocline depth (m) |
+| dateofcalculation | dbl | Date of calculation (numeric) |
+| datetime | dttm | Datetime of the haul |
+
+---
+
+### `datras_2018_length.csv`
+
+**Description:** Length-frequency data linked to the 2018 DATRAS hauls. Each row represents a species–length class observed in a haul, with raw and raised counts. Join to `datras_2018_haul` via `id`.
+
+Read with: `read_csv("data/datras_2018_length.csv")`
+
+Rows: 490,564 | Columns: 6
+
+| Variable | Type | Description |
+|---|---|---|
+| id | chr | Haul identifier; links to `datras_2018_haul` |
+| latin | chr | Latin (scientific) species name |
+| sex | chr | Sex of fish (may be NA for unsexed records) |
+| length | dbl | Length class (mm) |
+| n.raw | dbl | Raw count (number of fish measured in that length class) |
+| n | dbl | Raised count (estimated total number in the tow) |
+
+---
+
+### `minke.csv`
+
+**Description:** Biological measurements from minke whale (*Balaenoptera acutorostrata*) caught during Icelandic research/commercial hunts. Contains individual-level data on morphometrics, age, maturity, and stomach contents.
+
+Read with: `read_csv("data/minke.csv")`
+
+Rows: 190 | Columns: 13
+
+| Variable | Type | Description |
+|---|---|---|
+| id | dbl | Unique whale identifier |
+| date | dttm | Date and time of catch |
+| lon | dbl | Longitude of catch position |
+| lat | dbl | Latitude of catch position |
+| area | chr | Named area of catch (e.g. "North", "South") |
+| length | dbl | Body length (cm) |
+| weight | dbl | Body weight (kg); many NAs |
+| age | dbl | Estimated age (years) |
+| sex | chr | Sex ("Female" / "Male") |
+| maturity | chr | Maturity status (e.g. "pregnant", "mature") |
+| stomach.volume | dbl | Stomach content volume (litres) |
+| stomach.weight | dbl | Stomach content weight (kg) |
+| year | dbl | Year of catch |
+
+---
+
+### `small_vms.csv`
+
+**Description:** A small subset of Vessel Monitoring System (VMS) positions, likely from a single vessel or fishing trip near Iceland. Each row is a VMS ping with position and vessel ID.
+
+Read with: `read_csv("data/small_vms.csv")`
+
+Rows: 1,070 | Columns: 3
+
+| Variable | Type | Description |
+|---|---|---|
+| id | dbl | Vessel identifier |
+| lon | dbl | Longitude of VMS ping |
+| lat | dbl | Latitude of VMS ping |
+
+---
+
+### `is_smb_stations.csv`
+
+**Description:** Station-level metadata for the Icelandic Spring Bottom Trawl Survey (SMB), covering surveys from 1990 onwards. Each row is one tow, with full positional, environmental, and operational detail.
+
+Read with: `read_csv("data/is_smb_stations.csv")`
+
+Rows: 19,846 | Columns: 28
+
+| Variable | Type | Description |
+|---|---|---|
+| id | dbl | Unique station/tow identifier; links to `is_smb_biological` |
+| date | date | Date of the tow |
+| year | dbl | Year of survey |
+| vid | dbl | Vessel identifier |
+| tow_id | chr | Composite tow identifier |
+| t1 | dttm | Start time of tow |
+| t2 | dttm | End time of tow |
+| lon1 | dbl | Longitude at start of tow |
+| lat1 | dbl | Latitude at start of tow |
+| lon2 | dbl | Longitude at end of tow |
+| lat2 | dbl | Latitude at end of tow |
+| ir | chr | ICES rectangle code |
+| ir_lon | dbl | Longitude of ICES rectangle centroid |
+| ir_lat | dbl | Latitude of ICES rectangle centroid |
+| z1 | dbl | Bottom depth at start of tow (m) |
+| z2 | dbl | Bottom depth at end of tow (m) |
+| temp_s | dbl | Surface temperature (°C) |
+| temp_b | dbl | Bottom temperature (°C) |
+| speed | dbl | Towing speed (knots) |
+| duration | dbl | Tow duration (minutes) |
+| towlength | dbl | Tow distance (nautical miles) |
+| horizontal | dbl | Horizontal net opening (m) |
+| verical | dbl | Vertical net opening (m) |
+| wind | dbl | Wind speed |
+| wind_direction | dbl | Wind direction (degrees) |
+| bormicon | dbl | Bormicon stratum code |
+| oldstrata | dbl | Old survey stratum code |
+| newstrata | dbl | New survey stratum code |
+
+---
+
+### `is_smb_biological.csv`
+
+**Description:** Species-level catch data from the Icelandic SMB survey, in long format. Each row is a species recorded at a station with total weight and number. Join to `is_smb_stations` via `id`.
+
+Read with: `read_csv("data/is_smb_biological.csv")`
+
+Rows: 68,834 | Columns: 4
+
+| Variable | Type | Description |
+|---|---|---|
+| id | dbl | Station identifier; links to `is_smb_stations` |
+| species | chr | Common English species name (e.g. "cod", "haddock") |
+| kg | dbl | Total catch weight (kg) |
+| n | dbl | Total number of fish caught |
+
+---
+
+### `smb_utbrteg.csv`
+
+**Description:** Raw Icelandic SMB trawl survey data with original Icelandic variable names. Used as input to generate `smb_summary.csv`. Contains tow-level catch totals for key commercial species.
+
+Read with: `read_csv("data/smb_utbrteg.csv")`
+
+| Variable | Type | Description |
+|---|---|---|
+| ar | dbl | Year (Icelandic: *ár*) |
+| reitur | dbl | ICES statistical square |
+| tog_nr | dbl | Tow number |
+| lon1 | dbl | Longitude at start of tow |
+| lat1 | dbl | Latitude at start of tow |
+| togtimi | dbl | Tow duration (minutes) |
+| torskur_kg | dbl | Cod catch weight (kg) |
+| torskur_stk | dbl | Cod catch number |
+| ufsi_kg | dbl | Saithe catch weight (kg) |
+| ufsi_stk | dbl | Saithe catch number |
+| ysa_kg | dbl | Haddock catch weight (kg) |
+| ysa_stk | dbl | Haddock catch number |
+| hrognkelsi_kg | dbl | Lumpfish catch weight (kg) |
+| hrognkelsi_stk | dbl | Lumpfish catch number |
+
+---
+
+### `smb_summary.csv`
+
+**Description:** Processed version of `smb_utbrteg.csv` with English variable names, ICES rectangle centroid coordinates added, and a tidy structure. Covers tow-level catch summaries for cod, saithe, haddock, and lumpfish.
+
+Read with: `read_csv("data/smb_summary.csv")`
+
+Rows: 21,582 | Columns: 18
+
+| Variable | Type | Description |
+|---|---|---|
+| year | dbl | Year of survey |
+| sq | dbl | ICES statistical square number |
+| tow_nr | dbl | Tow number within square |
+| lon1 | dbl | Longitude at start of tow |
+| lat1 | dbl | Latitude at start of tow |
+| lon2 | dbl | Longitude at end of tow |
+| lat2 | dbl | Latitude at end of tow |
+| ir_lon | dbl | Longitude of ICES rectangle centroid |
+| ir_lat | dbl | Latitude of ICES rectangle centroid |
+| towtime | dbl | Tow duration (minutes) |
+| cod_kg | dbl | Cod catch weight (kg) |
+| cod_n | dbl | Cod catch number |
+| saithe_kg | dbl | Saithe catch weight (kg) |
+| saithe_n | dbl | Saithe catch number |
+| haddock_kg | dbl | Haddock catch weight (kg) |
+| haddock_n | dbl | Haddock catch number |
+| lumpfish_kg | dbl | Lumpfish catch weight (kg) |
+| lumpfish_n | dbl | Lumpfish catch number |
+
+---
+
+## Spatial vector data
+
+---
+
+### `helcom.gpkg`
+
+**Description:** HELCOM (Helsinki Commission) sub-basin polygons for the Baltic Sea, used for regional classification and reporting.
+
+Read with: `read_sf("data/helcom.gpkg")`
+
+Features: 17 | Geometry: MULTIPOLYGON | CRS: WGS 84 (EPSG:4326)
+
+| Variable | Type | Description |
+|---|---|---|
+| objectid | dbl | Internal object identifier |
+| sb_code | int | Sub-basin numeric code |
+| name | chr | Sub-basin name (e.g. "Kattegat", "Gulf of Finland") |
+| areakm2 | dbl | Area in km² (may be 0 for some features) |
+| helcom_id | chr | HELCOM unique identifier (e.g. "SEA-001") |
+| shape_star | dbl | Shape start area attribute |
+| shape_stle | dbl | Shape start-to-end length attribute |
+| shape_leng | dbl | Perimeter length |
+| shape_area | dbl | Polygon area (internal units) |
+| geom | geom | MULTIPOLYGON geometry |
+
+---
+
+### `ice_lines.gpkg`
+
+**Description:** Line geometries representing ice edges or boundaries, stored in a projected coordinate system. Likely used as reference overlays in map exercises.
+
+Read with: `read_sf("data/ice_lines.gpkg")`
+
+Features: 3 | Geometry: LINESTRING | CRS: Unnamed projected CRS (LAEA-like, units: m)
+
+| Variable | Type | Description |
+|---|---|---|
+| geom | geom | LINESTRING geometry |
+
+---
+
+### `ice_points.gpkg`
+
+**Description:** Point geometries associated with ice observations or reference locations.
+
+Read with: `read_sf("data/ice_points.gpkg")`
+
+Features: 5 | Geometry: POINT | CRS: Unnamed projected CRS (units: m)
+
+| Variable | Type | Description |
+|---|---|---|
+| geom | geom | POINT geometry |
+
+---
+
+### `ice_polygon.gpkg`
+
+**Description:** Polygon geometries representing ice-covered areas.
+
+Read with: `read_sf("data/ice_polygon.gpkg")`
+
+Features: 2 | Geometry: POLYGON | CRS: Unnamed projected CRS (units: m)
+
+| Variable | Type | Description |
+|---|---|---|
+| geom | geom | POLYGON geometry |
+
+---
+
+### `iceland_coastline.gpkg`
+
+**Description:** Coastline polygon for Iceland, stored in a projected CRS (LAEA). Contains a single feature representing the full Icelandic landmass.
+
+Read with: `read_sf("data/iceland_coastline.gpkg")`
+
+Features: 1 | Geometry: MULTIPOLYGON | CRS: Unnamed projected CRS (LAEA, units: m)
+
+| Variable | Type | Description |
+|---|---|---|
+| ID_0 | chr | Country numeric code ("104") |
+| NAME_0 | chr | Country name ("Iceland") |
+| geom | geom | MULTIPOLYGON geometry |
+
+---
+
+### `iceland_contours.gpkg`
+
+**Description:** Depth contour lines around Iceland at standard bathymetric levels (-100, -200, -300, -500, -1000, -2000 m). Useful for adding depth reference lines to maps.
+
+Read with: `read_sf("data/iceland_contours.gpkg")`
+
+Features: 6 | Geometry: MULTILINESTRING | CRS: WGS 84 (EPSG:4326)
+
+| Variable | Type | Description |
+|---|---|---|
+| level | chr | Depth contour level in metres (e.g. "-200") |
+| geom | geom | MULTILINESTRING geometry |
+
+---
+
+### `ices_ecoregions.gpkg`
+
+**Description:** ICES ecoregion polygons covering the North Atlantic and adjacent seas, used for fish stock assessment reporting areas.
+
+Read with: `read_sf("data/ices_ecoregions.gpkg")`
+
+Features: 17 | Geometry: MULTIPOLYGON | CRS: WGS 84 (EPSG:4326)
+
+| Variable | Type | Description |
+|---|---|---|
+| ecoregion | chr | Ecoregion name (e.g. "Icelandic Waters", "Barents Sea") |
+| area_km2 | dbl | Ecoregion area (km²) |
+| geom | geom | MULTIPOLYGON geometry |
+
+---
+
+### `ices_rectangles.gpkg`
+
+**Description:** ICES statistical rectangles (0.5° latitude × 1° longitude grid) covering the North Atlantic, used as the standard spatial reporting unit in ICES stock assessments.
+
+Read with: `read_sf("data/ices_rectangles.gpkg")`
+
+Features: 6,758 | Geometry: POLYGON | CRS: WGS 84 (EPSG:4326)
+
+| Variable | Type | Description |
+|---|---|---|
+| id | dbl | Internal identifier |
+| icesname | chr | ICES rectangle name (e.g. "47A0") |
+| south | dbl | Southern boundary latitude |
+| west | dbl | Western boundary longitude |
+| north | dbl | Northern boundary latitude |
+| east | dbl | Eastern boundary longitude |
+| area_km2 | int | Rectangle area (km²) |
+| objectid | dbl | Additional object identifier |
+| icesname_1 | chr | Duplicate of icesname (join artifact) |
+| ecoregion | chr | ICES ecoregion the rectangle belongs to |
+| area | dbl | Fraction of rectangle area |
+| percentage | dbl | Percentage of rectangle within ecoregion |
+| objectid_1 | dbl | Additional join artifact identifier |
+| icesname_2 | chr | Second duplicate of icesname |
+| shape_st_ar | dbl | Shape area attribute |
+| shape_st_le | dbl | Shape length attribute |
+| geom | geom | POLYGON geometry |
+
+---
+
+### `nephrops_fu.gpkg`
+
+**Description:** Nephrops (*Nephrops norvegicus*, Norway lobster) functional unit polygons as defined by ICES, covering the Northeast Atlantic.
+
+Read with: `read_sf("data/nephrops_fu.gpkg")`
+
+Features: 30 | Geometry: POLYGON | CRS: WGS 84 (EPSG:4326)
+
+| Variable | Type | Description |
+|---|---|---|
+| name | chr | Functional unit name (e.g. "Noup", "North Minch") |
+| fu | chr | Functional unit code number |
+| geom | geom | POLYGON geometry |
+
+---
+
+### `OSPAR_intensity_Otter_2015.gpkg`
+
+**Description:** OSPAR 2015 otter trawl fishing intensity data on a 0.05° c-square grid, covering the Northeast Atlantic. Includes swept area ratios (SAR) and effort metrics used in bottom-impact assessments.
+
+Read with: `read_sf("data/OSPAR_intensity_Otter_2015.gpkg")`
+
+Features: 91,190 | Geometry: POLYGON | CRS: WGS 84 (EPSG:4326)
+
+| Variable | Type | Description |
+|---|---|---|
+| c_square | chr | C-square identifier for the 0.05° grid cell |
+| mid_lat | dbl | Latitude of grid cell centre |
+| mid_lon | dbl | Longitude of grid cell centre |
+| SubsurfSAR | dbl | Subsurface swept area ratio (SAR) |
+| SurfSAR | dbl | Surface swept area ratio (SAR) |
+| SurfSA | dbl | Surface swept area (km²) |
+| totweight | dbl | Total catch weight (tonnes) |
+| totvalue | dbl | Total catch value |
+| KWfishingH | dbl | Kilowatt fishing hours |
+| FishingH | dbl | Fishing hours |
+| geom | geom | POLYGON geometry |
+
+---
+
+## Raster data
+
+---
+
+### `Faroes_minbtemp.tif`
+
+**Description:** Minimum bottom temperature raster for the Faroe Islands area. Values in °C. Stored in a LAEA projected coordinate system.
+
+Read with: `rast("data/Faroes_minbtemp.tif")`
+
+Dimensions: 175 rows × 200 cols | Resolution: 2000 m | CRS: LAEA (lon_0=-4, lat_0=69) | Range: -1.23 to 8.91 °C
+
+| Layer | Description |
+|---|---|
+| Faroes_minbtemp | Minimum bottom temperature (°C) |
+
+---
+
+### `Iceland_currentsp.tif`
+
+**Description:** Ocean current speed raster for the waters around Iceland. Likely a climatological mean or seasonal average. Values in m/s.
+
+Read with: `rast("data/Iceland_currentsp.tif")`
+
+Dimensions: 300 rows × 1080 cols | Resolution: ~0.017° | CRS: WGS 84 (EPSG:4326) | Range: 0.002 to 0.291 m/s
+
+| Layer | Description |
+|---|---|
+| Iceland_currentsp | Current speed (m/s) |
+
+---
+
+### `Iceland_maxbtemp.tif`
+
+**Description:** Maximum bottom temperature raster for Icelandic waters. Values in °C. Stored in a LAEA projected coordinate system matching `Iceland_minbtemp.tif`.
+
+Read with: `rast("data/Iceland_maxbtemp.tif")`
+
+Dimensions: 340 rows × 375 cols | Resolution: 2000 m | CRS: LAEA (lon_0=-4, lat_0=69) | Range: -0.99 to 9.82 °C
+
+| Layer | Description |
+|---|---|
+| Iceland_maxbtemp | Maximum bottom temperature (°C) |
+
+---
+
+### `Iceland_minbtemp.tif`
+
+**Description:** Minimum bottom temperature raster for Icelandic waters. Values in °C. Same grid as `Iceland_maxbtemp.tif`; together they represent the seasonal range of bottom temperatures.
+
+Read with: `rast("data/Iceland_minbtemp.tif")`
+
+Dimensions: 340 rows × 375 cols | Resolution: 2000 m | CRS: LAEA (lon_0=-4, lat_0=69) | Range: -1.00 to 8.60 °C
+
+| Layer | Description |
+|---|---|
+| Iceland_minbtemp | Minimum bottom temperature (°C) |
+
+---
+
+### `nephrops.tif`
+
+**Description:** Raster representing Nephrops (*Nephrops norvegicus*) distribution or habitat quality around Iceland. Values are integer scores (1–40), possibly a suitability or abundance index.
+
+Read with: `rast("data/nephrops.tif")`
+
+Dimensions: 2401 rows × 8129 cols | Resolution: ~0.0013° × 0.00065° | CRS: WGS 84 (EPSG:4326) | Range: 1 to 40
+
+| Layer | Description |
+|---|---|
+| nephrops | Nephrops distribution index (integer score 1–40) |
