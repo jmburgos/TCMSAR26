@@ -1,5 +1,7 @@
 ---
 title: "Coordinate Reference Systems"
+execute:
+  enabled: false
 ---
 
 A fundamental aspect of spatial data is defining its Coordinate Reference System (CRS). Briefly, a CRS defines how to represent the Earth's surface on the plane. Until we define a projection, coordinates are just numbers.

@@ -1,21 +1,8 @@
 ---
 title: "Interactive plots"
-output:
-  html_document:
-    fig_height: 4
-    fig_width: 8
-    highlight: haddock
-    theme: united
-    toc: yes
-    toc_float: yes
-    toc_depth: 4
+execute:
+  enabled: false
 ---
-
-
-```{r, include=FALSE}
-knitr::opts_chunk$set(warning = FALSE, message = FALSE)
-```
-
 
 ```{r setup}
 library(rnaturalearth)
@@ -23,7 +10,7 @@ library(sf)
 library(htmltools)
 library(leaflet)
 library(tidyverse)
-liibrary(sf)
+library(sf)
 
 ```
 
@@ -64,11 +51,11 @@ leaflet() %>%
 
 Here:
 
-* a map widget is created by calling `r cl("leaflet")`
-* a background map is created by calling `r cl("addTiles")`
-* a spatial point is added, here using `r cl("addPopups")`
+* a map widget is created by calling r cl("leaflet")
+* a background map is created by calling r cl("addTiles")
+* a spatial point is added, here using r cl("addPopups")
 
-Leaflet works similar as ggplot, in that one can compile multiple layers by calling `r cl("add****")`-functions. The difference, besides difference in the layer-function names, is that in ggplot we use the "+", while in leaflet one uses "%>%".
+Leaflet works similar as ggplot, in that one can compile multiple layers by calling r cl("add****")-functions. The difference, besides difference in the layer-function names, is that in ggplot we use the "+", while in leaflet one uses "%>%".
 
 
 
@@ -99,7 +86,7 @@ minke <-
   as_tibble()
 ```
 
-A simple plot of the sample locations can be obtained by using the `r cl("addCircles")`-function:
+A simple plot of the sample locations can be obtained by using the r cl("addCircles") -function:
 
 ```{r, fig.height = 3, fig.width = 4}
 leaflet() %>% 
@@ -169,7 +156,7 @@ Emulate the following plot where:
 * The default colour value ("#03F") is overridden (you can use standard English R colour names)
 * The default weight (of the outer "ring") is overridden/suppressed.
 
-As usual it is best to read the help-file and/or check what are the arguments for the `r cl("addCirles")`-function (call args(addCircle)).
+As usual it is best to read the help-file and/or check what are the arguments for the r cl("addCirles")-function (call args(addCircle)).
 
 ```{r, fig.height = 3, fig.width = 4, echo = FALSE}
 leaflet() %>% 
@@ -219,7 +206,7 @@ m <-
 m
 ```
 
-This plot however does not give us indication about which colour corresponds to which sex. Again, legends that come free in ggplot need to be specifically provided in leaflet using the `r cl("addLegend")`-function:
+This plot however does not give us indication about which colour corresponds to which sex. Again, legends that come free in ggplot need to be specifically provided in leaflet using the r cl("addLegend") -function:
 
 ```{r, fig.height = 3, fig.width = 4}
 m %>% 
@@ -267,12 +254,12 @@ leaflet() %>%
             values = c("Male", "Female"))
 ```
 
-Note however that one needs to specify explicitly the "domain" within the `r cl("addLegend")`-function (NOTE: check if there is not an alternative to this).
+Note however that one needs to specify explicitly the "domain" within the r cl("addLegend") -function (NOTE: check if there is not an alternative to this).
 
 ### Basemaps
 
 
-The `r cl("addTiles")`-function provides a reference background to spatial maps, the default being [openstreetmap](https://www.openstreetmap.org)-tiles. That background may not be the most suitable for oceanographic data we are most likely confronted with. The `r cl("addProviderTiles")`-function provides a quick access to some free third-party basemaps that are encapsulated in the "providers"-list, a data object in the leaflet-package. 
+The r cl("addTiles")-function provides a reference background to spatial maps, the default being [openstreetmap](https://www.openstreetmap.org)-tiles. That background may not be the most suitable for oceanographic data we are most likely confronted with. The r cl("addProviderTiles")-function provides a quick access to some free third-party basemaps that are encapsulated in the "providers"-list, a data object in the leaflet-package. 
 
 #### Leaflet build-in alternatives
 
@@ -331,7 +318,7 @@ m <-
            group = "MRI multibeam")
 ```
 
-The above script includes some options, here the minimum and the maximum zoom of 5 and 12 specifies the zoom level that the tiles are made visible to the user. The argument group comes in handy when allowing the user to control what layers are shown/hidden. For that we use the `r cl("addLayersControl")`-function:
+The above script includes some options, here the minimum and the maximum zoom of 5 and 12 specifies the zoom level that the tiles are made visible to the user. The argument group comes in handy when allowing the user to control what layers are shown/hidden. For that we use the r cl("addLayersControl")-function:
 
 ```{r}
 m %>% 

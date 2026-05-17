@@ -1,7 +1,7 @@
 project:
   type: website
   output-dir: site
-
+  
 website:
   title: "Introduction to mapping and spatial analysis with R"
   sidebar:
@@ -31,16 +31,8 @@ website:
     - text: "Interactive maps"
       file: interactive.qmd
     - text: "Interpolation"
-      file: interpolation.qmd
-      
-      
-   
-   
-   
+      file: interpolation.qmd   
 format:
   html:
     theme: cosmo
     toc: true
-
-
-

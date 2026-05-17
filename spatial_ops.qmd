@@ -1,21 +1,8 @@
 ---
 title: "Spatial operations with *sf* objects"
-output:
-  html_document:
-    fig_height: 4
-    fig_width: 9
-    highlight: haddock
-    theme: united
-    toc: yes
-    toc_float: yes
-    toc_depth: 2
+execute:
+  enabled: false
 ---
-
-```{r, echo = FALSE}
-knitr::opts_chunk$set(warning = FALSE, message = FALSE)
-```
-
-
 
 #### These are the packages needed for this tutorial:
 ```{r setup}
@@ -68,7 +55,6 @@ Now, let's load the Nephrops functional units.  These are spatial regions used f
 
 ```{r }
 nfu <- read_sf("ftp://ftp.hafro.is/pub/data/shapes/nephrops_fu.gpkg")
-
 
 ```
 Note that the CRS in the *nfu* object is **the same** as in the *np* object.  This is a fundamental requirement.  If we want to do spatial operations between two datasets, they need to be in the same coordinate system.

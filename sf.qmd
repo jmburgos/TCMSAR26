@@ -1,5 +1,7 @@
 ---
 title: "Simple features"
+execute:
+  enabled: false
 ---
 
 ## Vector data in R

@@ -1,19 +1,6 @@
 ---
 title: "Introduction to Spatial Data"
-output:
-  html_document:
-    fig_height: 4
-    fig_width: 9
-    highlight: haddock
-    theme: united
-    toc: yes
-    toc_float: yes
-    toc_depth: 2
 ---
-
-```{r, echo = FALSE}
-knitr::opts_chunk$set(warning = FALSE, message = FALSE)
-```
 
 # What is spatial data?
 - In simple terms, spatial data refers to data associated to specific geographical locations (e.g. latitude and longitude).
@@ -21,9 +8,7 @@ knitr::opts_chunk$set(warning = FALSE, message = FALSE)
 - Very often we distinguish between the geographic locations themselves (the "geometry" or "shape") and the data associated to that geometry ("attributes").
 
 What would be the geometry and attributes of data collected during a bottom trawl?
-```{r out.width = "50%", echo= FALSE}
-knitr::include_graphics("./img/trawl.png")
-```
+
 
 # Geographic information systems (GIS)
 Typically when we think about analysing spatial data we think about Geographic Information Systems (GIS).

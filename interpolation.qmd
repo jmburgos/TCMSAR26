@@ -1,19 +1,8 @@
 ---
 title: "Interpolation"
-output:
-  html_document:
-    fig_height: 4
-    fig_width: 9
-    highlight: haddock
-    theme: united
-    toc: yes
-    toc_float: yes
-    toc_depth: 2
+execute:
+  enabled: false
 ---
-
-```{r, echo = FALSE}
-knitr::opts_chunk$set(warning = FALSE, message = FALSE)
-```
 
 
 **Needed libraries**:

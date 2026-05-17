@@ -1,19 +1,8 @@
 ---
-title: "Introduction to ggplot2"
-output:
-  html_document:
-    fig_height: 4
-    fig_width: 9
-    highlight: haddock
-    theme: united
-    toc: yes
-    toc_float: yes
-    toc_depth: 2
+title: "Mapping with ggplot2"
+execute:
+  enabled: false
 ---
-
-```{r, echo = FALSE}
-knitr::opts_chunk$set(warning = FALSE, message = FALSE)
-```
 
 # Getting started
 ___
@@ -34,18 +23,6 @@ library(marmap)      # access global topgraphy data
 library(patchwork)   # used for multiplotting
 ```
 
-```{r, echo = FALSE}
-theme_set(theme_grey(base_size = 16))
-cl = function(x, color = "blue"){
-  outputFormat = knitr::opts_knit$get("rmarkdown.pandoc.to")
-  if(outputFormat == 'latex')
-    paste("\\textcolor{",color,"}{", x ,"}",sep="")
-  else if(outputFormat == 'html')
-    paste("<font color='",color,"'>", x ,"</font>",sep="")
-  else
-    x
-}
-```
 
 ## Key components of ggplot 
 
@@ -62,9 +39,9 @@ ggplot has __three__ key components:
 
 1.  argument __data__, which must be a `data.frame` or some derivative there of (`tbl`, `data.table`, ...)
 
-2. A set of aesthetic mappings (called with the `r cl("aes")`~function) between variables in the data and visual properties, and 
+2. A set of aesthetic mappings (called with the r cl("aes")~function) between variables in the data and visual properties, and 
 
-3. At least one call to a `r cl("layer")` which describes how to render each observation.
+3. At least one call to a r cl("layer") which describes how to render each observation.
 
 
 ```{r}
@@ -73,7 +50,7 @@ ggplot(data = minke) +
   layer(geom = "point", stat = "identity", position = "identity")
 ```
 
-Generally we do not call `r cl("layer")` directly but use functions starting with `r cl("geom_")` that are a shortcut calls to the `r cl("layer") `-function. Hence the above call is normally written as:
+Generally we do not call r cl("layer") directly but use functions starting with r cl("geom_")` that are a shortcut calls to the r cl("layer") -function. Hence the above call is normally written as:
 ```{r, eval = FALSE}
 ggplot(data = minke, aes(x = lon, y = lat, colour = sex)) + geom_point()
 ```
@@ -101,14 +78,15 @@ In the above plot, we basically have mapped the longitude position on the x-axis
 ## Reference map
 
 * Maps as background for r-plot can come from myriad of sources. Here we take an example of shoreline that reside in the map-packages.
-* To get the data into required ggplot2 form (a data.frame) we use the `r cl("map_data")`-function.
+* To get the data into required ggplot2 form (a data.frame) we use the r cl("map_data")
+-function.
 
 ```{r}
 iceland <- map_data("worldHires", region = "Iceland")
 glimpse(iceland)
 ```
 
-Here we have just a simple dataframe with `r nrow(iceland)` coordinates (long and lat) and some other variables. We can try map these coordinates to different layers (more on `r cl("labs")` later):
+Here we have just a simple dataframe with r nrow(iceland) coordinates (long and lat) and some other variables. We can try map these coordinates to different layers (more on r cl("labs") later):
 
 ```{r, fig.height = 5}
 m <- 
@@ -167,7 +145,7 @@ m4 <- m4 + annotate("text", x = -18, y = 64.8, label = "stereographic")
 m1 + m2 + m3 + m4
 ```
 
-Note that the `r cl("geom_quickmap")` is an approximation (albeit good one for most purposes), if one is operating on a larger scale `r cl("geom_map")` may be more accurate (actually all maps are wrong when put on a two dimensional pane).
+Note that the r cl("geom_quickmap") is an approximation (albeit good one for most purposes), if one is operating on a larger scale r cl("geom_map") may be more accurate (actually all maps are wrong when put on a two dimensional pane).
 
 ## Adding layers
 
@@ -183,9 +161,9 @@ m <-
 m + coord_quickmap()
 ```
 
-Besides adding a `r cl("point")` layer on **top** of the `r cl("polygon")` layer we have added one aesthetics:
+Besides adding a r cl("point") layer on **top** of the r cl("polygon") layer we have added one aesthetics:
 
-* `colour`: Here we are letting the value of the variable sex control the colour displayed. Hence we call that argument within the `r cl("aes")`-function.
+* `colour`: Here we are letting the value of the variable sex control the colour displayed. Hence we call that argument within the r cl("aes")-function.
 
 We will be introduced to more aesthetics as we move along.
 
@@ -211,7 +189,7 @@ ggplot(minke) +
   scale_colour_discrete()
 ```
 
-Within the `r cl("scale_")`-functions all the settings take the default argument, check e.g.:
+Within the r cl("scale_")-functions all the settings take the default argument, check e.g.:
 ```{r, eval = FALSE}
 ?scale_x_continuous
 ```
@@ -258,9 +236,9 @@ m <-
 m
 ```
 
-If one only interested in overwriting the default axis-name one could use the `r cl("labs")`-shortcut function.
+If one only interested in overwriting the default axis-name one could use the r cl("labs")-shortcut function.
 
-One of ggplot defaults is that the range of the x and the y-axis is dictated by the range in the data. If we want to "zoom into" a plot we can overwrite the default boundaries of the horizontal and vertical axis by calling the arguments xlim and ylim within the `r cl("coord_quickmap")`-function.
+One of ggplot defaults is that the range of the x and the y-axis is dictated by the range in the data. If we want to "zoom into" a plot we can overwrite the default boundaries of the horizontal and vertical axis by calling the arguments xlim and ylim within the r cl("coord_quickmap")-function.
 
 ```{r}
 m + coord_quickmap(xlim = c(-25, -20), ylim = c(65, 66.6))
@@ -311,7 +289,7 @@ ggplot() +
 # More layers
 ___
 
-Here we will only focus on ggplot `r cl("layers")` that are useful when plotting spatial data.
+Here we will only focus on ggplot r cl("layers") that are useful when plotting spatial data.
 
 **Data used**:
 ```{r}
@@ -334,7 +312,7 @@ m <-
 
 ## geom_segment
 
-The `r cl("segment")`-layer is useful when wanting to display some very simple vector data that only have a start and an end point. Lets take the tow location from the Icelandic spring survey as an example:
+The r cl("segment")`-layer is useful when wanting to display some very simple vector data that only have a start and an end point. Lets take the tow location from the Icelandic spring survey as an example:
 
 ```{r}
 m +
@@ -345,7 +323,7 @@ m +
 
 ## geom_point
 
-We can assign a variable to the size argument in the `r cl("geom_point")`-layer, the size of the point then being some function of value of a variable. Lets visualize the abundance of cod:
+We can assign a variable to the size argument in the r cl("geom_point")`-layer, the size of the point then being some function of value of a variable. Lets visualize the abundance of cod:
 
 ```{r}
 p <-
@@ -398,7 +376,7 @@ ggplot() +
 
 ## geom_path
 
-We have already shown a plot using the `r cl("path")`-layer, but just to create a background map. For a more appropriate demonstration lets use the vessel track data from the 2019 spring survey. Besides the coordinate data the key additional element of this dataset is time, which it has already been ordered by.
+We have already shown a plot using the r cl("path")`-layer, but just to create a background map. For a more appropriate demonstration lets use the vessel track data from the 2019 spring survey. Besides the coordinate data the key additional element of this dataset is time, which it has already been ordered by.
 
 ```{r}
 track <- 
@@ -413,7 +391,7 @@ m +
 
 ## geom_tile
 
-The survey data contains the ICES rectangles that a tow belongs (ir) to as well as the center coordinate position (ir_lon and ir_lat) we can use the `r cl("tile")`-layer to display some characteristics of the data (we will later deal with how this was achieved).
+The survey data contains the ICES rectangles that a tow belongs (ir) to as well as the center coordinate position (ir_lon and ir_lat) we can use the r cl("tile")`-layer to display some characteristics of the data (we will later deal with how this was achieved).
 
 However, since there is more than one tow in each tile we need first to generate some summary of the data by each rectangle (actually here by the center-points):
 
@@ -486,9 +464,9 @@ ggplot() +
 
 ## geom_raster
 
-The above plot using the `r cl("tile")`-layer is actually a kind of a raster plot, albeit the resolution being not very high.
+The above plot using the r cl("tile")`-layer is actually a kind of a raster plot, albeit the resolution being not very high.
 
-To demonstrate the use of the `r cl("raster")`-layer lets use the global relief models from the ETOPO1 dataset hosted on a NOAA server can be accessed using the `getNOAA.bathy`-function in the marmap-package (you need to install that package). To access them one specifies the boundary of the data of interest and then, since we are using ggplot for mapping are turned into a data frame using the `r cl("fortify")`-function:
+To demonstrate the use of the r cl("raster")`-layer lets use the global relief models from the ETOPO1 dataset hosted on a NOAA server can be accessed using the `getNOAA.bathy`-function in the marmap-package (you need to install that package). To access them one specifies the boundary of the data of interest and then, since we are using ggplot for mapping are turned into a data frame using the r cl("fortify")`-function:
 
 ```{r}
 xlim <- c(-28, -10)
@@ -517,7 +495,7 @@ m +
 
 ## geom_contour
 
-We will later deal with the syntax for generating contours from rasters. However, as is often the case, ggplot provides a shortcut for generating contours based on raster data, the `r cl("contour")`-layer.
+We will later deal with the syntax for generating contours from rasters. However, as is often the case, ggplot provides a shortcut for generating contours based on raster data, the r cl("contour")`-layer.
 
 ```{r}
 m2 <- 
@@ -626,7 +604,7 @@ m +
        size = "per 4 miles")
 ```
 
-Note: The in the `r cl("facet_grid")`-function the first variable (here age) is plotted as rows, the second variable (here yearclass) as columns.
+Note: The in the r cl("facet_grid")`-function the first variable (here age) is plotted as rows, the second variable (here yearclass) as columns.
 
 # Bits
 
@@ -680,8 +658,8 @@ minke <-
   read_csv("ftp://ftp.hafro.is/pub/data/csv/minke.csv")
 ```
 
-* To assign a position to an ICES rectangle we use the `r cl("d2ir")`-function.
-* To get the midpoint of the ICES rectangle we use the `r cl("ir2d")`-function.
+* To assign a position to an ICES rectangle we use the r cl("d2ir")`-function.
+* To get the midpoint of the ICES rectangle we use the r cl("ir2d")`-function.
 
 ```{r}
 minke %>% 
@@ -788,7 +766,7 @@ p +
 
 ### Using discreet value
 
-One may often want to generate a plot that shows a range of some continuous values as discrete interval. For that one could e.g. use the `r cl("cut")`-function. Here is an example were based on intervals that such that the number in each interval are roughly the same:
+One may often want to generate a plot that shows a range of some continuous values as discrete interval. For that one could e.g. use the r cl("cut")`-function. Here is an example were based on intervals that such that the number in each interval are roughly the same:
 
 ```{r}
 p <-

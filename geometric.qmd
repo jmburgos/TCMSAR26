@@ -1,5 +1,7 @@
 ---
 title: "Working with geometries in sf objects"
+execute:
+  enabled: false
 ---
 
 
