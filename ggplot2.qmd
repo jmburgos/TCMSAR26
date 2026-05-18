@@ -1,0 +1,470 @@
+---
+title: "Mapping with ggplot2 — part 2"
+execute:
+  enabled: false
+---
+
+# Getting started
+
+## Libraries
+
+```{r setup}
+library(tidyverse)
+library(sf)
+library(rnaturalearth)
+library(rnaturalearthdata)
+library(ggspatial)
+library(patchwork)
+```
+
+## Data
+
+```{r data}
+minke <- read_csv("data/minke.csv")
+smb   <- read_csv("data/smb_summary.csv")
+
+# Convert minke whale positions to sf
+minke_sf <- minke |>
+  st_as_sf(coords = c("lon", "lat"), crs = 4326)
+
+# Country polygons from rnaturalearth
+iceland_sf <- ne_countries(country = "Iceland", scale = "medium",
+                           returnclass = "sf")
+world_sf   <- ne_countries(scale = "medium", returnclass = "sf")
+
+# Nephrops functional units — used for labelling examples
+nfu <- read_sf("data/nephrops_fu.gpkg")
+
+# Iceland coastline and depth contours — used in the mixed-CRS example
+coast    <- read_sf("data/iceland_coastline.gpkg")
+contours <- read_sf("data/iceland_contours.gpkg")
+
+# SMB 2019 tows
+smb2019 <- smb |> filter(year == 2019)
+```
+
+---
+
+# From `ggplot1` to `geom_sf()`
+
+In `ggplot1` we used `map_data()` from the **maps** package to get country
+outlines as plain data frames, and plotted them with `geom_polygon()`. That
+approach works, but it has limitations: it requires a specific data structure
+with a column named `group` to draw polygons correctly, it cannot represent
+lines or arbitrary polygon boundaries, and the projection (`coord_quickmap`) is
+only an approximation.
+
+The modern approach is `geom_sf()`. It accepts any sf object — point, line, or
+polygon — and uses `coord_sf()` to manage the coordinate system exactly. Because
+the geometry is stored in the sf object itself, there is no need to manage
+coordinate column names or polygon ordering manually.
+
+```{r}
+# ggplot1 approach — a data frame with long/lat columns
+iceland_df <- map_data("world", region = "Iceland")
+
+p_old <- ggplot() +
+  geom_polygon(data = iceland_df, aes(long, lat, group = group),
+               fill = "grey80", colour = "white") +
+  coord_quickmap(xlim = c(-27, -11), ylim = c(62.5, 67.5)) +
+  labs(title = "maps / geom_polygon") +
+  theme_bw()
+
+# Modern approach — an sf object
+p_new <- ggplot() +
+  geom_sf(data = iceland_sf, fill = "grey80", colour = "white") +
+  coord_sf(xlim = c(-27, -11), ylim = c(62.5, 67.5)) +
+  labs(title = "rnaturalearth / geom_sf") +
+  theme_bw()
+
+p_old + p_new
+```
+
+`geom_sf()` selects the appropriate rendering (points, lines, or polygons)
+automatically based on the geometry column. A single call handles all geometry
+types — no need to choose between `geom_point()`, `geom_path()`, and
+`geom_polygon()` depending on what you have.
+
+---
+
+# Basemaps with `rnaturalearth`
+
+The **rnaturalearth** package provides country and coastline polygons as sf
+objects at several resolutions (`"small"`, `"medium"`, `"large"`), and is a
+well-maintained replacement for the **maps** package for basemap data.
+
+```{r}
+ggplot() +
+  geom_sf(data = iceland_sf, fill = "grey80", colour = "white") +
+  theme_bw()
+```
+
+Adding data on top follows exactly the same layering logic as `ggplot1`: the
+basemap goes first, then data layers. Here we add the minke whale observations:
+
+```{r}
+ggplot() +
+  geom_sf(data = iceland_sf, fill = "grey80") +
+  geom_sf(data = minke_sf, aes(colour = sex), size = 2, alpha = 0.7) +
+  scale_colour_brewer(name = "Sex", palette = "Set1") +
+  labs(x = NULL, y = NULL) +
+  theme_bw()
+```
+
+For a regional view, zoom with `coord_sf(xlim, ylim)`. Values are in the units
+of the active CRS — decimal degrees for the WGS84 default:
+
+```{r}
+ggplot() +
+  geom_sf(data = world_sf, fill = "grey80") +
+  geom_sf(data = minke_sf, aes(colour = sex), alpha = 0.8) +
+  coord_sf(xlim = c(-26, -12), ylim = c(62.5, 67.5)) +
+  scale_colour_brewer(name = "Sex", palette = "Set1") +
+  labs(x = NULL, y = NULL) +
+  theme_bw()
+```
+
+---
+
+# Projections with `coord_sf()`
+
+`coord_sf()` controls the CRS used when rendering all map layers. Every layer is
+automatically reprojected to match — you never need to reproject your data
+manually just for plotting.
+
+This connects directly to what you learned in the [CRS chapter](crs.qmd): pass
+any EPSG code or proj string to the `crs` argument.
+
+```{r}
+p_base <- ggplot() +
+  geom_sf(data = iceland_sf, fill = "grey80") +
+  geom_sf(data = minke_sf, aes(colour = sex), alpha = 0.7) +
+  scale_colour_brewer(name = "Sex", palette = "Set1") +
+  scale_x_continuous(NULL, NULL) +
+  scale_y_continuous(NULL, NULL)
+
+p1 <- p_base + coord_sf(crs = 4326) +
+  labs(title = "WGS84 (geographic)")
+
+p2 <- p_base + coord_sf(crs = "+proj=laea +lat_0=65 +lon_0=-19") +
+  labs(title = "LAEA centred on Iceland")
+
+p3 <- p_base + coord_sf(crs = "+proj=stere +lat_0=90 +lat_ts=65 +lon_0=-19") +
+  labs(title = "Stereographic")
+
+p1 + p2 + p3
+```
+
+## Mixing layers with different CRS
+
+When your layers have different CRS — a common situation when combining data
+from different sources — `coord_sf()` aligns them automatically. The display CRS
+defaults to the first layer's CRS, but setting it explicitly is best practice:
+
+```{r}
+# coast and contours are loaded in the setup chunk above
+# coast: projected LAEA — contours: WGS84
+
+# Explicit CRS avoids surprises when layer order changes
+ggplot() +
+  geom_sf(data = contours, colour = "steelblue", linewidth = 0.3) +
+  geom_sf(data = coast,    fill = "grey80") +
+  coord_sf(crs = 8088) +   # ISN2016 / LAEA Iceland — Iceland's official CRS
+  theme_bw()
+```
+
+---
+
+# Labels: `geom_sf_text()` and `geom_sf_label()`
+
+For labelling polygon or point features, `geom_sf_text()` and `geom_sf_label()`
+place text at the geometry's position (centroid for polygons). A useful pattern
+is to compute centroid positions first with `st_centroid()` and use those as the
+label layer:
+
+```{r}
+nfu_centroids <- st_centroid(nfu)
+
+ggplot() +
+  geom_sf(data = nfu, fill = NA, colour = "steelblue") +
+  geom_sf_label(data = nfu_centroids, aes(label = name),
+                size = 2.5, label.padding = unit(0.15, "lines")) +
+  theme_bw()
+```
+
+`geom_sf_text()` omits the label box; use it for point labels where you do not
+want the visual weight of a background rectangle.
+
+---
+
+# Facetting
+
+Facetting splits data into panels by one or two grouping variables. It is
+particularly effective for showing how species distributions shift over time.
+
+## `facet_wrap()`
+
+`facet_wrap()` arranges panels in a single ribbon, filling rows left to right.
+Here, cod abundance is mapped for six survey years:
+
+```{r}
+smb_sel <- smb |> filter(year %in% c(1995, 2000, 2005, 2010, 2015, 2019))
+
+ggplot() +
+  geom_sf(data = iceland_sf, fill = "grey80") +
+  geom_point(data = smb_sel, aes(lon1, lat1, size = cod_n),
+             alpha = 0.15, colour = "red") +
+  scale_size_area(max_size = 12, name = "Cod (n)") +
+  coord_sf(xlim = c(-27, -11), ylim = c(62.5, 67.5)) +
+  scale_x_continuous(NULL, NULL) +
+  scale_y_continuous(NULL, NULL) +
+  facet_wrap(~ year) +
+  theme_bw()
+```
+
+## `facet_grid()`
+
+`facet_grid(rows ~ cols)` creates a matrix of panels defined by two variables.
+This is useful for comparing species and years simultaneously. We pivot the SMB
+data to long format first so both species can be a facet variable:
+
+```{r}
+smb_long <- smb |>
+  filter(year %in% c(2005, 2010, 2015, 2019)) |>
+  pivot_longer(cols = c(cod_n, haddock_n),
+               names_to  = "species",
+               values_to = "n") |>
+  mutate(species = recode(species, cod_n = "Cod", haddock_n = "Haddock"))
+
+ggplot() +
+  geom_sf(data = iceland_sf, fill = "grey80") +
+  geom_point(data = smb_long, aes(lon1, lat1, size = n),
+             alpha = 0.2, colour = "red") +
+  scale_size_area(max_size = 8, name = "Catch (n)") +
+  coord_sf(xlim = c(-27, -11), ylim = c(62.5, 67.5)) +
+  scale_x_continuous(NULL, NULL) +
+  scale_y_continuous(NULL, NULL) +
+  facet_grid(species ~ year) +
+  theme_bw()
+```
+
+In `facet_grid(rows ~ cols)`, the first variable defines rows and the second
+defines columns. Use `. ~ year` for columns only, or `species ~ .` for rows only.
+
+---
+
+# Axis formatting
+
+## Geographic degree labels
+
+The helper functions below produce properly formatted degree–direction axis labels:
+
+```{r}
+scale_longitude <- function(min = -180, max = 180, step = 1, ...) {
+  breaks <- seq(min, max, step)
+  labels <- ifelse(breaks < 0,
+                   paste0(abs(breaks), "\u00B0W"),
+                   paste0(breaks, "\u00B0E"))
+  scale_x_continuous(name = NULL, breaks = breaks, labels = labels, ...)
+}
+
+scale_latitude <- function(min = -90, max = 90, step = 0.5, ...) {
+  breaks <- seq(min, max, step)
+  labels <- ifelse(breaks < 0,
+                   paste0(abs(breaks), "\u00B0S"),
+                   paste0(breaks, "\u00B0N"))
+  scale_y_continuous(name = NULL, breaks = breaks, labels = labels, ...)
+}
+
+ggplot() +
+  geom_sf(data = iceland_sf, fill = "grey80") +
+  coord_sf(xlim = c(-25, -12), ylim = c(63, 67)) +
+  scale_longitude(min = -25, max = -12, step = 2) +
+  scale_latitude(min = 63, max = 67, step = 1) +
+  theme_bw()
+```
+
+## ICES statistical rectangle labels
+
+ICES rectangles use a notation like "40G1" rather than decimal degrees. The functions below relabel axes accordingly. They require the **geo** package (`remotes::install_github("hafro/geo")`):
+
+```{r eval=FALSE}
+library(geo)
+
+scale_longitude_ices <- function(min = -44, max = 68.5, step = 1, ...) {
+  breaks <- seq(min + 0.5, max - 0.5, step)
+  labels <- geo::d2ir(60, breaks) %>% stringr::str_sub(3)
+  scale_x_continuous(name = NULL, breaks = breaks, labels = labels, ...)
+}
+
+scale_latitude_ices <- function(min = 36, max = 84.5, step = 0.5, ...) {
+  breaks <- seq(min + 0.25, max - 0.25, step)
+  labels <- geo::d2ir(breaks, 0) %>% stringr::str_sub(1, 2)
+  scale_y_continuous(name = NULL, breaks = breaks, labels = labels, ...)
+}
+
+ggplot() +
+  geom_sf(data = iceland_sf, fill = "grey80") +
+  coord_sf(xlim = c(-25, -12), ylim = c(63, 67)) +
+  scale_longitude_ices() +
+  scale_latitude_ices() +
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_line(linewidth = 0.5),
+        axis.ticks = element_blank()) +
+  theme_bw()
+```
+
+---
+
+# Map embellishments
+
+## Scale bars and north arrows with `ggspatial`
+
+```{r}
+ggplot() +
+  geom_sf(data = iceland_sf, fill = "grey80") +
+  annotation_scale(location = "bl", width_hint = 0.4) +
+  annotation_north_arrow(
+    location = "bl", which_north = "true",
+    pad_x = unit(0.6, "in"), pad_y = unit(0.4, "in"),
+    style = north_arrow_fancy_orienteering
+  ) +
+  coord_sf() +
+  theme_bw()
+```
+
+## Themes for maps
+
+`theme_void()` removes axes, grid lines, and background — often the cleanest choice for publication maps that carry their own spatial reference:
+
+```{r}
+ggplot() +
+  geom_sf(data = iceland_sf, fill = "grey85", colour = "white") +
+  geom_sf(data = minke_sf, aes(colour = sex), size = 1.8, alpha = 0.8) +
+  scale_colour_brewer(name = "Sex", palette = "Set1") +
+  annotation_scale(location = "br") +
+  annotation_north_arrow(
+    location = "tl",
+    style = north_arrow_minimal,
+    height = unit(0.8, "cm"), width = unit(0.8, "cm")
+  ) +
+  coord_sf() +
+  theme_void() +
+  theme(legend.position = "bottom",
+        plot.title = element_text(face = "bold")) +
+  labs(title = "Minke whale sightings", caption = "Source: MFRI")
+```
+
+## Inset maps with `inset_element()`
+
+`inset_element()` places one plot inside another — useful for a small context map within a detailed regional map:
+
+```{r}
+context_map <- ggplot() +
+  geom_sf(data = world_sf, fill = "grey80", colour = "white",
+          linewidth = 0.2) +
+  geom_rect(aes(xmin = -27, xmax = -11, ymin = 62.5, ymax = 67.5),
+            fill = NA, colour = "red", linewidth = 1) +
+  coord_sf(xlim = c(-40, 30), ylim = c(45, 80)) +
+  theme_void()
+
+detail_map <- ggplot() +
+  geom_sf(data = iceland_sf, fill = "grey80") +
+  geom_sf(data = minke_sf, aes(colour = sex), alpha = 0.8) +
+  scale_colour_brewer(name = "Sex", palette = "Set1") +
+  coord_sf() + theme_bw() +
+  labs(title = "Minke whale sightings")
+
+detail_map +
+  inset_element(context_map,
+                left = 0.65, right = 1.0,
+                bottom = 0.0, top = 0.35)
+```
+
+---
+
+# Gridding point data
+
+## Using `grade()` for custom grids
+
+The `grade()` function bins coordinates to a regular grid and returns the midpoint of each cell — useful for summarising survey data at a chosen resolution:
+
+```{r}
+grade <- function(x, dx) {
+  if (dx > 1) warning("Not tested for grids larger than one degree")
+  brks <- seq(floor(min(x)), ceiling(max(x)), dx)
+  ints <- findInterval(x, brks, all.inside = TRUE)
+  (brks[ints] + brks[ints + 1]) / 2
+}
+
+smb2019_gridded <- smb2019 |>
+  mutate(glon = grade(lon1, 0.5),
+         glat = grade(lat1, 0.25)) |>
+  group_by(glon, glat) |>
+  summarise(Cod = mean(cod_n), .groups = "drop")
+
+ggplot() +
+  geom_tile(data = smb2019_gridded,
+            aes(x = glon, y = glat, fill = Cod)) +
+  geom_sf(data = iceland_sf, fill = "grey60") +
+  coord_sf(xlim = c(-27, -11), ylim = c(62.5, 67.5)) +
+  scale_fill_viridis_c(option = "B", direction = -1,
+                       transform = "log1p",
+                       name = "Mean cod (n)") +
+  scale_x_continuous(NULL, NULL) +
+  scale_y_continuous(NULL, NULL) +
+  theme_bw()
+```
+
+## Using `st_make_grid()` for spatial polygon grids
+
+For a more rigorous approach that produces proper `sf` polygon grids respecting the CRS, use `st_make_grid()` then join with a spatial join:
+
+```{r}
+bbox_sfc <- st_bbox(c(xmin = -27, xmax = -11,
+                      ymin = 62.5, ymax = 67.5),
+                    crs = 4326) |>
+  st_as_sfc()
+
+grid_sf <- st_make_grid(bbox_sfc,
+                        cellsize = c(0.5, 0.25),
+                        what = "polygons") |>
+  st_as_sf()
+
+smb2019_pts <- smb2019 |>
+  st_as_sf(coords = c("lon1", "lat1"), crs = 4326)
+
+grid_summary <- grid_sf |>
+  st_join(smb2019_pts |> select(cod_n)) |>
+  group_by(x) |>
+  summarise(Cod = mean(cod_n, na.rm = TRUE), .groups = "drop")
+
+ggplot() +
+  geom_sf(data = grid_summary, aes(fill = Cod), colour = NA) +
+  geom_sf(data = iceland_sf, fill = "grey60") +
+  coord_sf(xlim = c(-27, -11), ylim = c(62.5, 67.5)) +
+  scale_fill_viridis_c(option = "B", direction = -1,
+                       name = "Mean cod (n)",
+                       na.value = "white") +
+  scale_x_continuous(NULL, NULL) +
+  scale_y_continuous(NULL, NULL) +
+  theme_bw()
+```
+
+---
+
+::: {.callout-note}
+## Final exercise
+
+Using the tools from this chapter:
+
+1. Choose a species from `is_smb_biological.csv`. Join it to `is_smb_stations.csv`
+   on `id` and fill zeros for stations where the species was absent.
+2. Create a `facet_wrap()` map showing its spatial distribution for selected years,
+   using a gridded summary (`geom_tile()`) with an appropriate colour scale and
+   transformation.
+3. Add proper degree-labelled axes, a scale bar, and a north arrow.
+4. Compose a final two-panel figure using `patchwork` that places your facetted
+   map alongside a time series (line chart) of total annual catch for the same
+   species.
+:::
