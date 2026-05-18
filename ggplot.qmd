@@ -390,6 +390,7 @@ ggplot() +
 `facet_grid()` creates a matrix of panels defined by two variables. Here, cod abundance is shown by year class (columns) and age (rows):
 
 ```{r fig.height=7}
+#| eval: false
 rbya <- read_csv("data/is_smb_cod_rbya.csv") %>%
   filter(yc %in% c(1984, 1985, 1996, 1997))
 

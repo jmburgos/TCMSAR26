@@ -1,38 +1,40 @@
 project:
   type: website
   output-dir: site
-  
+
 website:
   title: "Introduction to mapping and spatial analysis with R"
-  sidebar:
-    style: "docked"
-    search: true
-    contents:
+  navbar:
+    left:
     - text: "Home"
       file: index.qmd
-    - text: "Introduction"  
-      file: intro.qmd
-    - text: "Spatial data"
-      file: spatial_data.qmd
-    - text: "Simple features"
-      file: sf.qmd
-    - text: "Working with geometries in sf objects"
-      file: geometric.qmd
-    - text: "Spatial operations"
-      file: spatial_ops.qmd
-    - text: "Coordinate reference systems"
-      file: crs.qmd
-    - text: "Rasters"
-      file: rasters.qmd
-    - text: "Reading and writting spatial data"
-      file: input_output.qmd
-    - text: "Mapping with ggplot"
-      file: ggplot.qmd
-    - text: "Interactive maps"
-      file: interactive.qmd
-    - text: "Interpolation"
-      file: interpolation.qmd
-      
+    - text: "Data"
+      file: data.qmd
+    - text: "Chapters"
+      menu:
+      - text: "Introduction"
+        file: intro.qmd
+      - text: "Spatial data"
+        file: spatial_data.qmd
+      - text: "Simple features"
+        file: sf.qmd
+      - text: "Working with geometries in sf objects"
+        file: geometric.qmd
+      - text: "Spatial operations"
+        file: spatial_ops.qmd
+      - text: "Coordinate reference systems"
+        file: crs.qmd
+      - text: "Rasters"
+        file: rasters.qmd
+      - text: "Reading and writing spatial data"
+        file: input_output.qmd
+      - text: "Mapping with ggplot"
+        file: ggplot.qmd
+      - text: "Interactive maps"
+        file: interactive.qmd
+      - text: "Interpolation"
+        file: interpolation.qmd
+
 format:
   html:
     theme: cosmo

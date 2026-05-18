@@ -91,6 +91,26 @@ Full descriptions of every dataset are in `data.qmd`.
 - **`leaflet`** — interactive maps
 - Likely also: `gstat` (interpolation), `ggspatial` (map annotations)
 
+## Document status (`execute: enabled`)
+
+Tracks whether each `.qmd` renders its code chunks. Set `execute: enabled: true` in the YAML front matter when a document is error-free and ready to build.
+
+| File | Status |
+|---|---|
+| `index.qmd` | — (no execute block; no code) |
+| `intro.qmd` | — (no execute block; no code) |
+| `spatial_data.qmd` | — (no execute block; no code) |
+| `data.qmd` | ✅ `enabled: true` |
+| `sf.qmd` | ❌ `enabled: false` |
+| `geometric.qmd` | ❌ `enabled: false` |
+| `spatial_ops.qmd` | ❌ `enabled: false` |
+| `crs.qmd` | ❌ `enabled: false` |
+| `rasters.qmd` | ❌ `enabled: false` |
+| `input_output.qmd` | ❌ `enabled: false` |
+| `ggplot.qmd` | ❌ `enabled: false` |
+| `interactive.qmd` | ❌ `enabled: false` |
+| `interpolation.qmd` | ❌ `enabled: false` |
+
 ## Rendering
 
 ```r

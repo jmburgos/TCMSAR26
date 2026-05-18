@@ -1,5 +1,7 @@
 ---
 title: "Data"
+execute:
+  enabled: true
 ---
 
 This page describes the datasets available in the `data/` directory. Datasets are organised into tabular (CSV), spatial vector (GeoPackage), and raster (GeoTIFF) files.

@@ -1,7 +1,7 @@
 ---
 title: "Interactive maps"
 execute:
-  enabled: false
+  enabled: true
 ---
 
 **Needed libraries**:
@@ -42,9 +42,9 @@ It is ideal for data exploration during analysis, not necessarily for polished o
 
 **Data used**:
 ```{r}
-minke <- read_csv("ftp://ftp.hafro.is/pub/data/csv/minke.csv")
+minke <- read_csv("data/minke.csv")
 
-minke_sf <- minke %>%
+minke_sf <- minke |>
   st_as_sf(coords = c("lon", "lat"), crs = 4326)
 ```
 
@@ -62,7 +62,7 @@ mapview(minke_sf, zcol = "sex", layer.name = "Sex")
 Multiple *sf* layers can be combined with `+`. The result includes a layer control
 panel so the user can toggle each layer on and off:
 ```{r}
-nfu <- read_sf("ftp://ftp.hafro.is/pub/data/shapes/nephrops_fu.gpkg")
+nfu <- read_sf("data/nephrops_fu.gpkg")
 
 mapview(nfu, layer.name = "Nephrops FU", alpha.regions = 0.2) +
   mapview(minke_sf, zcol = "sex", layer.name = "Minke whales")
@@ -70,15 +70,16 @@ mapview(nfu, layer.name = "Nephrops FU", alpha.regions = 0.2) +
 
 To view two maps side by side with synchronised pan and zoom, use `sync()`:
 ```{r}
+#| eval: false
 m1 <- mapview(minke_sf, zcol = "sex",     layer.name = "Sex")
 m2 <- mapview(minke_sf, zcol = "age",     layer.name = "Age")
-
-sync(m1, m2)
+# sync(m1, m2)
+m1 | m2
 ```
 
 `mapview` also accepts `terra` raster objects directly:
 ```{r}
-mintemp <- terra::rast("ftp://ftp.hafro.is/pub/data/rasters/Iceland_minbtemp.tif")
+mintemp <- terra::rast("data/Iceland_minbtemp.tif")
 
 mapview(mintemp, layer.name = "Min. bottom temp.")
 ```
@@ -112,7 +113,7 @@ The basic building block is `tm_shape()`, which specifies the data, followed by
 layer functions such as `tm_polygons()`, `tm_dots()`, `tm_lines()`, etc.:
 
 ```{r}
-ices_er <- read_sf("ftp://ftp.hafro.is/pub/data/shapes/ices_ecoregions.gpkg")
+ices_er <- read_sf("data/ices_ecoregions.gpkg")
 
 tm_shape(ices_er) +
   tm_polygons(col = "ecoregion",
@@ -126,11 +127,11 @@ introduces a new dataset:
 
 ```{r}
 tm_shape(ices_er) +
-  tm_polygons(col = "ecoregion", alpha = 0.4, id = "ecoregion") +
+  tm_polygons(col = "ecoregion", fill_alpha = 0.4, id = "ecoregion") +
   tm_shape(minke_sf) +
   tm_dots(col = "sex",
           palette = c(Male = "steelblue", Female = "tomato"),
-          size = 0.05,
+          size = 1,
           id = "sex",
           popup.vars = c("age", "length", "weight"))  # shown in click popup
 ```
@@ -170,14 +171,14 @@ For polished, production-quality interactive maps, the `leaflet` package gives t
 most control. It is more verbose than `mapview` or `tmap`, but every visual element
 can be customised precisely.
 
-Leaflet works by piping layers together with `%>%`. Each `add*()` call adds a new
+Leaflet works by piping layers together with `|>`. Each `add*()` call adds a new
 layer to the map widget.
 
 ## The basic construct
 
 ```{r}
-leaflet() %>%
-  addTiles() %>%
+leaflet() |>
+  addTiles() |>
   addPopups(lng = -21.9426,
             lat =  64.1355,
             popup = "Reykjavík")
@@ -195,16 +196,16 @@ Leaflet accepts *sf* objects directly — you do not need to specify `lng` and `
 when the object already has a geometry column:
 
 ```{r}
-leaflet() %>%
-  addTiles() %>%
+leaflet() |>
+  addTiles() |>
   addCircles(data = minke_sf, radius = 10000)
 ```
 
 For plain data frames you must supply `lng` and `lat` explicitly:
 
 ```{r}
-leaflet() %>%
-  addTiles() %>%
+leaflet() |>
+  addTiles() |>
   addCircles(data = minke,
              lng  = ~lon,
              lat  = ~lat,
@@ -259,13 +260,13 @@ ggplot does. You must first create a colour palette function using one of the
 pal_sex <- colorFactor(palette = c("steelblue", "tomato"),
                        domain   = c("Male", "Female"))
 
-leaflet(minke_sf) %>%
-  addTiles() %>%
+leaflet(minke_sf) |>
+  addTiles() |>
   addCircles(color       = ~pal_sex(sex),
              radius      = 8000,
              fillOpacity = 0.8,
              weight      = 1,
-             label       = ~sex) %>%
+             label       = ~sex) |>
   addLegend(position = "bottomleft",
             pal      = pal_sex,
             values   = ~sex,
@@ -276,27 +277,25 @@ For the heavily skewed abundance data common in fisheries surveys, `colorBin()` 
 log-transformed breaks is often more informative than a linear mapping:
 
 ```{r}
-smb2019 <- read_csv("ftp://ftp.hafro.is/pub/data/csv/is_smb.csv") %>%
-  filter(year == 2019) %>%
+smb2019 <- read_csv("data/smb_summary.csv") |> 
+  filter(year == 2019) |>
   st_as_sf(coords = c("lon1", "lat1"), crs = 4326)
-
-breaks_cod <- c(0, 10, 50, 200, 500, 2000)
 
 pal_cod <- colorBin(palette = "YlOrRd",
                     domain  = smb2019$cod_n,
-                    bins    = breaks_cod,
+                    bins    = c(0, 10, 50, 200, 500, 3000),
                     na.color = "transparent")
 
-leaflet(smb2019) %>%
-  addProviderTiles(providers$Esri.OceanBasemap) %>%
+leaflet(smb2019) |>
+  addProviderTiles(providers$Esri.OceanBasemap) |>
   addCircleMarkers(radius      = 6,
                    color       = "white",
                    weight      = 0.5,
                    fillColor   = ~pal_cod(cod_n),
                    fillOpacity = 0.85,
                    label       = ~as.character(round(cod_n)),
-                   popup       = ~paste0("<b>Station:</b> ", id,
-                                         "<br><b>Cod (n):</b> ", cod_n)) %>%
+                   popup       = ~paste0("<b>Station:</b> ", tow_nr,
+                                         "<br><b>Cod (n):</b> ", cod_n)) |>
   addLegend(position = "bottomright",
             pal      = pal_cod,
             values   = ~cod_n,
@@ -325,15 +324,15 @@ alternative basemaps. A full searchable preview is at
 <https://leaflet-extras.github.io/leaflet-providers/preview/>.
 
 ```{r}
-m_base <- leaflet() %>%
+m_base <- leaflet() |>
   setView(lng = -19, lat = 65, zoom = 6)
 
 # Ocean-focused basemaps
-m_base %>% addProviderTiles(providers$Esri.OceanBasemap)
+m_base |> addProviderTiles(providers$Esri.OceanBasemap)
 
-m_base %>% addProviderTiles(providers$Esri.WorldImagery)
+m_base |> addProviderTiles(providers$Esri.WorldImagery)
 
-m_base %>% addProviderTiles(providers$CartoDB.Positron)
+m_base |> addProviderTiles(providers$CartoDB.Positron)
 ```
 
 Often no basemap at all gives the cleanest result for oceanographic data, because
@@ -343,18 +342,18 @@ a coastline polygon as a plain `addPolygons()` layer instead:
 ```{r}
 iceland_sf <- ne_countries(country = "Iceland", scale = 10, returnclass = "sf")
 
-leaflet() %>%
+leaflet() |>
   addPolygons(data   = iceland_sf,
               color  = "grey40",
               weight = 1,
               fillColor = "grey80",
-              fillOpacity = 1) %>%
+              fillOpacity = 1) |>
   addCircles(data        = minke_sf,
              color       = ~pal_sex(sex),
              radius      = 8000,
              fillOpacity = 0.8,
              weight      = 0,
-             label       = ~sex) %>%
+             label       = ~sex) |>
   addLegend("bottomleft", pal = pal_sex, values = minke_sf$sex,
             title = "Sex")
 ```
@@ -367,30 +366,33 @@ name and pass those names to either `baseGroups` (radio button — only one acti
 at a time) or `overlayGroups` (checkboxes — any combination):
 
 ```{r}
-trail <- read_csv("ftp://ftp.hafro.is/pub/data/csv/is_smb_vms2019.csv") %>%
-  st_as_sf(coords = c("lon", "lat"), crs = 4326) %>%
-  group_by(vessel) %>%
-  summarise(do_union = FALSE) %>%
-  st_cast("LINESTRING")
+# NOTE: BAD EXAMPLE
+trail <- read_csv("data/smb_summary.csv") |>
+  filter(year %in% 2001:2009) |> 
+  st_as_sf(coords = c("lon1", "lat1"), crs = 4326) |>
+  group_by(year) |>
+  summarise(do_union = FALSE) |>
+  st_cast("LINESTRING") |> 
+  mutate(year = as.character(year))
 
 pal_vessel <- colorFactor(
-  palette = RColorBrewer::brewer.pal(n = length(unique(trail$vessel)), name = "Set1"),
-  domain  = trail$vessel)
+  palette = RColorBrewer::brewer.pal(n = length(unique(trail$year)), name = "Set1"),
+  domain  = trail$year)
 
-leaflet() %>%
-  addProviderTiles(providers$Esri.OceanBasemap, group = "Ocean") %>%
-  addProviderTiles(providers$Esri.WorldImagery,  group = "Satellite") %>%
+leaflet() |>
+  addProviderTiles(providers$Esri.OceanBasemap, group = "Ocean") |>
+  addProviderTiles(providers$Esri.WorldImagery,  group = "Satellite") |>
   addPolylines(data    = trail,
-               color   = ~pal_vessel(vessel),
+               color   = ~pal_vessel(year),
                weight  = 2,
                opacity = 1,
-               label   = ~vessel,
-               group   = ~vessel) %>%
-  addLegend("bottomleft", pal = pal_vessel,
-            values = trail$vessel, title = "Vessel") %>%
+               label   = ~year,
+               group   = ~year) |>
+  #addLegend("bottomleft", pal = pal_vessel,
+  #          values = trail$year, title = "Vessel") |>
   addLayersControl(
     baseGroups    = c("Ocean", "Satellite"),
-    overlayGroups = unique(trail$vessel),
+    overlayGroups = unique(trail$year),
     options       = layersControlOptions(collapsed = FALSE))
 ```
 
@@ -400,11 +402,11 @@ The `leafpop` package makes it easy to attach formatted tables or even ggplot
 figures to polygon popups:
 
 ```{r}
-nfu_proj <- nfu %>% st_transform(4326)
+nfu_proj <- nfu |> st_transform(4326)
 
 # A simple summary table popup per polygon
-leaflet(nfu_proj) %>%
-  addTiles() %>%
+leaflet(nfu_proj) |>
+  addTiles() |>
   addPolygons(color       = "steelblue",
               weight      = 1,
               fillOpacity = 0.3,
@@ -421,23 +423,23 @@ For very large rasters, `leafem::addGeotiff()` streams tiles on demand and is
 much faster than loading the full raster into memory:
 
 ```{r}
-mintemp_r <- terra::rast("ftp://ftp.hafro.is/pub/data/rasters/Iceland_minbtemp.tif")
+mintemp_r <- terra::rast("data/Iceland_minbtemp.tif")
 
 pal_temp <- colorNumeric(palette   = "RdYlBu",
                          domain    = terra::values(mintemp_r),
                          na.color  = "transparent",
                          reverse   = TRUE)
 
-leaflet() %>%
-  addProviderTiles(providers$Esri.OceanBasemap) %>%
-  leafem::addRasterRGB(mintemp_r) %>%      # quick RGB preview, or use addRasterImage:
+leaflet() |>
+  addProviderTiles(providers$Esri.OceanBasemap) |>
+  #leafem::addRasterRGB(data = mintemp_r) |>      # quick RGB preview, or use addRasterImage:
   addRasterImage(mintemp_r,
                  colors  = pal_temp,
                  opacity = 0.8,
-                 group   = "Min. bottom temp.") %>%
+                 group   = "Min. bottom temp.") |>
   addLegend(pal    = pal_temp,
             values = terra::values(mintemp_r),
-            title  = "Min. bottom temp. (°C)") %>%
+            title  = "Min. bottom temp. (°C)") |>
   addLayersControl(overlayGroups = "Min. bottom temp.")
 ```
 
@@ -448,11 +450,11 @@ When displaying thousands of points, overlapping markers make the map unreadable
 clusters that expand on click:
 
 ```{r}
-all_smb <- read_csv("ftp://ftp.hafro.is/pub/data/csv/is_smb.csv") %>%
+all_smb <- read_csv("data/is_smb_stations.csv") |>
   st_as_sf(coords = c("lon1", "lat1"), crs = 4326)
 
-leaflet(all_smb) %>%
-  addProviderTiles(providers$CartoDB.Positron) %>%
+leaflet(all_smb) |>
+  addProviderTiles(providers$CartoDB.Positron) |>
   addCircleMarkers(radius      = 4,
                    color       = "steelblue",
                    fillOpacity = 0.6,
@@ -468,17 +470,17 @@ which are useful for field data collection workflows or for letting users define
 an area of interest interactively:
 
 ```{r}
-leaflet() %>%
-  addProviderTiles(providers$Esri.OceanBasemap) %>%
-  setView(lng = -19, lat = 65, zoom = 6) %>%
+leaflet() |>
+  addProviderTiles(providers$Esri.OceanBasemap) |>
+  setView(lng = -19, lat = 65, zoom = 6) |>
   addDrawToolbar(
     targetGroup    = "drawn",
     editOptions    = editToolbarOptions(selectedPathOptions =
-                                          selectedPathOptions())) %>%
+                                          selectedPathOptions())) |>
   addMeasure(
     position        = "bottomleft",
     primaryLengthUnit  = "kilometers",
-    primaryAreaUnit    = "sqmeters") %>%
+    primaryAreaUnit    = "sqmeters") |>
   addLayersControl(overlayGroups = "drawn")
 ```
 
@@ -488,9 +490,10 @@ Any leaflet (or mapview / tmap in view mode) widget can be saved as a
 self-contained HTML file. The `selfcontained = TRUE` argument embeds all
 JavaScript and CSS so the file works offline:
 
-```{r eval=FALSE}
-m <- leaflet(minke_sf) %>%
-  addTiles() %>%
+```{r}
+#| eval: false
+m <- leaflet(minke_sf) |>
+  addTiles() |>
   addCircles(color = ~pal_sex(sex), radius = 8000)
 
 htmlwidgets::saveWidget(m, "minke_map.html", selfcontained = TRUE)
@@ -522,7 +525,7 @@ and `onclick` aesthetics. The `girafe()` function then renders the plot as an
 interactive SVG.
 
 ```{r}
-ices_er_int <- ices_er %>%
+ices_er_int <- ices_er |>
   mutate(tooltip_text = paste0("<b>", ecoregion, "</b>",
                                "<br>Area: ", round(area_km2), " km²"))
 
@@ -569,15 +572,15 @@ features at interactive frame rates, with a nearly identical API to base leaflet
 library(leafgl)
 
 # Render a large point dataset via WebGL
-big_pts <- read_csv("ftp://ftp.hafro.is/pub/data/csv/is_smb.csv") %>%
+big_pts <- read_csv("data/is_smb_stations.csv") |>
   st_as_sf(coords = c("lon1", "lat1"), crs = 4326)
 
-leaflet() %>%
-  addProviderTiles(providers$CartoDB.DarkMatter) %>%
+leaflet() |>
+  addProviderTiles(providers$CartoDB.DarkMatter) |>
   addGlPoints(data       = big_pts,
               fillColor  = "steelblue",
               fillOpacity = 0.5,
-              radius     = 3)
+              radius     = 6)
 ```
 
 **`mapgl`** wraps MapLibre GL JS (the open-source fork of Mapbox GL JS, requiring
@@ -587,7 +590,7 @@ capable option for production applications:
 ```{r eval=FALSE}
 library(mapgl)
 
-maplibre() %>%
+maplibre() |>
   add_circle_layer(id     = "smb-stations",
                    source = big_pts,
                    circle_color  = "steelblue",
@@ -627,19 +630,19 @@ server <- function(input, output, session) {
 
   # Render the base map once
   output$map <- renderLeaflet({
-    leaflet() %>%
-      addProviderTiles(providers$Esri.OceanBasemap) %>%
+    leaflet() |>
+      addProviderTiles(providers$Esri.OceanBasemap) |>
       setView(lng = -19, lat = 65, zoom = 6)
   })
 
   # Update only the data layer when the year changes
   observeEvent(input$year, {
-    dat <- smb_all %>%
-      filter(year == input$year) %>%
+    dat <- smb_all |>
+      filter(year == input$year) |>
       st_as_sf(coords = c("lon1", "lat1"), crs = 4326)
 
-    leafletProxy("map") %>%
-      clearGroup("stations") %>%
+    leafletProxy("map") |>
+      clearGroup("stations") |>
       addCircleMarkers(data        = dat,
                        radius      = 4,
                        color       = "steelblue",
