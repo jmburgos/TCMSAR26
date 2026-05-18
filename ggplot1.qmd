@@ -1,30 +1,18 @@
 ---
 title: "Mapping with ggplot2"
 execute:
-  enabled: false
+  enabled: true
 ---
 
-# Getting started
-
-The [ggplot2 book](https://ggplot2-book.org) is the definitive reference for everything covered here and much more.
+# Seeding
 
 ## Libraries
 
 ```{r setup}
 library(tidyverse)          # ggplot2, dplyr, readr, etc.
-library(maps)               # basic maps
+library(maps)               # basic country maps
 library(patchwork)          # combining multiple plots
-
-# library(mapdata)            # higher resolution maps
-
-# library(sf)                 # spatial objects and geom_sf
-#library(rnaturalearth)      # modern basemap data as sf objects
-#library(rnaturalearthdata)  # data dependency for rnaturalearth
-#library(ggspatial)          # scale bars, north arrows
-
-#library(tidyterra)          # ggplot2 integration for terra rasters
-#library(terra)              # raster data
-#library(marmap)             # bathymetry data
+library(marmap)             # bathymetry data
 ```
 
 ## Data used
@@ -33,25 +21,17 @@ library(patchwork)          # combining multiple plots
 minke   <- read_csv("data/minke.csv")
 iceland <- map_data(map = "world", region = "Iceland")
 smb     <- read_csv("data/smb_summary.csv")
-
-# Country polygon at 1:50m resolution
-#iceland_sf <- ne_countries(country = "Iceland", scale = "medium",
-#                           returnclass = "sf")
-#world_sf <- ne_countries(scale = "medium", returnclass = "sf")
-#nfu <- read_sf("data/nephrops_fu.gpkg")
-
-#track <- read_csv("data/is_smb_vms2019.csv")
-
+xlim <- c(-30.0, -10.0)
+ylim <- c( 62.5,  67.5)
 depth <- 
   getNOAA.bathy(lon1 = xlim[1], lon2 = xlim[2],
                 lat1 = ylim[1], lat2 = ylim[2],
                 resolution = 1) |> 
-  fortify()  # turn the object into a data.frame
-#mintemp <- rast("data/Iceland_minbtemp.tif")
-#rbya <- read_csv("data/is_smb_cod_rbya.csv")
+  fortify() |>     # turn the object into a data.frame
+  filter(z <= 0)   # limit to our area of interest
 ```
 
-## Key components of ggplot2
+# Basis of ggplot
 
 ## The 3 key compontents
 
@@ -68,13 +48,13 @@ ggplot(data = minke) +
 Different syntax, equivalent outcome — all four lines below produce the same plot:
 
 ```{r eval=FALSE}
+ggplot(data = minke)                       + geom_point(aes(x = lon, y = lat, colour = sex))
+ggplot(minke)                              + geom_point(aes(lon,         lat, colour = sex))
 ggplot()                                   + geom_point(data = minke, aes(lon, lat, colour = sex))
-ggplot(data = minke)                       + geom_point(aes(lon, lat, colour = sex))
-ggplot(minke)                              + geom_point(aes(lon, lat, colour = sex))
 ggplot(minke, aes(lon, lat, colour = sex)) + geom_point()
 ```
 
-## The 3 key compontents
+## You can save a plot (object or image)
 
 A ggplot can be stored as an object for later use and built upon:
 
@@ -86,12 +66,21 @@ p |> write_rds("minke.rds")  # you can save it
 read_rds("minke.rds")        # and retrive it (later or send it to somebody else)
 ```
 
-Above plot maps longitude to x and latitude to y, but two things are at minimum missing:
+Save as image:
 
-* a background reference map
-* a proper map projection
+```{r}
+#| eval: false
+p |> ggsave(filename = "minke.png") # check the help file for all the options
+```
 
-## Quick and dirty backgrounds
+Include in a(nother) document:
+
+```{r}
+#| eval: false
+knitr::include_graphics("minke.png")
+```
+
+# Quick and dirty backgrounds
 
 Let's take a peek at the object "iceland" already imported above:
 
@@ -114,10 +103,10 @@ p1 + p2 + p3 + p4  # The magic of the patchwork-package
 
 * `geom_line` does not work because it reorders the data
   * Check help file for `geom_line` vs `geom_path`
-* `geom_point` reveals the data richness (dataset has only 454 rows)
+* `geom_point` reveals the data "richness" - dataset has only 454 rows
   * This is an endless issue!
 
-## Projections
+# Projections
 
 A map is just a xy-plot but with a certain projections. We could try to guess the projections (i.e. the aspect ration of the plot) as done on the left, or better still use the `geom_quickmap` function (on the right):
 
@@ -134,6 +123,8 @@ p4 + p5 + p6 + plot_layout(widths = c(2, 2, 4))
 * You don't want to use `coord_fixed` because the aspect ratio depends on latitude 
 * `coord_quickmap` is only an approximation (`coord_map` may be more accurate)
   * Actually all maps are wrong when put on a two-dimensional pane.
+
+# Layers
 
 ## Multiple layers
 
@@ -194,17 +185,17 @@ basemap +
                linewidth = 0.3)
 ```
 
-## geom_tile — gridded summaries
+## geom_raster — gridded summaries
 
-`geom_tile()` draws rectangles centred on each (x, y) coordinate, useful for pre-gridded data:
+`geom_raster()` draws rectangles centered on each (x, y) coordinate, useful for pre-gridded data:
 
 ```{r}
 s <- smb |> filter(year == 2019) |> 
   group_by(ir_lon, ir_lat) |>                    # lon-lat: 1.0 x 0.5 degrees 
   summarise(Cod = mean(cod_n), .groups = "drop")
 basemap + 
-  geom_tile(data = s,
-            aes(ir_lon, ir_lat, fill = Cod)) +
+  geom_raster(data = s,
+              aes(ir_lon, ir_lat, fill = Cod)) +
   scale_fill_viridis_c(option = "B", direction = -1, name = "Mean cod (n)")
 ```
 
@@ -232,7 +223,7 @@ The **viridis** palettes (`"viridis"`, `"magma"`, `"plasma"`, `"inferno"`, `"civ
 
 ```{r}
 p <- ggplot() +
-  geom_tile(data = s, 
+  geom_raster(data = s, 
             aes(x = ir_lon, y = ir_lat, fill = Cod)) +
   geom_polygon(data = iceland,
                aes(long, lat),
@@ -274,7 +265,7 @@ s_cut <- s %>%
                          labels = c("Low", "Medium", "High", "Very high"),
                          include.lowest = TRUE))
 ggplot() +
-  geom_tile(data = s_cut, aes(x = ir_lon, y = ir_lat, fill = Cod_class)) +
+  geom_raster(data = s_cut, aes(x = ir_lon, y = ir_lat, fill = Cod_class)) +
   geom_polygon(data = iceland,
                aes(long, lat),
                fill = "grey60") +
@@ -287,21 +278,11 @@ ggplot() +
   theme_bw()
 ```
 
-## geom_raster and geom_contour — bathymetry
+## geom_contour
 
-For regular raster grids (equal-resolution cells), `geom_raster()` is faster than `geom_tile()`. Here we use `marmap` to download ETOPO1 bathymetry data:
+For the example we use a high resolution gridded data
 
 ```{r}
-xlim <- c(-28, -10)
-ylim <- c(62.5, 67.5)
-depth <- 
-  marmap::getNOAA.bathy(lon1 = xlim[1], lon2 = xlim[2],
-                lat1 = ylim[1], lat2 = ylim[2],
-                resolution = 1) |> 
-  fortify() |>  # turn the object into a data.frame
-  filter(z <= 0)
-glimpse(depth)
-
 p <-
   ggplot() +
   geom_raster(data = depth, aes(x = x, y = y, fill = z)) +
@@ -313,6 +294,7 @@ p <-
   scale_x_continuous(NULL, NULL) +
   scale_y_continuous(NULL, NULL) +
   theme_bw()
+p
 ```
 
 Add depth contour lines with `geom_contour()`:
@@ -325,4 +307,6 @@ p +
                linewidth = 0.3, colour = "white")
 ```
 
+# Readings:
 
+The [ggplot2 book](https://ggplot2-book.org) is the definitive reference for everything covered here and much more.

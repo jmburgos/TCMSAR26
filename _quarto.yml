@@ -10,12 +10,14 @@ website:
       file: index.qmd
     - text: "Data"
       file: data.qmd
-    - text: "Chapters"
+    - text: "Sessions"
       menu:
       - text: "Introduction"
         file: intro.qmd
       - text: "Spatial data"
         file: spatial_data.qmd
+      - text: "Mapping with ggplot - part 1"
+        file: ggplot1.qmd
       - text: "Simple features"
         file: sf.qmd
       - text: "Working with geometries in sf objects"
@@ -28,8 +30,6 @@ website:
         file: rasters.qmd
       - text: "Reading and writing spatial data"
         file: input_output.qmd
-      - text: "Mapping with ggplot"
-        file: ggplot.qmd
       - text: "Interactive maps"
         file: interactive.qmd
       - text: "Interpolation"
@@ -51,4 +51,4 @@ format:
     message: false
     warning: false
     echo: true
-    code-fold: true
+    code-fold: false

@@ -18,42 +18,45 @@ title: "Home"
 | 11:30 – 11:45 | *Break* | |
 | 11:45 – 13:00 | [Spatial data concepts](spatial_data.qmd) | Vector vs raster models, points/lines/polygons, sp vs sf ecosystem |
 | 13:00 – 14:00 | *Lunch* | |
-| 14:00 – 15:30 | [Simple features (sf)](sf.qmd) | sfg / sfc / sf class structure, building sf objects, POINT & LINESTRING geometries |
+| 14:00 – 15:30 | [Mapping with ggplot — part 1](ggplot1.qmd) | |
 | 15:30 – 15:45 | *Break* | |
-| 15:45 – 17:00 | [Simple features — continued](sf.qmd) | Making sf objects from data frames, operating with attributes, class Spatial |
+| 15:45 – 17:00 | [Mapping with ggplot — part 1, continued](ggplot1.qmd) | |
 
 ### Tuesday — 09:00 to 17:00
 
 | Time | Session | Topics |
 |------|---------|--------|
-| 09:00 – 10:30 | [Working with geometries](geometric.qmd) | Sampling, centroids, buffers, convex/concave hulls, grids, simplification |
+| 09:00 – 10:30 | [Simple features (sf)](sf.qmd) | sfg / sfc / sf class structure, building sf objects, POINT & LINESTRING geometries |
 | 10:30 – 10:45 | *Break* | |
-| 10:45 – 12:00 | [Working with geometries — continued](geometric.qmd) | Measurements, distances, aggregation, attribute-geometry relationships |
+| 10:45 – 12:00 | [Simple features — continued](sf.qmd) | Making sf objects from data frames, operating with attributes, class Spatial |
 | 12:00 – 13:00 | *Lunch* | |
-| 13:00 – 14:30 | [Spatial operations](spatial_ops.qmd) | Binary predicates, DE-9IM model, spatial subsetting, spatial joins |
+| 13:00 – 14:30 | [Working with geometries](geometric.qmd) | Sampling, centroids, buffers, convex/concave hulls, grids, simplification |
 | 14:30 – 14:45 | *Break* | |
-| 14:45 – 17:00 | [Coordinate reference systems](crs.qmd) | Ellipsoids, datums, projections, PROJ/EPSG, st_transform(), CRS in ggplot |
+| 14:45 – 16:00 | [Working with geometries — continued](geometric.qmd) | Measurements, distances, aggregation, attribute-geometry relationships |
+| 16:00 – 17:00 | [Spatial operations](spatial_ops.qmd) | Binary predicates, DE-9IM model, spatial subsetting, spatial joins |
 
 ### Wednesday — 09:00 to 17:00
 
 | Time | Session | Topics |
 |------|---------|--------|
-| 09:00 – 10:30 | [Rasters](rasters.qmd) | Raster data model, RasterLayer / Brick / Stack, reading files, metadata |
+| 09:00 – 09:30 | [Spatial operations — continued](spatial_ops.qmd) | |
+| 09:30 – 10:30 | [Coordinate reference systems](crs.qmd) | Ellipsoids, datums, projections, PROJ/EPSG, st_transform(), CRS in ggplot |
 | 10:30 – 10:45 | *Break* | |
-| 10:45 – 12:00 | [Rasters — continued](rasters.qmd) | Extraction, masks, raster algebra, focal & zonal statistics |
+| 10:45 – 12:00 | [Coordinate reference systems — continued](crs.qmd) | |
 | 12:00 – 13:00 | *Lunch* | |
-| 13:00 – 14:30 | [Rasters — continued](rasters.qmd) | Resampling, reprojecting, rasterization, ggplot with rasters, stars package |
+| 13:00 – 14:30 | [Rasters](rasters.qmd) | Raster data model, RasterLayer / Brick / Stack, reading files, metadata |
 | 14:30 – 14:45 | *Break* | |
-| 14:45 – 16:00 | [Reading & writing spatial data](input_output.qmd) | GDAL, shapefiles, GeoPackages, CSVs, st_read() / st_write() |
-| 16:00 – 17:00 | [Mapping with ggplot — introduction](ggplot.qmd) | Key components, reference maps, projections, adding layers |
+| 14:45 – 17:00 | [Rasters — continued](rasters.qmd) | Extraction, masks, raster algebra, focal & zonal statistics |
 
 ### Thursday — 09:00 to 17:00
 
 | Time | Session | Topics |
 |------|---------|--------|
-| 09:00 – 10:30 | [Mapping with ggplot — continued](ggplot.qmd) | geom_segment, geom_point, geom_tile, geom_raster, geom_contour, facetting |
+| 09:00 – 09:30 | [Rasters — continued](rasters.qmd) | Resampling, reprojecting, rasterization, ggplot with rasters, stars package |
+| 09:30 – 10:30 | [Reading & writing spatial data](input_output.qmd) | GDAL, shapefiles, GeoPackages, CSVs, st_read() / st_write() |
 | 10:30 – 10:45 | *Break* | |
-| 10:45 – 12:00 | [Mapping with ggplot — continued](ggplot.qmd) | Colour scales, ICES rectangles, scalebars, north arrows, customization |
+| 10:45 – 11:00 | [Reading & writing spatial data — continued](input_output.qmd) | |
+| 11:00 – 12:00 | [Mapping with ggplot — part 2](ggplot2.qmd) | Colour scales, ICES rectangles, scalebars, north arrows, customization |
 | 12:00 – 13:00 | *Lunch* | |
 | 13:00 – 14:30 | [Interactive maps](interactive.qmd) | leaflet basics, data input, layer calls, colour mapping, basemaps |
 | 14:30 – 14:45 | *Break* | |
@@ -68,6 +71,26 @@ title: "Home"
 | 10:45 – 12:00 | [Interpolation — continued](interpolation.qmd) | Kriging with variogram fitting, GAMs |
 | 12:00 – 13:00 | *Lunch* | |
 | 13:00 – 14:00 | Wrap-up & open exercises | Participants work on data of their choice; instructors available for questions |
+
+## Time allocation by section - the original
+
+Posit Assistant: Do not touch this section
+
+| Section | File | Total time |
+|---------|------|------------|
+| Introduction | [intro.qmd](intro.qmd) | 1h 30m |
+| Spatial data concepts | [spatial_data.qmd](spatial_data.qmd) | 1h 15m |
+| Simple features (sf) | [sf.qmd](sf.qmd) | 2h 45m |
+| Working with geometries | [geometric.qmd](geometric.qmd) | 2h 45m |
+| Spatial operations | [spatial_ops.qmd](spatial_ops.qmd) | 1h 30m |
+| Coordinate reference systems | [crs.qmd](crs.qmd) | 2h 15m |
+| Rasters | [rasters.qmd](rasters.qmd) | 4h 15m |
+| Reading & writing spatial data | [input_output.qmd](input_output.qmd) | 1h 15m |
+| Mapping with ggplot | [ggplot.qmd](ggplot.qmd) | 3h 45m |
+| Interactive maps | [interactive.qmd](interactive.qmd) | 3h 45m |
+| Interpolation | [interpolation.qmd](interpolation.qmd) | 2h 45m |
+| Wrap-up & open exercises | — | 1h 00m |
+| **Total** | | **28h 45m** |
 
 ## Contact info
 Julian M. Burgos
