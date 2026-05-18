@@ -1,0 +1,328 @@
+---
+title: "Mapping with ggplot2"
+execute:
+  enabled: false
+---
+
+# Getting started
+
+The [ggplot2 book](https://ggplot2-book.org) is the definitive reference for everything covered here and much more.
+
+## Libraries
+
+```{r setup}
+library(tidyverse)          # ggplot2, dplyr, readr, etc.
+library(maps)               # basic maps
+library(patchwork)          # combining multiple plots
+
+# library(mapdata)            # higher resolution maps
+
+# library(sf)                 # spatial objects and geom_sf
+#library(rnaturalearth)      # modern basemap data as sf objects
+#library(rnaturalearthdata)  # data dependency for rnaturalearth
+#library(ggspatial)          # scale bars, north arrows
+
+#library(tidyterra)          # ggplot2 integration for terra rasters
+#library(terra)              # raster data
+#library(marmap)             # bathymetry data
+```
+
+## Data used
+
+```{r}
+minke   <- read_csv("data/minke.csv")
+iceland <- map_data(map = "world", region = "Iceland")
+smb     <- read_csv("data/smb_summary.csv")
+
+# Country polygon at 1:50m resolution
+#iceland_sf <- ne_countries(country = "Iceland", scale = "medium",
+#                           returnclass = "sf")
+#world_sf <- ne_countries(scale = "medium", returnclass = "sf")
+#nfu <- read_sf("data/nephrops_fu.gpkg")
+
+#track <- read_csv("data/is_smb_vms2019.csv")
+
+depth <- 
+  getNOAA.bathy(lon1 = xlim[1], lon2 = xlim[2],
+                lat1 = ylim[1], lat2 = ylim[2],
+                resolution = 1) |> 
+  fortify()  # turn the object into a data.frame
+#mintemp <- rast("data/Iceland_minbtemp.tif")
+#rbya <- read_csv("data/is_smb_cod_rbya.csv")
+```
+
+## Key components of ggplot2
+
+## The 3 key compontents
+
+1. A **data** argument — a `data.frame` or derivative (`tibble`, `sf`, ...)
+2. A set of **aesthetic mappings** via `aes()` — connecting variables to visual properties
+3. At least one **layer** via a `geom_*()` function — describing how to render observations
+
+```{r}
+ggplot(data = minke) +
+  aes(x = lon, y = lat, colour = sex) +
+  geom_point()
+```
+
+Different syntax, equivalent outcome — all four lines below produce the same plot:
+
+```{r eval=FALSE}
+ggplot()                                   + geom_point(data = minke, aes(lon, lat, colour = sex))
+ggplot(data = minke)                       + geom_point(aes(lon, lat, colour = sex))
+ggplot(minke)                              + geom_point(aes(lon, lat, colour = sex))
+ggplot(minke, aes(lon, lat, colour = sex)) + geom_point()
+```
+
+## The 3 key compontents
+
+A ggplot can be stored as an object for later use and built upon:
+
+```{r}
+#| eval: false
+p <- ggplot(minke) + geom_point(aes(lon, lat, colour = sex))
+class(p)                     # "ggplot2::ggplot" "ggplot" "ggplot2::gg" "S7_object" "gg"
+p |> write_rds("minke.rds")  # you can save it
+read_rds("minke.rds")        # and retrive it (later or send it to somebody else)
+```
+
+Above plot maps longitude to x and latitude to y, but two things are at minimum missing:
+
+* a background reference map
+* a proper map projection
+
+## Quick and dirty backgrounds
+
+Let's take a peek at the object "iceland" already imported above:
+
+```{r}
+#| eval: false
+iceland |> glimpse()    # coordinates are "long" and "lat"
+                        # "order" matters
+```
+
+Plotting with different geoms illustrates why order matter:
+
+```{r fig.height=6}
+p <- ggplot(iceland, aes(long, lat))
+p1 <- p + geom_point()   + labs(title = "geom_point")
+p2 <- p + geom_line()    + labs(title = "geom_line")
+p3 <- p + geom_path()    + labs(title = "geom_path")
+p4 <- p + geom_polygon() + labs(title = "geom_polygon")
+p1 + p2 + p3 + p4  # The magic of the patchwork-package
+```
+
+* `geom_line` does not work because it reorders the data
+  * Check help file for `geom_line` vs `geom_path`
+* `geom_point` reveals the data richness (dataset has only 454 rows)
+  * This is an endless issue!
+
+## Projections
+
+A map is just a xy-plot but with a certain projections. We could try to guess the projections (i.e. the aspect ration of the plot) as done on the left, or better still use the `geom_quickmap` function (on the right):
+
+TODO: Need some fix, this is not illustrating the issue
+
+```{r, fig.height = 2, fig.width = 2}
+p4 <- p + geom_path() +                            labs(title = "as is")
+p5 <- p + geom_path() + coord_fixed(ratio = 2.4) + labs(title = "coord_fixed")
+p6 <- p + geom_path() + coord_quickmap()         + labs(title = "coord_quickmap")
+p4 + p5 + p6 + plot_layout(widths = c(2, 2, 4))
+```
+
+* A spatial map in its simplest term is just an xy-plot with a specific aspect ratio
+* You don't want to use `coord_fixed` because the aspect ratio depends on latitude 
+* `coord_quickmap` is only an approximation (`coord_map` may be more accurate)
+  * Actually all maps are wrong when put on a two-dimensional pane.
+
+## Multiple layers
+
+Let's create our "perfect" background map:
+
+```{r}
+#| echo: false
+basemap <- ggplot() +
+  geom_polygon(data = iceland, 
+               aes(x = long, y = lat),
+               fill = "grey80", colour = "white") +
+  coord_quickmap(xlim = c(-27, -11), ylim = c(62.5, 67.5)) +
+  scale_x_continuous(NULL, NULL) +
+  scale_y_continuous(NULL, NULL) +
+  theme_bw()
+```
+
+We can now use our base map for continuous analysis.
+
+## A pitfall to avoid
+
+Let's say you want to zoom into area (like here, NorthEast)
+
+NOTE: Not the best of examples:
+
+```{r}
+dont <- basemap + xlim(-30, -12) + ylim(65, 67)
+do   <- basemap + coord_quickmap(xlim = c(-30, -12), ylim = c(65, 67))
+dont + do
+```
+
+## geom_point — bubble plots
+
+Mapping a continuous variable to `size` creates a bubble chart. Use `scale_size_area()` so that **area** (not radius) is proportional to the value, and zero value maps to zero area:
+
+```{r}
+minke <- basemap +
+  geom_point(data = minke,
+             aes(lon, lat, size = age),           # so not long-lat
+             alpha = 0.3, colour = "red") +
+  scale_size_area(max_size = 10)
+cod <- basemap +
+  geom_point(data = smb |> filter(year == 2019),  # you can filter in-place
+             aes(lon1, lat1, size = cod_n),       # here lon1 and lat1
+             alpha = 0.3, colour = "red") +
+  scale_size_area(max_size = 10)
+minke + cod
+```
+
+## geom_segment — tow tracks
+
+`geom_segment()` draws straight lines between start and end coordinates, ideal for a quickmap of e.g. tow tracks:
+
+```{r}
+basemap +
+  geom_segment(data = smb |> filter(year == 2019),
+               aes(x = lon1, y = lat1, xend = lon2, yend = lat2),
+               linewidth = 0.3)
+```
+
+## geom_tile — gridded summaries
+
+`geom_tile()` draws rectangles centred on each (x, y) coordinate, useful for pre-gridded data:
+
+```{r}
+s <- smb |> filter(year == 2019) |> 
+  group_by(ir_lon, ir_lat) |>                    # lon-lat: 1.0 x 0.5 degrees 
+  summarise(Cod = mean(cod_n), .groups = "drop")
+basemap + 
+  geom_tile(data = s,
+            aes(ir_lon, ir_lat, fill = Cod)) +
+  scale_fill_viridis_c(option = "B", direction = -1, name = "Mean cod (n)")
+```
+
+
+## geom_path — vessel tracks
+
+`geom_path()` connects points **in the order they appear in the data**, making it ideal for time-ordered GPS tracks:
+
+```{r}
+#| eval: false
+#track <- read_csv("data/is_smb_vms2019.csv")
+#track <- read_csv("data/small_vms.csv")
+basemap +
+  geom_path(data = track,
+            aes(x = lon, y = lat, colour = factor(id)),
+            linewidth = 0.4, alpha = 0.8) +
+  scale_colour_brewer(name = "Vessel", palette = "Set1")
+```
+
+## A little bit on colour scales
+
+### Continuous data: viridis palettes
+
+The **viridis** palettes (`"viridis"`, `"magma"`, `"plasma"`, `"inferno"`, `"cividis"`, `"mako"`, `"rocket"`, `"turbo"`) are built into ggplot2. They are perceptually uniform, readable in greyscale, and accessible to colour-blind readers:
+
+```{r}
+p <- ggplot() +
+  geom_tile(data = s, 
+            aes(x = ir_lon, y = ir_lat, fill = Cod)) +
+  geom_polygon(data = iceland,
+               aes(long, lat),
+               fill = "grey60") +
+  coord_quickmap(xlim = c(-27, -11), ylim = c(62.5, 67.5)) +
+  scale_x_continuous(NULL, NULL) +
+  scale_y_continuous(NULL, NULL) +
+  theme_bw()
+
+p1 <- p + scale_fill_viridis_c(option = "D", name = "viridis")
+p2 <- p + scale_fill_viridis_c(option = "B", direction = -1, name = "magma (rev)")
+p3 <- p + scale_fill_viridis_c(option = "C", name = "plasma")
+
+p1 + p2 + p3
+```
+
+### Colour scale transformations
+
+When data are highly skewed, transforming the colour scale can reveal spatial patterns more clearly. The `transform` argument accepts standard transformation names:
+
+```{r}
+p_log  <- p + scale_fill_viridis_c(option = "B", direction = -1,
+                                         transform = "log1p",
+                                         name = "log1p scale")
+p_sqrt <- p + scale_fill_viridis_c(option = "B", direction = -1,
+                                         transform = "sqrt",
+                                         name = "sqrt scale")
+p_log + p_sqrt
+```
+
+### Discrete intervals with `cut()`
+
+Binning continuous data into labelled classes can be clearer than a smooth gradient, especially for reporting:
+
+```{r}
+s_cut <- s %>%
+  mutate(Cod_class = cut(Cod,
+                         breaks = c(0, 23, 62, 145, Inf),
+                         labels = c("Low", "Medium", "High", "Very high"),
+                         include.lowest = TRUE))
+ggplot() +
+  geom_tile(data = s_cut, aes(x = ir_lon, y = ir_lat, fill = Cod_class)) +
+  geom_polygon(data = iceland,
+               aes(long, lat),
+               fill = "grey60") +
+  coord_quickmap(xlim = c(-27, -11), ylim = c(62.5, 67.5)) +
+  scale_fill_viridis_d(option = "B", direction = -1,
+                       name = "Cod abundance",
+                       na.value = "white") +
+  scale_x_continuous(NULL, NULL) +
+  scale_y_continuous(NULL, NULL) +
+  theme_bw()
+```
+
+## geom_raster and geom_contour — bathymetry
+
+For regular raster grids (equal-resolution cells), `geom_raster()` is faster than `geom_tile()`. Here we use `marmap` to download ETOPO1 bathymetry data:
+
+```{r}
+xlim <- c(-28, -10)
+ylim <- c(62.5, 67.5)
+depth <- 
+  marmap::getNOAA.bathy(lon1 = xlim[1], lon2 = xlim[2],
+                lat1 = ylim[1], lat2 = ylim[2],
+                resolution = 1) |> 
+  fortify() |>  # turn the object into a data.frame
+  filter(z <= 0)
+glimpse(depth)
+
+p <-
+  ggplot() +
+  geom_raster(data = depth, aes(x = x, y = y, fill = z)) +
+  geom_polygon(data = iceland,
+               aes(long, lat),
+               fill = "grey60") +
+  scale_fill_viridis_c(option = "D", name = "Depth (m)") +
+  coord_quickmap() +
+  scale_x_continuous(NULL, NULL) +
+  scale_y_continuous(NULL, NULL) +
+  theme_bw()
+```
+
+Add depth contour lines with `geom_contour()`:
+
+```{r}
+p +
+  geom_contour(data = depth,
+               aes(x = x, y = y, z = z),
+               breaks = c(-50, -100, -200, -400, -1000),
+               linewidth = 0.3, colour = "white")
+```
+
+
