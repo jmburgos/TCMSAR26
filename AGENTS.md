@@ -91,7 +91,15 @@ Full descriptions of every dataset are in `data.qmd`.
 - **`terra`** — raster data
 - **`tidyverse`** (incl. `ggplot2`, `dplyr`, `readr`) — data wrangling and plotting
 - **`leaflet`** — interactive maps
-- Likely also: `gstat` (interpolation), `ggspatial` (map annotations)
+- **`tidyterra`** — ggplot2 integration for terra SpatRaster objects (`geom_spatraster()`)
+- **`patchwork`** — combining ggplot figures
+- **`ggspatial`** — scale bars, north arrows (`annotation_scale()`, `annotation_north_arrow()`)
+- **`gstat`** + **`automap`** — interpolation (IDW, kriging, variograms)
+- **`mgcv`** — GAMs with spatial smooths
+- **`marmap`** — NOAA bathymetry download (`getNOAA.bathy()`)
+- **`rnaturalearth`** / **`rnaturalearthdata`** — country polygons as sf objects
+- **`crsuggest`** — CRS selection helper
+- **`mapview`**, **`tmap`**, **`ggiraph`** — interactive / quick-look maps
 
 ## Document status (`execute: enabled`)
 
@@ -111,9 +119,43 @@ Tracks whether each `.qmd` renders its code chunks. Files with no `execute:` blo
 | `interactive.qmd` | ✅ | `enabled: true` |
 | `rasters.qmd` | ❌ | `enabled: false` |
 | `input_output.qmd` | ❌ | `enabled: false` |
-| `ggplot2.qmd` | 🚧 | file not yet created |
+| `ggplot2.qmd` | ❌ | `enabled: false`; content complete but not yet tested |
 | `interpolation.qmd` | ❌ | `enabled: false` |
 | `ggplot.qmd` | *(legacy)* | superseded by ggplot1/2 |
+
+## Known bugs and missing files
+
+### Broken file path
+- **`rasters.qmd` line 66**: reads `"./data/Iceland_btemp.tif"` — file does not exist.
+  Correct path is `"./data/Iceland_minbtemp.tif"`. Will cause a render error when
+  `execute: enabled` is turned on for that file.
+
+### Files used in chapters but missing from the `data.qmd` download script
+These will cause failures when students run the affected chapters:
+
+| File | Used actively in |
+|---|---|
+| `ospar.gpkg` | `spatial_ops.qmd` (polygon join example), `sf.qmd` (exercise) |
+| `bormicon.gpkg` | `rasters.qmd` (rasterization, via ftp URL) |
+| `is_smb.csv` | `interactive.qmd` (Shiny example, via ftp URL) |
+
+### Files in `data.qmd` but never used in any chapter
+`smb_utbrteg.csv`, `ices_rectangles.gpkg`, `OSPAR_intensity_Otter_2015.gpkg`, `nephrops.tif`
+
+### FTP vs local path inconsistency
+Several files that exist in `data/` are still read via `ftp://ftp.hafro.is/...`
+in some chapters (`iceland_coastline.gpkg`, `helcom.gpkg`, all raster TIFFs in
+`rasters.qmd`, `is_smb_stations.csv` in `rasters.qmd` and `interpolation.qmd`,
+`is_smb_biological.csv` in `interpolation.qmd`). These chapters will fail offline
+even though the files are in `data/`.
+
+## Content audit
+
+See [`content_notes.md`](content_notes.md) for:
+- Schedule sequencing issues (`crs.qmd` taught after chapters that require it) and a proposed alternative schedule (CRS + ggplot2 on Tuesday, geometric moves to Wednesday)
+- `ggplot2.qmd` content structure: sf-only vector mapping; raster visualisation split to `rasters.qmd` ("Rasters and ggplot" section already present)
+- Full content overlap analysis across chapters
+- Complete data usage tally (which dataset appears in which chapter)
 
 ## Rendering
 

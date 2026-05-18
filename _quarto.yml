@@ -35,6 +35,12 @@ website:
       - text: "Interpolation"
         file: interpolation.qmd
     right:
+    - text: "AI"
+      menu:
+      - text: "AGENTS"
+        file: AGENTS.md
+      - text: "Content Notes"
+        file: content_notes.md
     - icon: github
       href: https://github.com/jmburgos/TCMSAR26
 
