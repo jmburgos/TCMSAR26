@@ -1,7 +1,6 @@
 ---
 title: "Spatial operations with sf objects"
-execute:
-  enabled: false
+
 ---
 
 ```{r setup}
@@ -26,25 +25,25 @@ We will use two main datasets throughout: Nephrops survey data from ICES DATRAS,
 
 ```{r load-data, message=FALSE}
 # DATRAS haul data (station positions)
-survey <- read_csv("ftp://ftp.hafro.is/pub/data/csv/datras_2018_haul.csv",
-                   guess_max = 2000) %>%  # guess_max prevents type-guessing errors
-  filter(year == 2018) %>%
+survey <- read_csv("./data/datras_2018_haul.csv",
+                   guess_max = 2000) |>  # guess_max prevents type-guessing errors
+  filter(year == 2018) |>
   select(id, survey, lat = shootlat, lon = shootlong)
 
 # Nephrops catch per haul
-nephrops <- read_csv("ftp://ftp.hafro.is/pub/data/csv/datras_2018_length.csv") %>%
-  filter(latin == "Nephrops norvegicus") %>%
-  left_join(survey, by = "id") %>%
-  group_by(id) %>%
+nephrops <- read_csv("ftp://ftp.hafro.is/pub/data/csv/datras_2018_length.csv") |>
+  filter(latin == "Nephrops norvegicus") |>
+  left_join(survey, by = "id") |>
+  group_by(id) |>
   summarise(survey = first(survey),
             lat    = first(lat),
             lon    = first(lon),
-            num    = sum(n)) %>%
-  ungroup() %>%
+            num    = sum(n)) |>
+  ungroup() |>
   st_as_sf(coords = c("lon", "lat"), crs = 4326)
 
 # Nephrops functional units (NFUs) — ICES assessment regions
-nfu <- read_sf("ftp://ftp.hafro.is/pub/data/shapes/nephrops_fu.gpkg")
+nfu <- read_sf("./data/nephrops_fu.gpkg")
 
 # Quick overview of both layers
 ggplot() +
@@ -116,7 +115,7 @@ Spatial subsetting filters one sf object by its spatial relationship to another 
 `st_filter()` is the modern, recommended approach for spatial subsetting. It is cleaner and more readable than the older `filter(st_within(., y, sparse = FALSE))` pattern.
 
 ```{r st-filter-basic, message=FALSE}
-nfu_kattegat <- nfu %>% filter(name == "Kattegat")
+nfu_kattegat <- nfu |> filter(name == "Kattegat")
 
 # Keep only stations within the Kattegat NFU
 nephrops_kattegat <- st_filter(nephrops, nfu_kattegat,
@@ -178,11 +177,11 @@ For reference, the older pattern using `filter()` with `sparse = FALSE` still wo
 
 ```{r filter-old, message=FALSE, eval=FALSE}
 # Equivalent to st_filter() with .predicate = st_within
-nephrops_kattegat_old <- nephrops %>%
+nephrops_kattegat_old <- nephrops %>% # Using the tidyverse pipe here!
   filter(st_within(x = ., y = nfu_kattegat, sparse = FALSE))
 ```
 
-Prefer `st_filter()` for new code — it is more readable and works correctly with both the magrittr (`%>%`) and native (`|>`) pipes.
+Prefer `st_filter()` for new code — it is more readable and works correctly with both the magrittr (`|>`) and native (`|>`) pipes.
 
 ---
 
@@ -196,13 +195,13 @@ The most common case: assign a polygon attribute (such as a region name) to each
 
 ```{r point-in-polygon-join, message=FALSE}
 # Add the NFU name to each Nephrops station
-nephrops_joined <- nephrops %>%
-  st_join(nfu %>% select(nfu_name = name),
+nephrops_joined <- nephrops |>
+  st_join(nfu |> select(nfu_name = name),
           join = st_within)
 
 # Stations outside all NFUs get NA
-nephrops_joined %>%
-  st_drop_geometry() %>%
+nephrops_joined |>
+  st_drop_geometry() |>
   count(nfu_name, sort = TRUE)
 
 ggplot() +
@@ -226,8 +225,8 @@ When points don't fall neatly inside any polygon — for example when survey sta
 
 ```{r nearest-join, message=FALSE}
 # Assign each station to the nearest NFU, regardless of containment
-nephrops_nearest <- nephrops %>%
-  st_join(nfu %>% select(nfu_name = name),
+nephrops_nearest <- nephrops |>
+  st_join(nfu |> select(nfu_name = name),
           join = st_nearest_feature)
 
 # Compare coverage: how many stations got assigned with each approach?
@@ -244,10 +243,10 @@ cat("Stations assigned with st_nearest_feature:",
 Joining two polygon layers is more complex because a polygon from one layer may overlap with multiple polygons from another, producing a one-to-many result.
 
 ```{r polygon-join-setup, message=FALSE}
-ier   <- read_sf("ftp://ftp.hafro.is/pub/data/shapes/ices_ecoregions.gpkg") %>%
+ier   <- read_sf("./data/ices_ecoregions.gpkg") |>
   select(ecoregion)  # 17 ecoregion polygons
 
-ospar <- read_sf("ftp://ftp.hafro.is/pub/data/shapes/ospar.gpkg") %>%
+ospar <- read_sf("./data/ospar.gpkg") |>
   select(subregion)  # 5 OSPAR subregion polygons
 
 ggplot() +
@@ -258,11 +257,26 @@ ggplot() +
 ```
 
 ```{r polygon-join-many, message=FALSE}
+#| error: true
 ospar_ier <- st_join(ospar, ier)
+
+```
+
+What happened?  The `st_join()` function (and others from the sf package) uses S2 spherical geometry by default.  S2 is stricter about topological issues than the GEOS (plannar) engine. A polygon can pass `st_is_valid()` (which uses GEOS) and still fail S2 validation.
+
+We can disable the S2 engine, do the spatial join, and then re-enable it afterward.
+
+```{r polygon-join-many_cont, message=FALSE}
+
+sf_use_s2(FALSE)
+ospar_ier <- st_join(ospar, ier)
+sf_use_s2(TRUE) 
 
 nrow(ospar)     # Original OSPAR subregions
 nrow(ospar_ier) # More rows — each OSPAR region appears once per overlapping ecoregion
 ```
+
+
 
 ::: {.callout-important}
 ## One-to-many joins with polygons
@@ -274,7 +288,10 @@ There are two common strategies:
 **Option 1 — Keep only the largest overlap** using `largest = TRUE`. Each OSPAR region is matched to whichever ecoregion it overlaps most. The result has the same number of rows as the input.
 
 ```{r polygon-join-largest, message=FALSE}
+sf_use_s2(FALSE) 
 ospar_ier_largest <- st_join(ospar, ier, largest = TRUE)
+sf_use_s2(TRUE) 
+
 nrow(ospar_ier_largest)  # Same as nrow(ospar)
 ```
 
@@ -293,17 +310,17 @@ ggplot() +
 A very common task is counting how many points from one layer fall within each polygon of another. Spatial join followed by `count()` is the cleanest approach:
 
 ```{r count-points, message=FALSE}
-station_counts <- nephrops %>%
-  st_join(nfu %>% select(nfu_name = name), join = st_within) %>%
-  st_drop_geometry() %>%           # Drop geometry before summarising
-  count(nfu_name, name = "n_stations") %>%
-  filter(!is.na(nfu_name)) %>%     # Remove stations not in any NFU
+station_counts <- nephrops |>
+  st_join(nfu |> select(nfu_name = name), join = st_within) |>
+  st_drop_geometry() |>           # Drop geometry before summarising
+  count(nfu_name, name = "n_stations") |>
+  filter(!is.na(nfu_name)) |>     # Remove stations not in any NFU
   arrange(desc(n_stations))
 
 station_counts
 
 # Join counts back to NFU polygons for mapping
-nfu_counts <- nfu %>%
+nfu_counts <- nfu |>
   left_join(station_counts, by = c("name" = "nfu_name"))
 
 ggplot() +
@@ -332,6 +349,6 @@ Calling `st_drop_geometry()` before `count()` converts the sf object to a plain 
 | Assign nearest polygon to points | `st_join(points, polygons, join = st_nearest_feature)` |
 | Polygon join — one dominant match | `st_join(a, b, largest = TRUE)` |
 | Polygon join — all matches | `st_join(a, b)` — result has more rows than input |
-| Count points per polygon | `st_join() %>% st_drop_geometry() %>% count()` |
+| Count points per polygon | `st_join() |> st_drop_geometry() |> count()` |
 | Check CRS match | `st_crs(a) == st_crs(b)` |
 | Align CRS before operations | `st_transform(x, crs)` |

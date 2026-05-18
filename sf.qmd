@@ -180,7 +180,7 @@ plot(st_geometry(nfu))  # Geometry only
 For publication-quality maps, use `geom_sf()` in ggplot2:
 
 ```{r}
-nfu %>%
+nfu |>
   ggplot() +
   geom_sf(aes(fill = name)) +
   labs(fill = "Area") +
@@ -207,7 +207,7 @@ The most common starting point in marine science is a data frame with latitude a
 smb <- read_csv("./data/is_smb_stations.csv")
 class(smb) # An ordinary tibble
 
-smb_sf <- smb %>%
+smb_sf <- smb |>
   st_as_sf(coords = c("lon1", "lat1"), crs = 4326)
 
 smb_sf
@@ -220,7 +220,7 @@ The `coords` argument always takes **longitude (x) first, then latitude (y)**. R
 By default, the coordinate columns are removed from the data frame once used to create the geometry. Use `remove = FALSE` to keep them:
 
 ```{r}
-smb_sf <- smb %>%
+smb_sf <- smb |>
   st_as_sf(coords = c("lon1", "lat1"), crs = 4326, remove = FALSE)
 ```
 
@@ -229,18 +229,20 @@ smb_sf <- smb %>%
 When you have a sequence of positions belonging to the same track (e.g. VMS data from a vessel), you typically want to represent each track as a LINESTRING rather than a set of individual points. The workflow is: convert to sf with POINT geometry, group by track identifier, then cast to LINESTRING.
 
 ```{r}
-vms <- read_csv("./data/small_vms.csv") %>%
-  st_as_sf(coords = c("lon", "lat"), crs = 4326) %>%
-  group_by(id) %>%
-  summarise(do_union = FALSE) %>%   # do_union = FALSE preserves point order
+vms <- read_csv("./data/small_vms.csv") |> 
+  st_as_sf(coords = c("lon", "lat"), crs = 4326) 
+
+vms_tracks <- vms |> 
+  group_by(id) |> 
+  summarise(do_union = FALSE) %>%  # do_union = FALSE preserves point order
   st_cast("LINESTRING")
 
-vms
-
 ggplot() +
-  geom_sf(data = vms, aes(colour = as.factor(id))) +
+  geom_sf(data = vms_tracks, aes(colour = as.factor(id))) +
+  theme_bw() +
   theme(legend.position = "none")
 ```
+
 
 ::: {.callout-important}
 ## Point order matters for LINESTRINGs
@@ -254,15 +256,15 @@ Sometimes you have start and end coordinates for each feature rather than a full
 ```{r}
 smb <- read_csv("./data/is_smb_stations.csv")
 
-tracks <- smb %>%
-  filter(year == 2019) %>%
-  dplyr::select(id, lon_1 = lon1, lat_1 = lat1, lon_2 = lon2, lat_2 = lat2) %>%
+tracks <- smb |>
+  filter(year == 2019) |>
+  dplyr::select(id, lon_1 = lon1, lat_1 = lat1, lon_2 = lon2, lat_2 = lat2) |>
   pivot_longer(cols = -id,
                names_to = c(".value", "endpoint"),
-               names_sep = "_") %>%
-  st_as_sf(coords = c("lon", "lat"), crs = 4326) %>%
-  group_by(id) %>%
-  summarise(do_union = FALSE) %>%
+               names_sep = "_") |>
+  st_as_sf(coords = c("lon", "lat"), crs = 4326) |>
+  group_by(id) |>
+  summarise(do_union = FALSE) |>
   st_cast("LINESTRING")
 
 ggplot() +
@@ -286,7 +288,7 @@ ggplot() +
   geom_sf(data = ices_er, aes(fill = ecoregion))
 
 # Filter to small ecoregions
-sm_ices_er <- ices_er %>%
+sm_ices_er <- ices_er |>
   filter(area_km2 < 100)
 
 ggplot() +
@@ -335,8 +337,8 @@ Regular dplyr joins (`left_join()`, `inner_join()`, etc.) work on sf objects jus
 
 ```{r}
 # Example: join species catch data to station sf object
-stations_sf <- smb %>%
-  filter(year == 2019) %>%
+stations_sf <- smb |>
+  filter(year == 2019) |>
   st_as_sf(coords = c("lon1", "lat1"), crs = 4326)
 
 smb_fish <- read_csv("./data/is_smb_biological.csv") |> 
@@ -350,7 +352,7 @@ smb_fish <- read_csv("./data/is_smb_biological.csv") |>
 
 
 # A non-spatial join — geometry comes from stations_sf
-stations_with_data <- stations_sf %>%
+stations_with_data <- stations_sf |>
   left_join(smb_fish, by = "id")
 ```
 
@@ -401,7 +403,7 @@ If a package you need requires sp input, convert your sf object with `as(x, "Spa
 | Extract geometry column | `st_geometry(x)` |
 | Drop geometry | `st_drop_geometry(x)` |
 | Rename geometry column | `rename_geometry(x, "new_name")` |
-| Convert points to lines/polygons | `group_by() %>% summarise(do_union=FALSE) %>% st_cast()` |
+| Convert points to lines/polygons | `group_by() |> summarise(do_union=FALSE) |> st_cast()` |
 | Convert sf to sp | `as(x, "Spatial")` |
 | Convert sp to sf | `st_as_sf(x)` |
 
