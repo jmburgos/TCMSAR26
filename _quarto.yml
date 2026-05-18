@@ -34,8 +34,21 @@ website:
         file: interactive.qmd
       - text: "Interpolation"
         file: interpolation.qmd
+    right:
+    - icon: github
+      href: https://github.com/jmburgos/TCMSAR26
+
+execute:
+  message: false
+  warning: false
 
 format:
   html:
-    theme: cosmo
+    theme: flatly
+    css: styles.css
     toc: true
+    toc-depth: 3
+    message: false
+    warning: false
+    echo: true
+    code-fold: true
