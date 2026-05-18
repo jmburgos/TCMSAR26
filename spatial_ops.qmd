@@ -31,7 +31,7 @@ survey <- read_csv("./data/datras_2018_haul.csv",
   select(id, survey, lat = shootlat, lon = shootlong)
 
 # Nephrops catch per haul
-nephrops <- read_csv("ftp://ftp.hafro.is/pub/data/csv/datras_2018_length.csv") |>
+nephrops <- read_csv("./data/datras_2018_length.csv") |>
   filter(latin == "Nephrops norvegicus") |>
   left_join(survey, by = "id") |>
   group_by(id) |>

@@ -1,7 +1,6 @@
 ---
 title: "Coordinate Reference Systems"
-execute:
-  enabled: false
+
 ---
 
 A fundamental aspect of spatial data is defining its Coordinate Reference System (CRS). A CRS defines how coordinates relate to actual locations on the Earth's surface. Without a CRS, coordinates are just numbers — a latitude of 65 and a longitude of -18 mean nothing unless we know *which* CRS they are expressed in.
@@ -116,23 +115,19 @@ The **sf** package links to the external **PROJ** library (<https://proj.org/>) 
 
 There are two main ways to specify a CRS in sf:
 
-**1. EPSG codes** — the preferred approach for common CRS. These are integer codes from the EPSG Geodetic Parameter Dataset that identify a specific CRS unambiguously.
+**1. EPSG codes** — the preferred approach for common CRS. These are integer codes from the EPSG Geodetic Parameter Dataset that identify a specific CRS unambiguously.  You can refer to them just by their number, but it is better to use the full "authority:code" notation.  
 
 ```{r}
 # EPSG:4326  — geographic coordinates, WGS84 (the GPS standard)
 # EPSG:32628 — UTM zone 28N, WGS84
 # EPSG:3035  — ETRS89-LAEA, the standard equal-area CRS for Europe
 # EPSG:8088  — ISN2016 / LAEA Iceland (Iceland's official CRS)
+# 8088  — same as above, but it is better to use the full notation
+# ESRI:54009  — Mollweide projection — only exists in the ESRI registry, not EPSG
+
 ```
 
-**2. Authority:code notation** — equivalent to EPSG codes but more explicit:
-
-```{r}
-# "EPSG:4326" is equivalent to the integer 4326
-st_transform(mysf, "EPSG:3035")
-```
-
-**3. Proj4 strings** (legacy) — strings like `"+proj=longlat +datum=WGS84"`. These still work for basic cases but are deprecated in modern PROJ. They cannot represent all CRS parameters and may produce warnings. You will encounter them in older code and documentation; prefer EPSG codes for new work.
+**2. Proj4 strings** (legacy) — strings like `"+proj=longlat +datum=WGS84"`. These still work for basic cases but are deprecated in modern PROJ. They cannot represent all CRS parameters and may produce warnings. You will encounter them in older code and documentation; prefer EPSG codes for new work.
 
 ## Querying the CRS of an object
 
@@ -141,7 +136,7 @@ library(rnaturalearth)
 library(tidyverse)
 library(sf)
 
-iceland <- ne_countries(returnclass = "sf", country = "Iceland", scale = 10) %>%
+iceland <- ne_countries(returnclass = "sf", country = "Iceland", scale = 10) |>
   st_geometry()
 
 st_crs(iceland)        # Full CRS information (WKT2 representation)
@@ -166,19 +161,19 @@ Applying `st_set_crs()` to data that is already correctly tagged will produce a 
 
 ```{r}
 # Creating an sf object without a CRS
-mysf <- data.frame(lat = c(66, 65.5), lon = c(-20, -19)) %>%
+mysf <- data.frame(lat = c(66, 65.5), lon = c(-20, -19)) |>
   st_as_sf(coords = c("lon", "lat"))
 
 st_crs(mysf) # NA — no CRS defined
 
 # STEP 1: Set the CRS (we know these are WGS84 lat/lon)
-mysf <- mysf %>%
+mysf <- mysf |>
   st_set_crs(4326)
 
 st_crs(mysf)$Name # Now it has a CRS
 
 # STEP 2: Transform to a projected CRS (LAEA Iceland)
-mysf_projected <- mysf %>%
+mysf_projected <- mysf |>
   st_transform(8088)
 
 st_crs(mysf_projected)$Name
@@ -210,14 +205,14 @@ suggest_top_crs(iceland)    # Returns just the top suggestion
 Reprojecting vector data means recalculating the coordinates of every point from one CRS to another. Use `st_transform()`:
 
 ```{r}
-europe <- ne_countries(returnclass = "sf", continent = "Europe") %>%
+europe <- ne_countries(returnclass = "sf", continent = "Europe") |>
   st_geometry()
 
 # Transform to Mollweide (equal-area, good for world maps)
-europe_moll <- europe %>% st_transform("ESRI:54009")
+europe_moll <- europe |> st_transform("ESRI:54009")
 
 # Transform to ETRS89-LAEA (standard equal-area CRS for Europe, EPSG:3035)
-europe_laea <- europe %>% st_transform(3035)
+europe_laea <- europe |> st_transform(3035)
 
 plot(europe, axes = TRUE, main = "Geographic (WGS84)")
 plot(europe_moll, axes = TRUE, main = "Mollweide")
