@@ -18,16 +18,18 @@ The project is a **Quarto website** (`_quarto.yml`, `output-dir: site/`), using 
 | `index.qmd` | Home (course schedule and contact) |
 | `intro.qmd` | Introduction |
 | `spatial_data.qmd` | Spatial data |
+| `ggplot1.qmd` | Mapping with ggplot — part 1 |
 | `sf.qmd` | Simple features |
 | `geometric.qmd` | Working with geometries in sf objects |
 | `spatial_ops.qmd` | Spatial operations |
 | `crs.qmd` | Coordinate reference systems |
 | `rasters.qmd` | Rasters |
 | `input_output.qmd` | Reading and writing spatial data |
-| `ggplot.qmd` | Mapping with ggplot |
+| `ggplot2.qmd` | Mapping with ggplot — part 2 (not yet created) |
 | `interactive.qmd` | Interactive maps |
 | `interpolation.qmd` | Interpolation |
 | `data.qmd` | Data (dataset descriptions + download script) |
+| `ggplot.qmd` | *(legacy file, superseded by ggplot1/2, not in nav)* |
 
 ### Other directories
 
@@ -93,23 +95,25 @@ Full descriptions of every dataset are in `data.qmd`.
 
 ## Document status (`execute: enabled`)
 
-Tracks whether each `.qmd` renders its code chunks. Set `execute: enabled: true` in the YAML front matter when a document is error-free and ready to build.
+Tracks whether each `.qmd` renders its code chunks. Files with no `execute:` block in their YAML default to `enabled: true` (the Quarto default); ✅ covers both cases.
 
-| File | Status |
-|---|---|
-| `index.qmd` | — (no execute block; no code) |
-| `intro.qmd` | — (no execute block; no code) |
-| `spatial_data.qmd` | — (no execute block; no code) |
-| `data.qmd` | ✅ `enabled: true` |
-| `sf.qmd` | ❌ `enabled: false` |
-| `geometric.qmd` | ❌ `enabled: false` |
-| `spatial_ops.qmd` | ❌ `enabled: false` |
-| `crs.qmd` | ❌ `enabled: false` |
-| `rasters.qmd` | ❌ `enabled: false` |
-| `input_output.qmd` | ❌ `enabled: false` |
-| `ggplot.qmd` | ❌ `enabled: false` |
-| `interactive.qmd` | ❌ `enabled: false` |
-| `interpolation.qmd` | ❌ `enabled: false` |
+| File | Status | Note |
+|---|---|---|
+| `index.qmd` | — | no code |
+| `intro.qmd` | — | no code |
+| `spatial_data.qmd` | — | no code |
+| `data.qmd` | ✅ | `enabled: true` |
+| `ggplot1.qmd` | ✅ | `enabled: true` |
+| `sf.qmd` | ✅ | no execute block (default) |
+| `geometric.qmd` | ✅ | no execute block (default) |
+| `spatial_ops.qmd` | ✅ | no execute block (default) |
+| `crs.qmd` | ✅ | no execute block (default) |
+| `interactive.qmd` | ✅ | `enabled: true` |
+| `rasters.qmd` | ❌ | `enabled: false` |
+| `input_output.qmd` | ❌ | `enabled: false` |
+| `ggplot2.qmd` | 🚧 | file not yet created |
+| `interpolation.qmd` | ❌ | `enabled: false` |
+| `ggplot.qmd` | *(legacy)* | superseded by ggplot1/2 |
 
 ## Rendering
 

@@ -243,6 +243,7 @@ cat("Stations assigned with st_nearest_feature:",
 Joining two polygon layers is more complex because a polygon from one layer may overlap with multiple polygons from another, producing a one-to-many result.
 
 ```{r polygon-join-setup, message=FALSE}
+#| error: true
 ier   <- read_sf("./data/ices_ecoregions.gpkg") |>
   select(ecoregion)  # 17 ecoregion polygons
 
@@ -267,7 +268,7 @@ What happened?  The `st_join()` function (and others from the sf package) uses S
 We can disable the S2 engine, do the spatial join, and then re-enable it afterward.
 
 ```{r polygon-join-many_cont, message=FALSE}
-
+#| error: true
 sf_use_s2(FALSE)
 ospar_ier <- st_join(ospar, ier)
 sf_use_s2(TRUE) 
@@ -288,6 +289,7 @@ There are two common strategies:
 **Option 1 — Keep only the largest overlap** using `largest = TRUE`. Each OSPAR region is matched to whichever ecoregion it overlaps most. The result has the same number of rows as the input.
 
 ```{r polygon-join-largest, message=FALSE}
+#| error: true
 sf_use_s2(FALSE) 
 ospar_ier_largest <- st_join(ospar, ier, largest = TRUE)
 sf_use_s2(TRUE) 
@@ -299,6 +301,7 @@ nrow(ospar_ier_largest)  # Same as nrow(ospar)
 :::
 
 ```{r polygon-join-plot, message=FALSE}
+#| error: true
 ggplot() +
   geom_sf(data = ospar_ier_largest, aes(fill = ecoregion)) +
   theme_bw() +
