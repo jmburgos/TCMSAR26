@@ -1,7 +1,5 @@
 ---
 title: "Rasters"
-execute:
-  enabled: false
 ---
 
 # Getting started
@@ -63,17 +61,17 @@ Reading rasters with **terra** uses the `rast()` function. Let's try it with a r
 
 ```{r}
 # Minimum temperature
-mintemp <- rast("./data/Iceland_btemp.tif")
+mintemp <- rast("./data/Iceland_minbtemp.tif")
 
 # Maximum temperature
-maxtemp <- rast("ftp://ftp.hafro.is/pub/data/rasters/Iceland_maxbtemp.tif")
+maxtemp <- rast("./data/Iceland_maxbtemp.tif")
 
 # And a bit of data off the Faroe Islands
-far_temp <- rast("ftp://ftp.hafro.is/pub/data/rasters/Faroes_minbtemp.tif")
+far_temp <- rast("./data/Faroes_minbtemp.tif")
 
 # Multi-layer rasters: pass a vector of paths, or use c()
-files <- c("ftp://ftp.hafro.is/pub/data/rasters/Iceland_minbtemp.tif",
-           "ftp://ftp.hafro.is/pub/data/rasters/Iceland_maxbtemp.tif")
+files <- c("./data/Iceland_minbtemp.tif",
+           "./data/Iceland_maxbtemp.tif")
 
 temps <- rast(files)
 
@@ -82,7 +80,7 @@ nlyr(mintemp)     # number of layers (replaces nlayers())
 
 class(temps)
 nlyr(temps)
-names(temps)
+names(temps) # By default the name of the files
 ```
 
 We can do a quick plot using terra's built-in plot method.
@@ -100,7 +98,7 @@ Printing a SpatRaster shows its metadata, including dimensions, resolution, exte
 To get the metadata directly from the file without fully reading it into memory, use `describe()`:
 
 ```{r}
-describe("ftp://ftp.hafro.is/pub/data/rasters/Iceland_minbtemp.tif")
+describe("./data/Iceland_minbtemp.tif")
 ```
 
 The coordinate reference system can be extracted (and set) with `crs()`:
@@ -114,7 +112,7 @@ The `ext()` function provides an object of class *SpatExtent* with the ranges of
 ```{r}
 ext(mintemp)    # replaces extent()
 
-bbox(mintemp)   # a matrix, compatible with sf
+st_bbox(mintemp)   # an bbox object compatible with sf
 ```
 
 # Summary statistics
@@ -167,7 +165,8 @@ ggplot() +
   geom_spatraster(data = temp_factor) +
   scale_fill_manual(values = c("blue", "lightblue", "red"),
                     na.value = "transparent",
-                    name = "Category")
+                    name = "Category") 
+  
 ```
 
 # Manipulation of raster objects
@@ -232,9 +231,9 @@ plot(rst_masked)
 ## Extracting raster data with sf objects
 
 ```{r}
-bt_points <- read_sf("ftp://ftp.hafro.is/pub/data/shapes/ice_points.gpkg")
-bt_lines  <- read_sf("ftp://ftp.hafro.is/pub/data/shapes/ice_lines.gpkg")
-bt_poly   <- read_sf("ftp://ftp.hafro.is/pub/data/shapes/ice_polygon.gpkg")
+bt_points <- read_sf("./data/ice_points.gpkg")
+bt_lines  <- read_sf("./data/ice_lines.gpkg")
+bt_poly   <- read_sf("./data/ice_polygon.gpkg")
 
 plot(mintemp)
 plot(vect(bt_points), add = TRUE)
@@ -306,9 +305,9 @@ ylim <- c(62.5, 67.5)
 depth <-
   getNOAA.bathy(lon1 = xlim[1], lon2 = xlim[2],
                 lat1 = ylim[1], lat2 = ylim[2],
-                resolution = 1, keep = TRUE) %>%
-  marmap::as.raster() %>%   # marmap still returns a raster object
-  rast()                     # convert to terra SpatRaster
+                resolution = 1, keep = TRUE) |> 
+  marmap::as.raster() |>    # marmap still returns a raster object
+  rast()                    # convert to terra SpatRaster
 
 writeRaster(depth, "./data/Iceland_depth.tif", overwrite = TRUE)
 
@@ -337,13 +336,13 @@ Zonal statistics refers to the calculation of statistics on values of a raster w
 
 ```{r}
 # Near-bottom current speeds
-current_sp <- rast("ftp://ftp.hafro.is/pub/data/rasters/Iceland_currentsp.tif")
+current_sp <- rast("./data/Iceland_currentsp.tif")
 
 # Classification matrix
 cm <- matrix(c(
-     0, -400, 1,
-  -400, -700, 2,
-  -700,-2500, 3),
+     -400, 0, 1,
+     -700, -400, 2,
+     -2500, -700, 3),
   ncol = 3, byrow = TRUE)
 
 depth_reclass <- classify(depth, cm)
@@ -354,8 +353,6 @@ compareGeom(depth, current_sp)
 # Mean current speed per depth zone (replaces zonal())
 zonal(current_sp, depth_reclass, fun = mean, na.rm = TRUE)
 
-# Range of current speeds per depth zone
-zonal(current_sp, depth_reclass, fun = range, na.rm = TRUE)
 ```
 
 # Changing the geometry of a raster
@@ -449,7 +446,7 @@ target <- rast(xmin = -28, xmax = -10,
                res = 0.2,
                crs = "EPSG:4326")
 
-stations <- read_csv("ftp://ftp.hafro.is/pub/data/csv/is_smb_stations.csv") %>%
+stations <- read_csv("./data/is_smb_stations.csv") |>
   st_as_sf(coords = c("lon1", "lat1"), crs = 4326)
 
 # Rasterize: count of stations per cell
@@ -468,16 +465,30 @@ plot(station_rst2, main = "Total towing time")
 Rasterizing polygons:
 
 ```{r}
-is_areas <- read_sf("ftp://ftp.hafro.is/pub/data/shapes/bormicon.gpkg")
+nfu <- read_sf("./data/nephrops_fu.gpkg") %>% # Note the tidyverse pipe!
+  mutate(area = units::set_units(st_area(.), km^2))
 
-# Rasterize by polygon ID
-is_areas_rst <- rasterize(vect(is_areas), target)
-plot(is_areas)
-plot(is_areas_rst)
 
-# Rasterize by an attribute field
-is_areas_rst2 <- rasterize(vect(is_areas), target, field = "area")
-plot(is_areas_rst2)
+target <- rast(xmin = -15, xmax = 13,
+               ymin = 36.5, ymax = 62,
+               res = 0.5,
+               crs = "EPSG:4326")
+
+
+# Rasterize by presence/absence
+nfu_rst <- rasterize(nfu, target)
+
+# Rasterize by polygon name
+nfu_names_rst <- rasterize(nfu, target, field="name")
+
+# Rasterize by polygon area
+nfu_areas_rst <- rasterize(nfu, target, field="area")
+
+plot(nfu_rst)
+plot(nfu_names_rst)
+plot(nfu_areas_rst)
+
+
 ```
 
 # Rasters and ggplot
@@ -487,7 +498,7 @@ The **tidyterra** package provides `geom_spatraster()`, which lets you plot Spat
 ```{r}
 depth <- rast("./data/Iceland_depth.tif")
 
-coast <- read_sf("ftp://ftp.hafro.is/pub/data/shapes/iceland_coastline.gpkg") %>%
+coast <- read_sf("./data/iceland_coastline.gpkg") |>
   st_transform(4326)
 
 ggplot() +
@@ -504,7 +515,7 @@ depth.df <- as.data.frame(depth, xy = TRUE)
 head(depth.df)
 
 ggplot() +
-  geom_raster(data = depth.df, aes(x = x, y = y, fill = Iceland_depth)) +
+  geom_raster(data = depth.df, aes(x = x, y = y, fill = layer)) +
   geom_sf(data = coast) +
   scale_fill_viridis_c(na.value = "transparent") +
   theme_bw()
