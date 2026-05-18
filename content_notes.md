@@ -1,8 +1,107 @@
 # Content Notes — TCMSAR26
 
-Compiled from a full read of all `.qmd` files, May 2026.  
-For course authors: covers schedule sequencing, content gaps, cross-chapter overlap,
-and a full data usage tally.
+Compiled from a full read of all `.qmd` files and participant registration data,
+May 2026. For course authors: covers participant profile, schedule sequencing,
+content gaps, cross-chapter overlap, and a full data usage tally.
+
+---
+
+## 0. Participant profile and course alignment
+
+Source: `data-raw/TCMSAR26_Participants_info-for-instructors.xlsx` (n = 25).
+
+### Who is in the room
+
+| Status | n |
+|---|---|
+| Researcher | 7 |
+| Practitioner | 6 |
+| PhD student / researcher | 5 |
+| Data analyst | 3 |
+| Technical officer | 2 |
+| MSc student | 2 |
+
+Institutions span Ireland (Marine Institute, 6 participants), Poland (National
+Marine Fisheries Research Institute, 4), Spain (IEO Santander, CETMAR, IMEDEA),
+the Netherlands (Wageningen), Sweden (SLU), Finland (LUKE), Northern Ireland
+(AFBI, 2), Latvia (BIOR, 2), Italy (Sicily Marine Centre, University of Bari),
+Germany (Hamburg), and England (Natural England, 2).
+
+Most participants have R experience and use it regularly; the course is not
+starting from zero. Six participants currently use QGIS or ArcGIS as their
+primary spatial tool and want to move workflows into R. One participant
+explicitly still uses the legacy **sp** package.
+
+### Primary use cases (non-exclusive)
+
+| Use case | n | Key participants |
+|---|---|---|
+| Fisheries surveys, VMS, ICES data | 12 | DATRAS, SMB, OSPAR VMS data calls |
+| Offshore renewable energy / MSP | 11 | ORE site selection, buffer/impact zones |
+| Seabed habitat mapping | 7 | Multibeam rasters, benthic classification |
+| Marine ecology / species distribution | 7 | SDMs, climate range shifts, biodiversity |
+
+The two largest groups — fisheries and ORE/MSP — partially overlap: several
+participants work on fishing footprint or trawling intensity in the context of
+wind farm development.
+
+### Alignment with current course content
+
+**Well served:**
+
+- *Fisheries/ICES cohort*: The course dataset is near-perfect for this group.
+  DATRAS (spatial_ops.qmd), SMB survey data (sf, rasters, interpolation,
+  interactive), and `small_vms.csv` map directly onto what these participants
+  do daily. The ICES working group members (participants 9, 10, 13, 14, 15)
+  will recognise the data immediately.
+- *GIS-to-R transition*: The practical chapter-by-chapter approach, with code
+  that runs on real data, is exactly what GIS practitioners need. The
+  `input_output.qmd` chapter (file formats, GDAL) is specifically useful for
+  people arriving from QGIS/ArcGIS.
+- *sp-to-sf transition*: The "sp class (legacy)" section in `sf.qmd` with
+  conversion code directly addresses the one participant still using sp — and
+  likely others who have inherited sp-based code.
+- *Interpolation / species distribution*: The kriging and IDW examples in
+  `interpolation.qmd` are directly applicable to habitat and ecology
+  participants building species distribution models.
+
+**Underserved:**
+
+- *ORE / MSP cohort (11 participants)*: This is the most significant gap.
+  Nearly half the participants work in offshore wind or marine spatial planning,
+  yet no chapter uses this framing. The operations they need — buffers around
+  protected areas, intersection of proposed development zones with fishing
+  intensity layers, suitability analysis — are all covered technically in
+  `geometric.qmd` and `spatial_ops.qmd`, but the examples use fisheries survey
+  data only. At minimum, the exercises in those two chapters could offer an
+  ORE/MSP variant alongside the fisheries variant.
+
+- *Large rasters from acoustic surveys (seabed mapping, 7 participants)*:
+  `rasters.qmd` covers `terra` thoroughly but its examples use relatively small
+  climatological rasters. Participants who will be processing multibeam DEMs
+  would benefit from a note on handling large rasters (chunked reading,
+  windowed writing, `terraOptions(memfrac = ...)`).
+
+### The unused OSPAR dataset is the most direct missed opportunity
+
+`OSPAR_intensity_Otter_2015.gpkg` (91,190 polygon features of otter trawl
+fishing intensity, already in `data/`) is described in `data.qmd` but used
+nowhere in the course. It is simultaneously the most relevant dataset for the
+fisheries cohort (direct output of the ICES VMS Data Call workflow several
+participants contribute to) and for the ORE/MSP cohort (trawling intensity is
+a standard input to wind farm impact assessments). It is also large enough to
+make a good performance example in `spatial_ops.qmd` or `interactive.qmd`.
+
+Key columns: `FishingH` (fishing hours), `KWfishingH` (kW-fishing hours, a proxy
+for effort), `SurfSAR` (surface swept area ratio), `totweight`, `totvalue`.
+
+Suggested uses:
+
+| Chapter | Exercise suggestion |
+|---|---|
+| `spatial_ops.qmd` | Spatial join with `ices_ecoregions.gpkg` → aggregate `FishingH` or `SurfSAR` by ecoregion; compare to a protected area polygon |
+| `ggplot2.qmd` | Side-by-side maps of `SurfSAR` vs `KWfishingH` using `patchwork`; `geom_sf` with viridis fill and log transform |
+| `interactive.qmd` | Leaflet choropleth of fishing intensity, giving participants a meaningful large-polygon interactive map exercise |
 
 ---
 
