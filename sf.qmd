@@ -1,7 +1,6 @@
 ---
 title: "Simple features"
-execute:
-  enabled: false
+
 ---
 
 ```{r setup}
@@ -129,10 +128,10 @@ In practice you will almost always read sf objects from files rather than buildi
 
 ```{r}
 # Read a GeoPackage file
-bor <- read_sf("ftp://ftp.hafro.is/pub/data/shapes/bormicon.gpkg")
+nfu <- read_sf("./data/nephrops_fu.gpkg")
 
-class(bor)
-glimpse(bor)
+class(nfu)
+glimpse(nfu)
 ```
 
 ::: {.callout-note}
@@ -145,7 +144,7 @@ Both functions read spatial data. `read_sf()` is a tidyverse-friendly wrapper ar
 When you print an sf object, the header shows the key metadata before the data:
 
 ```{r}
-bor
+nfu
 ```
 
 The header tells you:
@@ -157,16 +156,16 @@ The header tells you:
 You can extract these individually:
 
 ```{r}
-st_geometry_type(bor)   # Geometry type of each feature
-st_crs(bor)             # Full CRS information
-st_crs(bor)$Name        # CRS name
-st_crs(bor)$epsg        # EPSG code (if defined)
-st_bbox(bor)            # Bounding box
+st_geometry_type(nfu)   # Geometry type of each feature
+st_crs(nfu)             # Full CRS information
+st_crs(nfu)$Name        # CRS name
+st_crs(nfu)$epsg        # EPSG code (if defined)
+st_bbox(nfu)            # Bounding box
 
 # Standard data frame functions also work
-nrow(bor)
-ncol(bor)
-names(bor)
+nrow(nfu)
+ncol(nfu)
+names(nfu)
 ```
 
 ## Plotting sf objects
@@ -174,14 +173,14 @@ names(bor)
 For a quick look, base R's `plot()` works directly on sf objects. By default it produces one map per attribute column:
 
 ```{r}
-plot(bor)               # One panel per attribute
-plot(st_geometry(bor))  # Geometry only
+plot(nfu)               # One panel per attribute
+plot(st_geometry(nfu))  # Geometry only
 ```
 
 For publication-quality maps, use `geom_sf()` in ggplot2:
 
 ```{r}
-bor %>%
+nfu %>%
   ggplot() +
   geom_sf(aes(fill = name)) +
   labs(fill = "Area") +
@@ -194,8 +193,8 @@ bor %>%
 ## Exercise
 Load and inspect the following datasets. For each, note the geometry type, CRS, number of features, and attribute columns.
 
-- `ftp://ftp.hafro.is/pub/data/shapes/helcom.gpkg`
-- `ftp://ftp.hafro.is/pub/data/shapes/ospar.gpkg`
+- `./data/helcom.gpkg`
+- `./data/ospar.gpkg`
 :::
 
 ---
@@ -205,7 +204,7 @@ Load and inspect the following datasets. For each, note the geometry type, CRS, 
 The most common starting point in marine science is a data frame with latitude and longitude columns. Use `st_as_sf()` to convert it:
 
 ```{r}
-smb <- read_csv("ftp://ftp.hafro.is/pub/data/csv/is_smb.csv")
+smb <- read_csv("./data/is_smb_stations.csv")
 class(smb) # An ordinary tibble
 
 smb_sf <- smb %>%
@@ -230,16 +229,16 @@ smb_sf <- smb %>%
 When you have a sequence of positions belonging to the same track (e.g. VMS data from a vessel), you typically want to represent each track as a LINESTRING rather than a set of individual points. The workflow is: convert to sf with POINT geometry, group by track identifier, then cast to LINESTRING.
 
 ```{r}
-vms <- read_csv("ftp://ftp.hafro.is/pub/data/csv/is_smb_vms2019.csv") %>%
+vms <- read_csv("./data/small_vms.csv") %>%
   st_as_sf(coords = c("lon", "lat"), crs = 4326) %>%
-  group_by(vid) %>%
+  group_by(id) %>%
   summarise(do_union = FALSE) %>%   # do_union = FALSE preserves point order
   st_cast("LINESTRING")
 
 vms
 
 ggplot() +
-  geom_sf(data = vms, aes(colour = as.factor(vid))) +
+  geom_sf(data = vms, aes(colour = as.factor(id))) +
   theme(legend.position = "none")
 ```
 
@@ -253,7 +252,7 @@ When building tracks, make sure the data is sorted by time *before* grouping, so
 Sometimes you have start and end coordinates for each feature rather than a full track, and want to draw a straight line between them. This requires reshaping the data so that both endpoints are represented as rows before converting to sf:
 
 ```{r}
-smb <- read_csv("ftp://ftp.hafro.is/pub/data/csv/is_smb.csv")
+smb <- read_csv("./data/is_smb_stations.csv")
 
 tracks <- smb %>%
   filter(year == 2019) %>%
@@ -281,7 +280,7 @@ The `pivot_longer()` call here uses the `names_to = c(".value", "endpoint")` pat
 Because sf objects are data frames, all standard dplyr operations work directly on them: `filter()`, `select()`, `mutate()`, `group_by()`, `summarise()`, and so on.
 
 ```{r}
-ices_er <- read_sf("ftp://ftp.hafro.is/pub/data/shapes/ices_ecoregions.gpkg")
+ices_er <- read_sf("./data/ices_ecoregions.gpkg")
 
 ggplot() +
   geom_sf(data = ices_er, aes(fill = ecoregion))
@@ -318,10 +317,14 @@ class(sm_ices_er_df) # Now a plain tibble, no geometry
 The geometry column can have any name, though `geometry` and `geom` are the most common. If you need to rename it (e.g. when merging objects with different geometry column names):
 
 ```{r}
-bor_renamed <- bor %>%
-  rename_geometry("geom")
 
-names(bor_renamed)
+# Step 1: rename the column
+names(ices_er)[names(ices_er) == "ices_er"] <- "geom"
+
+# Step 2: update the sf_column pointer
+attr(ices_er, "sf_column") <- "geom"
+
+
 ```
 
 ---
@@ -336,9 +339,19 @@ stations_sf <- smb %>%
   filter(year == 2019) %>%
   st_as_sf(coords = c("lon1", "lat1"), crs = 4326)
 
+smb_fish <- read_csv("./data/is_smb_biological.csv") |> 
+  group_by(id, species) |> 
+    summarise(n = sum(n), .groups = "drop") |>
+    pivot_wider(
+    names_from  = species,
+    values_from = n,
+    names_prefix = "n."
+    )
+
+
 # A non-spatial join — geometry comes from stations_sf
 stations_with_data <- stations_sf %>%
-  left_join(smb %>% select(id, cod_n, haddock_n), by = "id")
+  left_join(smb_fish, by = "id")
 ```
 
 For **spatial** joins (joining based on geographic relationships rather than shared columns), use `st_join()` — covered in the [Spatial operations](spatial_ops.qmd) chapter.
