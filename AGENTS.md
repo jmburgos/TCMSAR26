@@ -122,6 +122,7 @@ Tracks whether each `.qmd` renders its code chunks. Files with no `execute:` blo
 | `ggplot2.qmd` | ❌ | `enabled: false`; content complete but not yet tested |
 | `interpolation.qmd` | ❌ | `enabled: false` |
 | `ggplot.qmd` | *(legacy)* | superseded by ggplot1/2 |
+| `ospar_intensity.qmd` | ❌ | `enabled: false`; standalone OSPAR fishing intensity chapter; not yet in nav |
 
 ## Known bugs and missing files
 

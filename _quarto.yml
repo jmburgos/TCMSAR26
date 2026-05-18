@@ -35,6 +35,10 @@ website:
       - text: "Interpolation"
         file: interpolation.qmd
     right:
+    - text: "Cases"
+      menu:
+      - text: "Trawl footprint"
+        file: ospar_intensity.qmd
     - text: "AI"
       menu:
       - text: "AGENTS"

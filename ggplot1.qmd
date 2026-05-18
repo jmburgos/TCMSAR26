@@ -1,7 +1,7 @@
 ---
 title: "Mapping with ggplot2"
 execute:
-  enabled: true
+  enabled: false
 ---
 
 # Seeding
