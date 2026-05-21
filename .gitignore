@@ -6,5 +6,9 @@
 
 /.quarto/
 **/*.quarto_ipynb
-/site/
+/_site/
 *.xlsx
+qgis_map.qgz
+/data-raw/
+.DS_Store
+Spatial_course.org
