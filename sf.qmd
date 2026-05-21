@@ -10,9 +10,9 @@ library(sf)
 
 # Vector data in R
 
-The **sf** package is the standard way to work with vector spatial data in R. It provides a class — also called *sf* — that represents spatial features as an extension of a regular data frame, integrating naturally with tidyverse tools like dplyr and ggplot2.
+The **sf** package is the standard way to work with vector spatial data in R. It provides a class -- also called *sf* -- that represents spatial features as an extension of a regular data frame, integrating naturally with tidyverse tools like dplyr and ggplot2. It replaced the older **sp** package in 2016; the history is covered in the [Spatial data concepts](spatial_data.qmd#the-r-ecosystem-for-spatial-data) chapter.
 
-An older package, **sp**, defined a different set of classes for the same purpose. You will encounter sp in older code and in some packages that have not yet migrated, but you should not start new work with it. Conversion between the two is straightforward and is covered briefly at the end of this chapter.
+You will encounter sp in older code and in some packages that have not yet migrated. Conversion between sf and sp is covered at the end of this chapter.
 
 ---
 

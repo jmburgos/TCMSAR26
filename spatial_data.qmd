@@ -126,6 +126,8 @@ Although regular grids are most common, the raster concept extends to rotated, s
 
 Other representations of continuous data exist — triangulated irregular networks (TINs) and point clouds, for example — but we will not cover these in this course.
 
+The raster data model and its implementation in R are covered in detail in the [Rasters](rasters.qmd) chapter.
+
 ---
 
 ## Common spatial file formats

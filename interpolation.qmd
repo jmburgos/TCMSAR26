@@ -1,7 +1,5 @@
 ---
 title: "Interpolation"
-execute:
-  enabled: false
 ---
 
 **Needed libraries**:
@@ -37,9 +35,10 @@ here, roughly in order of complexity, are:
 | Ordinary kriging | Spatial autocorrelation follows a stationary variogram model | When spatial structure can be modelled; provides uncertainty estimates |
 | GAMs with spatial smooths | Spatial trend is a smooth function of coordinates | When you also want to include non-spatial covariates |
 
-A key practical requirement for all distance-based methods: **your data must be in
-a projected coordinate system** (metres, not degrees) before interpolating.
-Distances in degrees are meaningless for these calculations.
+::: {.callout-important}
+## Project your data before interpolating
+All distance-based interpolation methods require a projected coordinate system (metres, not degrees). Use `st_transform(x, crs)` to reproject before fitting any model. See the [CRS chapter](crs.qmd#which-projection-to-use) for guidance on choosing a projection appropriate to your study area.
+:::
 
 ---
 
@@ -49,10 +48,10 @@ We will interpolate cod biomass from the 2018 Icelandic spring bottom trawl surv
 (SMB). The data are loaded once here and reused across all sections.
 
 ```{r}
-biol <- read_csv("ftp://ftp.hafro.is/pub/data/csv/is_smb_biological.csv") %>%
+biol <- read_csv("./data/is_smb_biological.csv") %>%
   filter(species == "cod")
 
-cod <- read_csv("ftp://ftp.hafro.is/pub/data/csv/is_smb_stations.csv") %>%
+cod <- read_csv("./data/is_smb_stations.csv") %>%
   filter(year == 2018) %>%
   left_join(biol, by = "id") %>%
   mutate(kg = replace_na(kg, 0)) %>%
@@ -60,7 +59,7 @@ cod <- read_csv("ftp://ftp.hafro.is/pub/data/csv/is_smb_stations.csv") %>%
   st_as_sf(coords = c("lon1", "lat1"), crs = 4326) %>%
   st_transform(3395)   # World Mercator — projected, units in metres
 
-iceland <- read_sf("ftp://ftp.hafro.is/pub/data/shapes/iceland_coastline.gpkg") %>%
+iceland <- read_sf("./data/iceland_coastline.gpkg") %>%
   st_transform(3395)
 ```
 

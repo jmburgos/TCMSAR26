@@ -9,7 +9,7 @@ A 5-day course on **mapping and spatial analysis with R**, aimed at fisheries an
 
 ## Project structure
 
-The project is a **Quarto website** (`_quarto.yml`, `output-dir: site/`), using the `cosmo` theme with a docked sidebar.
+The project is a **Quarto website** (`_quarto.yml`, `output-dir: _site/`), using the `cosmo` theme with a docked sidebar.
 
 ### Source files (`.qmd`)
 

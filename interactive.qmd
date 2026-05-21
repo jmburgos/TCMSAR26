@@ -416,6 +416,89 @@ leaflet(nfu_proj) |>
                                        feature.id  = FALSE))
 ```
 
+## Choropleth of fishing intensity
+
+The OSPAR otter trawl intensity layer is a large polygon dataset (91,190
+features). It is an instructive case because:
+
+- the data is strongly right-skewed, making colour-scale choice important;
+- the polygon count is near the practical limit of standard `leaflet` DOM
+  rendering, so it motivates the WebGL approach shown in the performance section;
+- it is directly relevant to both fisheries management (ICES VMS Data Call) and
+  marine spatial planning (wind farm EIA baseline data).
+
+```{r ospar-leaflet, message=FALSE}
+ospar_int <- read_sf("data/OSPAR_intensity_Otter_2015.gpkg") |>
+  select(FishingH, KWfishingH, SurfSAR) |>
+  st_transform(4326)
+
+# Use quantile breaks so colour variation is visible across the full range
+pal_sar <- colorQuantile(
+  palette  = "YlOrRd",
+  domain   = ospar_int$SurfSAR,
+  n        = 7,
+  na.color = "transparent"
+)
+
+leaflet(ospar_int) |>
+  addProviderTiles(providers$CartoDB.Positron) |>
+  addPolygons(
+    fillColor   = ~pal_sar(SurfSAR),
+    fillOpacity = 0.75,
+    color       = NA,              # no polygon border — 91k borders would be slow
+    smoothFactor = 0.5,
+    label = ~paste0("SAR: ", round(SurfSAR, 2),
+                    " | Fishing hours: ", round(FishingH, 1)),
+    popup = ~paste0(
+      "<b>Surface SAR:</b> ",    round(SurfSAR,    2), "<br>",
+      "<b>Fishing hours:</b> ",  round(FishingH,   1), "<br>",
+      "<b>kW·fishing hours:</b> ", round(KWfishingH, 0)
+    ),
+    group = "Otter trawl intensity"
+  ) |>
+  addLegend(
+    position = "bottomright",
+    pal      = pal_sar,
+    values   = ~SurfSAR,
+    title    = "SurfSAR<br>(quantile bins)",
+    labFormat = labelFormat(digits = 2)
+  ) |>
+  addLayersControl(
+    overlayGroups = "Otter trawl intensity",
+    options       = layersControlOptions(collapsed = FALSE)
+  )
+```
+
+::: {.callout-note}
+## Why `colorQuantile()` and why `color = NA`?
+
+**Colour scale:** `SurfSAR` has a very long right tail — most cells have low
+values, but a small number of intensively fished cells have very high SAR.
+`colorQuantile()` allocates an equal number of features to each colour bin
+regardless of the raw value range, so the map shows spatial variation across
+the whole dataset rather than a near-uniform low-colour wash with a few bright
+outliers.
+
+**No border:** with 91,190 polygons, drawing a border around each feature would
+add ~90,000 SVG path strokes to the DOM and make the map noticeably slow. Setting
+`color = NA` removes borders entirely. If you want a subtle separator, set
+`color = "white"` and `weight = 0.1`.
+:::
+
+::: {.callout-note}
+## Exercise
+
+1. Switch the colour palette from `"YlOrRd"` to `"viridis"` (or any palette
+   from `RColorBrewer::brewer.pal.info`). Which palette communicates the spatial
+   gradient more clearly on the `CartoDB.Positron` basemap?
+2. Add a second layer showing the ICES ecoregion boundaries (`ices_ecoregions.gpkg`)
+   as `addPolylines()` with `color = "steelblue"` and `weight = 1`. Use
+   `addLayersControl()` to let the user toggle each layer independently.
+3. The map currently includes all cells regardless of fishing activity. Filter to
+   `SurfSAR > 0` before plotting. Does this change how the map renders, and does
+   it change the interpretation?
+:::
+
 ## Raster layers
 
 Use `addRasterImage()` from the `leafem` package for *terra* `SpatRaster` objects.

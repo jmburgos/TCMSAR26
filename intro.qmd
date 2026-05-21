@@ -174,7 +174,7 @@ install.packages(c(
 
 ::: {.callout-note}
 ## A note on raster packages
-This course uses **terra** for raster data. Some chapters also reference the older **raster** package, which you may encounter in existing code. The two packages have similar functionality but different syntax. If you see a function like `raster()` or `stack()`, it is from the raster package; the terra equivalents are `rast()` and `c()`.
+This course uses **terra** for raster data. The older **raster** package has similar functionality but different syntax -- `rast()` replaces `raster()`, and `c()` replaces `stack()`. For the full history of the R spatial ecosystem, see the [Spatial data concepts](spatial_data.qmd#the-r-ecosystem-for-spatial-data) chapter.
 :::
 
 ## Verify your installation

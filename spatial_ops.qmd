@@ -53,12 +53,12 @@ ggplot() +
   labs(title = "Nephrops survey stations and functional units")
 ```
 
+
 ::: {.callout-important}
 ## CRS must match for spatial operations
-Any spatial operation between two sf objects requires them to share the same coordinate reference system. sf will throw an error or give wrong results if they do not. Always check with `st_crs(a) == st_crs(b)` before combining layers, and use `st_transform()` to align them if needed.
-
-In this chapter both `nephrops` and `nfu` are in EPSG:4326 (geographic WGS84). For topological operations (within, intersects, etc.) this is acceptable, though sf will warn you that it is assuming planar geometry. For distance-based operations, you must project first — see the distance subsetting section below.
+Any spatial operation between two sf objects requires them to share the same CRS — sf will throw an error or give wrong results if they do not. Check with `st_crs(a) == st_crs(b)` and use `st_transform()` to align if needed. For topological operations (within, intersects, etc.) geographic coordinates are acceptable, though sf will warn about assuming planar geometry. For distance-based operations, project first. See the [CRS chapter](crs.qmd#setting-vs-transforming-a-critical-distinction) for the distinction between setting and transforming a CRS.
 :::
+
 
 ---
 
@@ -332,6 +332,122 @@ ggplot() +
 ## Why use st_drop_geometry() before summarising?
 Calling `st_drop_geometry()` before `count()` converts the sf object to a plain tibble. This prevents sf from trying to aggregate the geometry column alongside the attributes, which would produce a MULTIPOINT for each NFU — technically valid but not what we want here, and slower. Summarising on the plain tibble and then joining back to the polygon layer for mapping is the cleanest pattern.
 :::
+
+
+# Aggregating a large polygon dataset by region
+
+The examples above use relatively small datasets. This section uses the OSPAR
+otter trawl intensity layer — 91,190 polygon features covering the North-East
+Atlantic — as a realistic performance test and a substantive fisheries example.
+
+The dataset is `OSPAR_intensity_Otter_2015.gpkg`. Key columns are:
+
+| Column | Description |
+|---|---|
+| `FishingH` | Fishing hours |
+| `KWfishingH` | kW-fishing hours — effort weighted by vessel power |
+| `SurfSAR` | Surface swept area ratio — area swept relative to cell area |
+| `totweight` | Total landed weight (tonnes) |
+| `totvalue` | Total landed value |
+
+::: {.callout-note}
+The **swept area ratio** (SAR) is a standard metric used in ICES VMS Data Call
+outputs and in wind farm Environmental Impact Assessments. A value of 1.0 means
+the cell was swept once on average during the reference period; values above 1.0
+indicate repeated passes. `SurfSAR` covers surface-contacting gear (otter trawls
+and similar); bottom-contacting gear (tickler chains, pulse gear) would be
+captured in `SubSurfSAR` if present.
+:::
+
+```{r ospar-load, message=FALSE}
+# 91,190 polygons — this may take a few seconds to read
+ospar_int <- read_sf("./data/OSPAR_intensity_Otter_2015.gpkg") |>
+  select(FishingH, KWfishingH, SurfSAR, totweight, totvalue)
+
+# Quick sense-check: how many cells have any recorded fishing?
+ospar_int |>
+  st_drop_geometry() |>
+  summarise(n_cells       = n(),
+            n_fished      = sum(FishingH > 0, na.rm = TRUE),
+            median_SurfSAR = median(SurfSAR, na.rm = TRUE),
+            max_SurfSAR    = max(SurfSAR,    na.rm = TRUE))
+```
+
+## Spatial join with ICES ecoregions
+
+We want to know total fishing hours and mean SAR for each ICES ecoregion. The
+workflow is: spatial join → drop geometry → summarise by ecoregion.
+
+The `SurfSAR` values must be averaged, not summed — they are already normalised
+by cell area. Fishing hours and effort (`KWfishingH`) are totals and can be
+summed.
+
+```{r ospar-join, message=FALSE}
+ier <- read_sf("./data/ices_ecoregions.gpkg") |>
+  select(ecoregion)
+
+# The OSPAR layer may have invalid geometries under S2 — disable it for the join
+sf_use_s2(FALSE)
+ospar_eco <- st_join(ospar_int, ier, join = st_intersects, left = FALSE)
+sf_use_s2(TRUE)
+
+# Summarise per ecoregion
+eco_summary <- ospar_eco |>
+  st_drop_geometry() |>
+  filter(!is.na(ecoregion)) |>
+  group_by(ecoregion) |>
+  summarise(
+    total_FishingH   = sum(FishingH,   na.rm = TRUE),
+    total_KWfishingH = sum(KWfishingH, na.rm = TRUE),
+    mean_SurfSAR     = mean(SurfSAR,   na.rm = TRUE),
+    n_cells          = n(),
+    .groups = "drop"
+  ) |>
+  arrange(desc(total_FishingH))
+
+eco_summary
+```
+
+Join the summary back to the ecoregion polygons for mapping:
+
+```{r ospar-map, message=FALSE}
+ier_summary <- ier |>
+  left_join(eco_summary, by = "ecoregion")
+
+ggplot(ier_summary) +
+  geom_sf(aes(fill = mean_SurfSAR), colour = "white", linewidth = 0.3) +
+  scale_fill_viridis_c(option = "inferno", direction = -1,
+                       transform = "log1p",
+                       name = "Mean SurfSAR\n(log scale)",
+                       na.value = "grey90") +
+  labs(title    = "Otter trawl surface swept area ratio by ICES ecoregion",
+       subtitle = "OSPAR VMS data 2015; log1p transform",
+       caption  = "Source: OSPAR Commission") +
+  theme_bw()
+```
+
+::: {.callout-note}
+## Why `log1p`?
+
+Swept area ratios are right-skewed: most cells have low values but a few heavily
+fished cells have very high SAR. A `log1p` (log(x + 1)) transform compresses the
+upper tail and reveals variation at low-to-moderate intensities. Using `log1p`
+rather than `log` avoids the undefined value at zero.
+:::
+
+::: {.callout-note}
+## Exercise
+
+1. Repeat the ecoregion summary using `KWfishingH` instead of `FishingH`. Which
+   ecoregion ranks highest on effort-weighted fishing hours but lower on raw
+   fishing hours? What might explain this?
+2. Filter the OSPAR layer to cells where `SurfSAR > 5` and make a map showing
+   these high-intensity cells. Do they cluster in particular areas?
+3. *(Extension)* Load a protected area polygon (e.g. from `helcom.gpkg`) and use
+   `st_filter()` to find all OSPAR cells that intersect it. What is the mean SAR
+   inside versus outside the protected area?
+:::
+
 
 ---
 

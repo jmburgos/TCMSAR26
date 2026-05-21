@@ -25,9 +25,7 @@ nfu <- read_sf("./data/nephrops_fu.gpkg") |>
 
 ::: {.callout-important}
 ## Always use projected data for geometric operations
-Geometric operations (areas, distances, buffers) assume planar (Cartesian) coordinates. If your data is in geographic coordinates (latitude/longitude), results will be wrong or meaningless — areas come out in square degrees, distances in degrees, and buffers become ellipses. Always project your data before doing geometric calculations, and make sure all layers share the same CRS.
-
-Use `st_is_longlat(x)` to check, and `st_transform(x, crs)` to reproject.
+Geometric operations (areas, distances, buffers) require planar (Cartesian) coordinates. Geographic coordinates (latitude/longitude) will produce wrong results — areas in square degrees, distances in degrees, and distorted buffers. Use `st_is_longlat(x)` to check, and `st_transform(x, crs)` to reproject. See the [CRS chapter](crs.qmd#which-projection-to-use) for guidance on choosing an appropriate projection.
 :::
 
 ---
@@ -288,7 +286,7 @@ Complex geometries with many vertices are slow to plot, slow to process, and lar
 `st_simplify()` uses the Douglas-Peucker algorithm. The `dTolerance` argument sets the maximum allowable deviation from the original shape in CRS units (metres for projected data).
 
 ```{r}
-helcom <- read_sf("ftp://ftp.hafro.is/pub/data/shapes/helcom.gpkg") |>
+helcom <- read_sf("./data/helcom.gpkg") |>
   st_transform(3395)
 
 helcom_simple <- st_simplify(helcom, dTolerance = 5000)  # 5 km tolerance

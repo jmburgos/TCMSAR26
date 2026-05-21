@@ -20,16 +20,20 @@ website:
         file: ggplot1.qmd
       - text: "Simple features"
         file: sf.qmd
+      - text: "Coordinate reference systems"
+        file: crs.qmd   
+      - text: "Mapping with ggplot - part 2"
+        file: ggplot2.qmd
       - text: "Working with geometries in sf objects"
         file: geometric.qmd
       - text: "Spatial operations"
         file: spatial_ops.qmd
-      - text: "Coordinate reference systems"
-        file: crs.qmd
       - text: "Rasters"
         file: rasters.qmd
       - text: "Reading and writing spatial data"
         file: input_output.qmd
+      - text: "R and QGIS"
+        file: qgis.qmd
       - text: "Interactive maps"
         file: interactive.qmd
       - text: "Interpolation"

@@ -1,0 +1,266 @@
+---
+  title: "R and QGIS"
+execute:
+  enabled: false
+---
+  
+  R and QGIS are complementary tools, and many practitioners use both in the same 
+workflow. QGIS excels at interactive, exploratory work: visually inspecting data, 
+digitising features, and quick one-off queries. R excels at reproducible, scripted 
+analysis that can be run end-to-end by anyone with the same data. There is no 
+need to choose between them.
+
+This chapter covers three ways to connect the two: simple file exchange, calling 
+QGIS processing algorithms directly from R, and accessing GRASS GIS through R.
+
+---
+  
+  # The shared foundation: GDAL
+  
+  R and QGIS are both built on [GDAL](https://gdal.org/), the Geospatial Data 
+Abstraction Library. This means they can read and write the same file formats, 
+and a file written by one can always be opened by the other. You do not need any 
+special integration layer to move data between them — a GeoPackage is a 
+GeoPackage whether you created it in R or in QGIS.
+
+```{r setup}
+library(tidyverse)
+library(sf)
+library(terra)
+```
+
+---
+  
+  # File exchange
+  
+  The simplest and most reliable way to combine R and QGIS in a workflow is to 
+write files from R that QGIS can open, and to read files prepared in QGIS back 
+into R.
+
+**GeoPackage** (`.gpkg`) is the recommended format for this. It is an open 
+standard supported natively by both tools, stores multiple layers in a single 
+file, and avoids the limitations of shapefiles. GeoTIFF (`.tif`) is the 
+equivalent for rasters.
+
+## Writing from R for use in QGIS
+
+```{r}
+# Write a processed sf object — open this directly in QGIS
+write_sf(my_sf, "output/survey_results.gpkg")
+
+# Write a raster — open in QGIS as a layer
+writeRaster(my_raster, "output/interpolated_temp.tif",
+            overwrite = TRUE)
+
+# A GeoPackage can hold multiple layers
+write_sf(stations_sf, "output/survey.gpkg", layer = "stations")
+write_sf(tracks_sf,   "output/survey.gpkg", layer = "tracks")
+```
+
+## Reading into R from QGIS
+
+```{r}
+# Read a layer prepared or digitised in QGIS
+study_areas <- read_sf("qgis_work/study_areas.gpkg")
+
+# If the GeoPackage has multiple layers, inspect first
+st_layers("qgis_work/study_areas.gpkg")
+
+# Then read the layer you need
+exclusion_zones <- read_sf("qgis_work/study_areas.gpkg",
+                           layer = "exclusion_zones")
+```
+
+::: {.callout-tip}
+## Organise your project folders clearly
+A simple convention that works well: keep a `qgis/` folder for layers you create 
+or edit interactively in QGIS, and an `output/` folder for layers produced by 
+your R scripts. Reading from `qgis/` and writing to `output/` keeps the 
+direction of data flow obvious.
+:::
+  
+  ---
+  
+  # Calling QGIS algorithms from R: `qgisprocess`
+  
+  The **qgisprocess** package (Dunnington et al.) lets you run QGIS processing 
+algorithms directly from an R script, passing `sf` and `terra` objects as inputs 
+and getting results back as R objects. This is the current recommended approach 
+for tight R--QGIS integration.
+
+It requires a local QGIS installation (version 3.14 or later), and it wraps the 
+`qgis_process` command-line tool that QGIS provides. All providers available in 
+your QGIS installation are accessible: native QGIS algorithms, GDAL, GRASS, and 
+SAGA.
+
+```{r}
+# install.packages("qgisprocess")
+library(qgisprocess)
+```
+
+## Checking your setup
+
+```{r}
+# Verify that qgisprocess can find your QGIS installation
+qgis_path()
+qgis_version()
+```
+
+## Discovering available algorithms
+
+```{r}
+# List all available algorithms
+qgis_algorithms()
+
+# Search by keyword
+qgis_algorithms() |>
+  filter(grepl("buffer", algorithm, ignore.case = TRUE)) |>
+  select(provider, algorithm, algorithm_title)
+
+# Get the full documentation for one algorithm
+qgis_show_help("native:buffer")
+```
+
+## A worked example: buffering survey stations
+
+```{r}
+# Load survey stations
+stations <- read_sf("./data/is_smb_stations.csv") |>
+  # (already an sf object with geometry)
+  st_transform(3057)   # reproject to ISN93 (metres) for buffering
+
+# Run the QGIS buffer algorithm
+result <- qgis_run_algorithm(
+  algorithm = "native:buffer",
+  INPUT     = stations,
+  DISTANCE  = 5000,    # 5 km buffer, in the CRS units (metres)
+  SEGMENTS  = 16,
+  DISSOLVE  = FALSE
+)
+
+# Convert the output back to an sf object
+station_buffers <- sf::read_sf(qgis_output(result, "OUTPUT"))
+
+# Inspect
+glimpse(station_buffers)
+```
+
+::: {.callout-note}
+The `DISTANCE` parameter is always in the units of the input layer's CRS. 
+Reproject to a projected CRS (metres) before buffering if your data are in 
+degrees.
+:::
+
+## Another example: dissolving polygons by attribute
+
+```{r}
+eez <- read_sf("./data/eez.gpkg")
+
+result <- qgis_run_algorithm(
+  algorithm = "native:dissolve",
+  INPUT     = eez,
+  FIELD     = "country"
+)
+
+eez_dissolved <- sf::read_sf(qgis_output(result, "OUTPUT"))
+```
+
+## Chaining algorithms
+
+`qgisprocess` results can be passed directly as inputs to the next algorithm 
+without converting back to `sf` at each step:
+
+```{r}
+# Buffer, then dissolve, in one chain
+buffered <- qgis_run_algorithm("native:buffer",
+                                INPUT    = stations,
+                                DISTANCE = 5000)
+
+dissolved <- qgis_run_algorithm("native:dissolve",
+                                 INPUT = qgis_output(buffered, "OUTPUT"))
+
+final <- sf::read_sf(qgis_output(dissolved, "OUTPUT"))
+```
+
+::: {.callout-warning}
+## Package versions
+**qgisprocess** stabilised on CRAN in 2023 and is the successor to the older 
+`RQGIS` and `RQGIS3` packages, which are no longer maintained. If you encounter 
+references to `RQGIS` in older tutorials or Stack Overflow answers, use 
+`qgisprocess` instead.
+
+Check the current version and documentation at: 
+<https://r-spatial.github.io/qgisprocess/>
+:::
+
+---
+
+# GRASS GIS from R: `rgrass`
+
+[GRASS GIS](https://grass.osgeo.org/) is a powerful open-source GIS that 
+includes algorithms not available in QGIS or R, particularly for terrain 
+analysis (watershed delineation, viewshed, least-cost paths) and advanced raster 
+processing. The **rgrass** package provides a direct interface between R and 
+GRASS.
+
+`qgisprocess` can also access GRASS algorithms if GRASS is installed alongside 
+QGIS, so for many purposes you do not need `rgrass` directly. Use `rgrass` when 
+you need fine-grained control over the GRASS environment, or when you are working 
+with workflows built around GRASS natively.
+
+```{r}
+# install.packages("rgrass")
+library(rgrass)
+
+# Initialise a GRASS session (requires GRASS to be installed)
+initGRASS(gisBase  = "/usr/lib/grass82",   # path to your GRASS installation
+          home     = tempdir(),
+          override = TRUE)
+
+# Write an sf object into the GRASS environment
+write_VECT(my_sf, vname = "my_layer", v.in.ogr_flags = "overwrite")
+
+# Run a GRASS command
+execGRASS("v.buffer",
+          input    = "my_layer",
+          output   = "my_layer_buffered",
+          distance = 5000)
+
+# Read the result back into R as an sf object
+result <- read_VECT("my_layer_buffered")
+```
+
+For most participants on this course, `qgisprocess` will be sufficient. The 
+`rgrass` documentation is at <https://rsbivand.github.io/rgrass/>.
+
+---
+
+# Choosing the right approach
+
+| Situation | Recommended approach |
+|---|---|
+| Move a processed layer to QGIS for visual checking | Write GeoPackage with `write_sf()` |
+| Use a QGIS-prepared layer in R | Read GeoPackage with `read_sf()` |
+| Run a specific QGIS algorithm inside a script | `qgisprocess` |
+| Need GRASS algorithms (watersheds, terrain) | `qgisprocess` with GRASS provider, or `rgrass` |
+| Building a fully reproducible pipeline | R throughout; QGIS for visual QC only |
+
+::: {.callout-tip}
+## A practical rule of thumb
+Use QGIS for interactive exploration and visual checks. Use R for anything you 
+need to run more than once, share with collaborators, or include in a report. 
+File exchange via GeoPackage always works. `qgisprocess` is the best option when 
+you specifically need a QGIS algorithm inside a scripted workflow.
+:::
+
+---
+
+# Further reading
+
+- [qgisprocess package documentation](https://r-spatial.github.io/qgisprocess/) — 
+  full reference with vignettes and algorithm examples.
+- [QGIS documentation: Processing framework](https://docs.qgis.org/latest/en/docs/user_manual/processing/index.html) — 
+  describes all native algorithms accessible via `qgisprocess`.
+- [rgrass documentation](https://rsbivand.github.io/rgrass/) — interface to GRASS GIS from R.
+- [Geocomputation with R, Chapter 9: Bridges to GIS software](https://r.geocompx.org/gis) — 
+  a detailed treatment of R--QGIS--GRASS--SAGA integration.

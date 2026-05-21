@@ -250,10 +250,10 @@ The `lwgeom::st_transform_proj()` function was previously needed for some projec
 When plotting sf objects with `geom_sf()`, ggplot2 uses `coord_sf()` to manage the coordinate system. `coord_sf()` ensures all layers are displayed in a common CRS, which it takes automatically from the first layer that defines one. You can override this with the `crs` argument.
 
 ```{r}
-coast <- read_sf("ftp://ftp.hafro.is/pub/data/shapes/iceland_coastline.gpkg")
+coast <- read_sf("./data/iceland_coastline.gpkg")
 st_crs(coast)
 
-depth <- read_sf("ftp://ftp.hafro.is/pub/data/shapes/iceland_contours.gpkg")
+depth <- read_sf("./data/iceland_contours.gpkg")
 st_crs(depth)
 ```
 

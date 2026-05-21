@@ -1,7 +1,6 @@
 ---
 title: "Mapping with ggplot2 — part 2"
-execute:
-  enabled: false
+
 ---
 
 # Getting started
@@ -450,6 +449,100 @@ ggplot() +
   scale_y_continuous(NULL, NULL) +
   theme_bw()
 ```
+
+---
+
+# Mapping fishing intensity with `patchwork`
+
+The OSPAR otter trawl intensity layer (`OSPAR_intensity_Otter_2015.gpkg`) is a
+large, real-world polygon dataset that rewards careful colour-scale choices.
+With 91,190 cells and strongly right-skewed distributions, it illustrates several
+techniques introduced in this chapter: `geom_sf()` with a continuous fill,
+viridis colour scales, log transforms, and `patchwork` for multi-panel figures.
+
+```{r ospar-ggplot-data, message=FALSE}
+ospar_int <- read_sf("data/OSPAR_intensity_Otter_2015.gpkg") |>
+  select(FishingH, KWfishingH, SurfSAR)
+```
+
+A basic starting map — note the heavy skew in the raw values:
+
+```{r ospar-ggplot-raw, message=FALSE}
+ggplot(ospar_int) +
+  geom_sf(aes(fill = SurfSAR), colour = NA) +
+  scale_fill_viridis_c(option = "plasma") +
+  theme_bw() +
+  labs(title = "SurfSAR — raw scale (hard to read)")
+```
+
+A log1p transform reveals the spatial structure across the whole range:
+
+```{r ospar-ggplot-log, message=FALSE}
+ggplot(ospar_int) +
+  geom_sf(aes(fill = SurfSAR), colour = NA) +
+  scale_fill_viridis_c(option = "plasma", direction = -1,
+                       transform = "log1p",
+                       name = "SurfSAR\n(log scale)") +
+  labs(title = "Surface swept area ratio",
+       subtitle = "OSPAR VMS data 2015",
+       caption  = "Source: OSPAR Commission") +
+  theme_bw()
+```
+
+## Side-by-side comparison with `patchwork`
+
+Two effort metrics measure slightly different things: `SurfSAR` is already
+normalised by cell area, whereas `KWfishingH` weighs fishing hours by vessel
+engine power. The `patchwork` `+` operator places them side by side so spatial
+patterns can be compared directly.
+
+```{r ospar-patchwork, message=FALSE, fig.width=11, fig.height=5}
+p_sar <- ggplot(ospar_int) +
+  geom_sf(aes(fill = SurfSAR), colour = NA) +
+  scale_fill_viridis_c(option    = "plasma",
+                       direction = -1,
+                       transform = "log1p",
+                       name      = "SurfSAR (log)") +
+  labs(title = "Surface swept area ratio") +
+  theme_bw() +
+  theme(axis.text = element_blank(), axis.ticks = element_blank())
+
+p_kw <- ggplot(ospar_int) +
+  geom_sf(aes(fill = KWfishingH), colour = NA) +
+  scale_fill_viridis_c(option    = "inferno",
+                       direction = -1,
+                       transform = "log1p",
+                       name      = "kW·h (log)") +
+  labs(title = "Effort (kW-fishing hours)") +
+  theme_bw() +
+  theme(axis.text = element_blank(), axis.ticks = element_blank())
+
+p_sar + p_kw +
+  plot_annotation(
+    title   = "Otter trawl fishing intensity — North-East Atlantic, 2015",
+    caption = "Source: OSPAR Commission",
+    theme   = theme(plot.title = element_text(face = "bold"))
+  )
+```
+
+The two panels do not always agree: areas with many hours of fishing by small
+vessels can have high `FishingH` but modest `KWfishingH`, whereas a few large
+industrial vessels can dominate `KWfishingH` while contributing fewer hours.
+
+::: {.callout-note}
+## Exercise
+
+1. Filter the OSPAR layer to cells in the North Sea only (roughly −3° to 9°E,
+   51° to 57°N using `st_crop()`). Recreate the two-panel patchwork for this
+   subregion. Does the spatial pattern look different at this scale?
+2. Add a third panel to the patchwork showing `totvalue` (total landed value)
+   on the same log1p scale. Use `plot_layout(ncol = 3)` to arrange all three
+   in a single row.
+3. The colour scales currently use different viridis options (`plasma` vs
+   `inferno`). Change both to `viridis` with `direction = -1` so the panels are
+   directly comparable. Does this make the comparison easier or harder to
+   interpret?
+:::
 
 ---
 

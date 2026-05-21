@@ -15,33 +15,17 @@ library(marmap)      # access global topography data
 ```
 
 ::: {.callout-note}
-This tutorial uses the **terra** package, which replaced the older **raster** and **rgdal** packages (both retired from CRAN at the end of 2023). The **terra** API is very similar to **raster**, so if you have used **raster** before you will find the transition straightforward. The main differences are noted throughout.
+This chapter uses **terra**, which replaced the older **raster** and **rgdal** packages. The API is similar -- differences are noted throughout. For the full background, see the [Spatial data concepts](spatial_data.qmd#the-r-ecosystem-for-spatial-data) chapter.
 :::
 
 # Raster data model
 
-Raster data is used to represent parameters that vary continuously in space.
+The raster data model was introduced in the [Spatial data concepts](spatial_data.qmd) chapter. As a brief recap: raster data represents continuous fields as a regular grid of equally-sized cells. Each cell holds one or more values, and the grid is defined by its **extent**, **resolution**, and **origin**. The coordinate reference system is a fourth required property.
 
-A raster represents some area as a regular grid of equally sized rectangles, known as cells or pixels.
+::: {.callout-note}
+If you need to revisit the conceptual background — the difference between continuous and categorical rasters, multi-layer rasters, or irregular grid types — see the [Spatial data concepts](spatial_data.qmd#raster-data-model) section.
+:::
 
-Each cell can hold one or more data values (i.e. single-layer and multi-layer rasters). Data can be continuous (e.g. depth, temperature) or discrete/categorical (e.g. land types). Satellite images are rasters. Rasters are also used to store the output of interpolations and of oceanographic models.
-
-<center>
-![](./img/raster1.png){width=50%}
-</center>
-
-Each cell has an individual ID. To define a raster you need to define:
-
-  - The cell size (also known as grain or resolution)
-  - The extent (raster size) or number of cells
-  - The origin (the lowest x and y values)
-  - The coordinate reference system
-
-<center>
-![](./img/raster2.png){width=50%}
-</center>
-
-Some raster formats can have multiple bands (layers).
 
 # Raster classes in R
 
@@ -468,12 +452,10 @@ Rasterizing polygons:
 nfu <- read_sf("./data/nephrops_fu.gpkg") %>% # Note the tidyverse pipe!
   mutate(area = units::set_units(st_area(.), km^2))
 
-
 target <- rast(xmin = -15, xmax = 13,
                ymin = 36.5, ymax = 62,
                res = 0.5,
                crs = "EPSG:4326")
-
 
 # Rasterize by presence/absence
 nfu_rst <- rasterize(nfu, target)
