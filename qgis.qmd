@@ -1,5 +1,5 @@
 ---
-  title: "R and QGIS"
+title: "R and QGIS"
 execute:
   enabled: false
 ---

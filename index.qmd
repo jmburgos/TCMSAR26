@@ -4,9 +4,9 @@ title: "Home"
 
 ![](./img/old_map.jpg)
 
-### This page: <https://heima.hafro.is/~julian/ftp/index.html>
+### This page: <https://heima.hafro.is/~julian/TCMSAR26/index.html>
 
-### Datasets: <https://heima.hafro.is/~julian/ftp/data.zip>
+### Datasets: <https://heima.hafro.is/~julian/TCMSAR26/data.zip>
 
 ## Schedule
 
@@ -33,4 +33,4 @@ title: "Home"
 
 Julian M. Burgos Email: julian.burgos(at) hafogvatn.is
 
-Einar Hjorleifsson Email: einar.hjorleifsson (at) hafogvatn.is
+Francesco Golin  Email: francesco.golin(at)hafogvatn.is

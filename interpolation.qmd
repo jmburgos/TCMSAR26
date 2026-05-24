@@ -1,5 +1,7 @@
 ---
 title: "Interpolation"
+execute:
+  enabled: false
 ---
 
 **Needed libraries**:

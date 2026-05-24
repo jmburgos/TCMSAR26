@@ -1,5 +1,7 @@
 ---
 title: "Reading and writing spatial data"
+execute:
+  enabled: false
 ---
 
 Spatial data is stored in files and in spatial databases. In this course we will focus on reading and writing files, with a brief look at spatial databases.
