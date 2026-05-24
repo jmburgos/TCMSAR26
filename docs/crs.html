@@ -1,0 +1,1186 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.37">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Coordinate Reference Systems – Introduction to mapping and spatial analysis with R</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-7f8f88aac4f3542376d5c11b86a4c14d.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-6033a600180109c3731f6a886c29932c.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="styles.css">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="./index.html">
+    <span class="navbar-title">Introduction to mapping and spatial analysis with R</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="./index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./data.html"> 
+<span class="menu-text">Data</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-sessions" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Sessions</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-sessions">    
+        <li>
+    <a class="dropdown-item" href="./intro.html">
+ <span class="dropdown-text">Introduction</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./spatial_data.html">
+ <span class="dropdown-text">Spatial data</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./ggplot1.html">
+ <span class="dropdown-text">Mapping with ggplot - part 1</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./sf.html">
+ <span class="dropdown-text">Simple features</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./crs.html">
+ <span class="dropdown-text">Coordinate reference systems</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./ggplot2.html">
+ <span class="dropdown-text">Mapping with ggplot - part 2</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./geometric.html">
+ <span class="dropdown-text">Working with geometries in sf objects</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./spatial_ops.html">
+ <span class="dropdown-text">Spatial operations</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./rasters.html">
+ <span class="dropdown-text">Rasters</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./input_output.html">
+ <span class="dropdown-text">Reading and writing spatial data</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./qgis.html">
+ <span class="dropdown-text">R and QGIS</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./interactive.html">
+ <span class="dropdown-text">Interactive maps</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./interpolation.html">
+ <span class="dropdown-text">Interpolation</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/jmburgos/TCMSAR26"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#the-components-of-a-crs" id="toc-the-components-of-a-crs" class="nav-link active" data-scroll-target="#the-components-of-a-crs">The components of a CRS</a>
+  <ul class="collapse">
+  <li><a href="#ellipsoid" id="toc-ellipsoid" class="nav-link" data-scroll-target="#ellipsoid">Ellipsoid</a></li>
+  <li><a href="#datum" id="toc-datum" class="nav-link" data-scroll-target="#datum">Datum</a></li>
+  <li><a href="#projection" id="toc-projection" class="nav-link" data-scroll-target="#projection">Projection</a></li>
+  </ul></li>
+  <li><a href="#spatial-projections" id="toc-spatial-projections" class="nav-link" data-scroll-target="#spatial-projections">Spatial projections</a></li>
+  <li><a href="#which-projection-to-use" id="toc-which-projection-to-use" class="nav-link" data-scroll-target="#which-projection-to-use">Which projection to use?</a></li>
+  <li><a href="#crs-in-r" id="toc-crs-in-r" class="nav-link" data-scroll-target="#crs-in-r">CRS in R</a>
+  <ul class="collapse">
+  <li><a href="#how-to-specify-a-crs" id="toc-how-to-specify-a-crs" class="nav-link" data-scroll-target="#how-to-specify-a-crs">How to specify a CRS</a></li>
+  <li><a href="#querying-the-crs-of-an-object" id="toc-querying-the-crs-of-an-object" class="nav-link" data-scroll-target="#querying-the-crs-of-an-object">Querying the CRS of an object</a></li>
+  <li><a href="#setting-vs.-transforming-a-critical-distinction" id="toc-setting-vs.-transforming-a-critical-distinction" class="nav-link" data-scroll-target="#setting-vs.-transforming-a-critical-distinction">Setting vs.&nbsp;transforming: a critical distinction</a></li>
+  <li><a href="#finding-the-right-crs-with-crsuggest" id="toc-finding-the-right-crs-with-crsuggest" class="nav-link" data-scroll-target="#finding-the-right-crs-with-crsuggest">Finding the right CRS with crsuggest</a></li>
+  </ul></li>
+  <li><a href="#transforming-vector-data" id="toc-transforming-vector-data" class="nav-link" data-scroll-target="#transforming-vector-data">Transforming vector data</a></li>
+  <li><a href="#projections-in-ggplot2" id="toc-projections-in-ggplot2" class="nav-link" data-scroll-target="#projections-in-ggplot2">Projections in ggplot2</a></li>
+  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary">Summary</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Coordinate Reference Systems</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>A fundamental aspect of spatial data is defining its Coordinate Reference System (CRS). A CRS defines how coordinates relate to actual locations on the Earth’s surface. Without a CRS, coordinates are just numbers — a latitude of 65 and a longitude of -18 mean nothing unless we know <em>which</em> CRS they are expressed in.</p>
+<p>A CRS is built from three components: an <em>ellipsoid</em>, a <em>datum</em>, and a <em>projection</em>.</p>
+<hr>
+<section id="the-components-of-a-crs" class="level1">
+<h1>The components of a CRS</h1>
+<section id="ellipsoid" class="level2">
+<h2 class="anchored" data-anchor-id="ellipsoid">Ellipsoid</h2>
+<p>The Earth is not a perfect sphere — it bulges at the equator and is flattened at the poles, and its surface is irregular. An <strong>ellipsoid</strong> is a smooth mathematical model that approximates the Earth’s shape.</p>
+<p>Some ellipsoids are fitted globally, trying to minimise error across the whole planet. <strong>WGS84</strong> is the most widely used global ellipsoid — it underpins GPS and most modern datasets. <strong>GRS80</strong> is nearly identical and underlies many national systems.</p>
+<p>Local ellipsoids are fitted to a specific region and can be more accurate there. Examples include ED50 (fitted to Europe) and OSGB36 (Great Britain). You may encounter these in older national datasets.</p>
+<p><img src="img/global_local.jpg" class="img-fluid"></p>
+</section>
+<section id="datum" class="level2">
+<h2 class="anchored" data-anchor-id="datum">Datum</h2>
+<p>The <strong>datum</strong> anchors the ellipsoid to the actual surface of the Earth by defining an origin point and the orientation of the coordinate axes. The datum always specifies which ellipsoid it uses, and sometimes shares its name (e.g.&nbsp;WGS84 is both an ellipsoid and a datum).</p>
+<p>Importantly, the same latitude/longitude values can refer to <em>different physical locations</em> depending on which datum is used. For most marine science work the differences are small enough to ignore, but they matter for precise navigation or cadastral work.</p>
+<p>When the datum is unknown, it is generally safe to assume WGS84.</p>
+</section>
+<section id="projection" class="level2">
+<h2 class="anchored" data-anchor-id="projection">Projection</h2>
+<p>Finally, the <strong>projection</strong> specifies how we represent the curved surface of the Earth on a flat plane. There are two broad approaches:</p>
+<p><strong>a) Geographic coordinates (unprojected):</strong> Latitude and longitude are spherical coordinates that describe positions on the 3D ellipsoid. When plotted directly on screen, they are treated as Cartesian (x, y) pairs — this is an implicit Equidistant Cylindrical projection and is fine for many purposes but distorts distances and areas, especially at high latitudes.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="./img/latlong.jpg" class="img-fluid figure-img" style="width:70.0%"></p>
+</figure>
+</div>
+</div>
+</div>
+<p><strong>b) Projected coordinates:</strong> An explicit mathematical transformation converts spherical coordinates into planar (Cartesian) coordinates in metres (or feet). Projected CRS are essential for accurate distance and area calculations, and for geometric operations.</p>
+<hr>
+</section>
+</section>
+<section id="spatial-projections" class="level1">
+<h1>Spatial projections</h1>
+<p>Different combinations of ellipsoid, datum, and transformation produce many different projections, broadly classified as planar (azimuthal), conical, or cylindrical.</p>
+<p><img src="img/projections.jpg" class="img-fluid"></p>
+<p>All projections introduce distortions — no flat map can perfectly represent a curved surface. The key properties that projections trade off against each other are:</p>
+<ul>
+<li><strong>Area</strong> (equal-area projections preserve area)</li>
+<li><strong>Shape</strong> (conformal projections preserve local shape)</li>
+<li><strong>Distance</strong> (equidistant projections preserve distances from a reference point)</li>
+</ul>
+<p>A projection cannot preserve all three simultaneously.</p>
+<p>The <strong>Mercator</strong> projection is conformal (preserves shapes locally) but greatly exaggerates areas near the poles. Greenland appears similar in size to South America, but in reality South America is about eight times larger. Mercator is well-suited for navigation because straight lines on the map are lines of constant bearing (rhumb lines).</p>
+<p><img src="img/proj1.jpg" class="img-fluid"></p>
+<p>The <strong>Azimuthal Equidistant</strong> projection preserves distances to and from the centre of the projection, but distorts shapes away from the centre.</p>
+<p><img src="img/proj2.png" class="img-fluid"></p>
+<p>The <strong>Cylindrical Equal Area</strong> projection preserves area — the proportions of Greenland and South America are correct — but distorts shapes near the poles.</p>
+<p><img src="img/proj4.jpg" class="img-fluid"></p>
+<p><strong>Conformal projections</strong> (like the Lambert Conformal Conic) preserve local shapes across the map, making them good for general-purpose mapping of mid-latitude regions.</p>
+<p><img src="img/proj3.png" class="img-fluid"></p>
+<hr>
+</section>
+<section id="which-projection-to-use" class="level1">
+<h1>Which projection to use?</h1>
+<p>There is no single right answer — projections have different properties suited to different purposes. The key questions to ask are:</p>
+<p><strong>1. What geographic scale am I working at?</strong></p>
+<ul>
+<li>Global or hemispheric: use a projection designed for large extents (Mollweide, Robinson, Winkel Tripel for display; Equal Earth for thematic maps).</li>
+<li>Regional (e.g.&nbsp;Icelandic waters, the North Atlantic): use a projection centred on your study area. Lambert Azimuthal Equal Area (LAEA) centred on your region is a robust choice for most analytical work.</li>
+<li>National: use the official national projection if one exists. Iceland’s official system is <strong>ISN2016</strong> (EPSG:8088), a LAEA projection using the GRS1980 ellipsoid, centred on Iceland.</li>
+</ul>
+<p><strong>2. What property do I need to preserve?</strong></p>
+<ul>
+<li><strong>Area measurements or density maps</strong> (points per grid cell, biomass per km²): use an <strong>equal-area</strong> projection. LAEA centred on your study area is a good default.</li>
+<li><strong>Shape and general mapping</strong>: use a <strong>conformal</strong> projection such as Lambert Conformal Conic (LCC). Transverse Mercator (the basis of UTM) is conformal and widely used.</li>
+<li><strong>Distance from a central point</strong>: use an <strong>equidistant</strong> projection (AEQD).</li>
+<li><strong>Polar regions</strong>: use a <strong>Stereographic</strong> projection (e.g.&nbsp;EPSG:3995 for Arctic, EPSG:3031 for Antarctic), but note that area and distance are distorted away from the pole.</li>
+</ul>
+<p><strong>3. Am I doing geometric calculations?</strong></p>
+<p>Always use a <strong>projected CRS</strong> (not geographic lat/lon) for geometric operations like area calculations, buffering, and polygon overlays. The sf package will warn you when you run operations on unprojected data.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Useful tools for choosing a CRS
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><a href="https://epsg.io" class="uri">https://epsg.io</a> — search for CRS by name, location, or code</li>
+<li><a href="https://projectionwizard.org" class="uri">https://projectionwizard.org</a> — suggests projections based on the extent and purpose of your map</li>
+<li>The <code>crsuggest</code> package in R — suggests appropriate CRS options for an sf object based on its geographic extent (see below)</li>
+</ul>
+</div>
+</div>
+<p>…or choose based on your personality: <a href="https://xkcd.com/977/" class="uri">https://xkcd.com/977/</a></p>
+<hr>
+</section>
+<section id="crs-in-r" class="level1">
+<h1>CRS in R</h1>
+<p>The <strong>sf</strong> package links to the external <strong>PROJ</strong> library (<a href="https://proj.org/" class="uri">https://proj.org/</a>) for all CRS operations. Modern versions of PROJ (6+) and sf use <strong>WKT2</strong> (Well-Known Text, 2nd edition) as the standard internal representation of CRS. This is more complete and less ambiguous than the older proj4string format.</p>
+<section id="how-to-specify-a-crs" class="level2">
+<h2 class="anchored" data-anchor-id="how-to-specify-a-crs">How to specify a CRS</h2>
+<p>There are two main ways to specify a CRS in sf:</p>
+<p><strong>1. EPSG codes</strong> — the preferred approach for common CRS. These are integer codes from the EPSG Geodetic Parameter Dataset that identify a specific CRS unambiguously. You can refer to them just by their number, but it is better to use the full “authority:code” notation.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># EPSG:4326  — geographic coordinates, WGS84 (the GPS standard)</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co"># EPSG:32628 — UTM zone 28N, WGS84</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co"># EPSG:3035  — ETRS89-LAEA, the standard equal-area CRS for Europe</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co"># EPSG:8088  — ISN2016 / LAEA Iceland (Iceland's official CRS)</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co"># 8088  — same as above, but it is better to use the full notation</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="co"># ESRI:54009  — Mollweide projection — only exists in the ESRI registry, not EPSG</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p><strong>2. Proj4 strings</strong> (legacy) — strings like <code>"+proj=longlat +datum=WGS84"</code>. These still work for basic cases but are deprecated in modern PROJ. They cannot represent all CRS parameters and may produce warnings. You will encounter them in older code and documentation; prefer EPSG codes for new work.</p>
+</section>
+<section id="querying-the-crs-of-an-object" class="level2">
+<h2 class="anchored" data-anchor-id="querying-the-crs-of-an-object">Querying the CRS of an object</h2>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rnaturalearth)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(sf)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>iceland <span class="ot">&lt;-</span> <span class="fu">ne_countries</span>(<span class="at">returnclass =</span> <span class="st">"sf"</span>, <span class="at">country =</span> <span class="st">"Iceland"</span>, <span class="at">scale =</span> <span class="dv">10</span>) <span class="sc">|&gt;</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_geometry</span>()</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="fu">st_crs</span>(iceland)        <span class="co"># Full CRS information (WKT2 representation)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Coordinate Reference System:
+  User input: WGS 84 
+  wkt:
+GEOGCRS["WGS 84",
+    DATUM["World Geodetic System 1984",
+        ELLIPSOID["WGS 84",6378137,298.257223563,
+            LENGTHUNIT["metre",1]]],
+    PRIMEM["Greenwich",0,
+        ANGLEUNIT["degree",0.0174532925199433]],
+    CS[ellipsoidal,2],
+        AXIS["latitude",north,
+            ORDER[1],
+            ANGLEUNIT["degree",0.0174532925199433]],
+        AXIS["longitude",east,
+            ORDER[2],
+            ANGLEUNIT["degree",0.0174532925199433]],
+    ID["EPSG",4326]]</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">st_crs</span>(iceland)<span class="sc">$</span>epsg   <span class="co"># Just the EPSG code</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 4326</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">st_crs</span>(iceland)<span class="sc">$</span>Name   <span class="co"># Human-readable name</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "WGS 84"</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">st_is_longlat</span>(iceland) <span class="co"># Is it geographic (unprojected)?</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] TRUE</code></pre>
+</div>
+</div>
+</section>
+<section id="setting-vs.-transforming-a-critical-distinction" class="level2">
+<h2 class="anchored" data-anchor-id="setting-vs.-transforming-a-critical-distinction">Setting vs.&nbsp;transforming: a critical distinction</h2>
+<p>There are two very different operations that both involve CRS, and confusing them is one of the most common mistakes in spatial analysis:</p>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Setting a CRS vs.&nbsp;transforming a CRS
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>Setting</strong> (<code>st_set_crs()</code>) tells R what coordinate system the data is <em>already in</em>. It only changes the metadata — the coordinate values themselves do not change. Use this when you have data without CRS information attached.</p>
+<p><strong>Transforming</strong> (<code>st_transform()</code>) actually <em>recalculates</em> all coordinates from one CRS to another. Use this when you want to change the projection.</p>
+<p>Applying <code>st_set_crs()</code> to data that is already correctly tagged will produce a warning and give wrong results. Applying <code>st_transform()</code> to data with no CRS will fail.</p>
+</div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Creating an sf object without a CRS</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>mysf <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">lat =</span> <span class="fu">c</span>(<span class="dv">66</span>, <span class="fl">65.5</span>), <span class="at">lon =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">20</span>, <span class="sc">-</span><span class="dv">19</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_as_sf</span>(<span class="at">coords =</span> <span class="fu">c</span>(<span class="st">"lon"</span>, <span class="st">"lat"</span>))</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="fu">st_crs</span>(mysf) <span class="co"># NA — no CRS defined</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Coordinate Reference System: NA</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># STEP 1: Set the CRS (we know these are WGS84 lat/lon)</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>mysf <span class="ot">&lt;-</span> mysf <span class="sc">|&gt;</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_set_crs</span>(<span class="dv">4326</span>)</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="fu">st_crs</span>(mysf)<span class="sc">$</span>Name <span class="co"># Now it has a CRS</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "WGS 84"</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># STEP 2: Transform to a projected CRS (LAEA Iceland)</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>mysf_projected <span class="ot">&lt;-</span> mysf <span class="sc">|&gt;</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_transform</span>(<span class="dv">8088</span>)</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a><span class="fu">st_crs</span>(mysf_projected)<span class="sc">$</span>Name</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "ISN2016 / Lambert 2016"</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">st_is_longlat</span>(mysf_projected) <span class="co"># FALSE — now it's projected</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] FALSE</code></pre>
+</div>
+</div>
+<p>Calling <code>st_set_crs()</code> on an object that already has a CRS will produce a warning — this is intentional, to guard against accidentally overwriting correct metadata:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># This produces a warning — the CRS is being replaced, not transformed</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="fu">st_set_crs</span>(mysf, <span class="dv">32628</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Simple feature collection with 2 features and 0 fields
+Geometry type: POINT
+Dimension:     XY
+Bounding box:  xmin: -20 ymin: 65.5 xmax: -19 ymax: 66
+Projected CRS: WGS 84 / UTM zone 28N
+          geometry
+1   POINT (-20 66)
+2 POINT (-19 65.5)</code></pre>
+</div>
+</div>
+</section>
+<section id="finding-the-right-crs-with-crsuggest" class="level2">
+<h2 class="anchored" data-anchor-id="finding-the-right-crs-with-crsuggest">Finding the right CRS with crsuggest</h2>
+<p>The <code>crsuggest</code> package can help you identify appropriate projected CRS options for your data based on its geographic extent:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(crsuggest)</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a><span class="fu">suggest_crs</span>(iceland)        <span class="co"># Returns a ranked list of suitable CRS options</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 10 × 6
+   crs_code crs_name                     crs_type  crs_gcs crs_units crs_proj4  
+   &lt;chr&gt;    &lt;chr&gt;                        &lt;chr&gt;       &lt;dbl&gt; &lt;chr&gt;     &lt;chr&gt;      
+ 1 3055     Hjorsey 1955 / UTM zone 27N  projected    4658 m         +proj=utm …
+ 2 3056     Hjorsey 1955 / UTM zone 28N  projected    4658 m         +proj=utm …
+ 3 6064     GR96 / EPSG Arctic zone 6-30 projected    4747 m         +proj=lcc …
+ 4 9040     ISN2016 / LCC Europe         projected    8086 m         +proj=lcc …
+ 5 9039     ISN2016 / LAEA Europe        projected    8086 m         +proj=laea…
+ 6 8088     ISN2016 / Lambert 2016       projected    8086 m         +proj=lcc …
+ 7 5639     ISN2004 / LCC Europe         projected    5324 m         +proj=lcc …
+ 8 5638     ISN2004 / LAEA Europe        projected    5324 m         +proj=laea…
+ 9 5325     ISN2004 / Lambert 2004       projected    5324 m         +proj=lcc …
+10 3057     ISN93 / Lambert 1993         projected    4659 m         +proj=lcc …</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">suggest_top_crs</span>(iceland)    <span class="co"># Returns just the top suggestion</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 5932</code></pre>
+</div>
+</div>
+<hr>
+</section>
+</section>
+<section id="transforming-vector-data" class="level1">
+<h1>Transforming vector data</h1>
+<p>Reprojecting vector data means recalculating the coordinates of every point from one CRS to another. Use <code>st_transform()</code>:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>europe <span class="ot">&lt;-</span> <span class="fu">ne_countries</span>(<span class="at">returnclass =</span> <span class="st">"sf"</span>, <span class="at">continent =</span> <span class="st">"Europe"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_geometry</span>()</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Transform to Mollweide (equal-area, good for world maps)</span></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>europe_moll <span class="ot">&lt;-</span> europe <span class="sc">|&gt;</span> <span class="fu">st_transform</span>(<span class="st">"ESRI:54009"</span>)</span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Transform to ETRS89-LAEA (standard equal-area CRS for Europe, EPSG:3035)</span></span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>europe_laea <span class="ot">&lt;-</span> europe <span class="sc">|&gt;</span> <span class="fu">st_transform</span>(<span class="dv">3035</span>)</span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(europe, <span class="at">axes =</span> <span class="cn">TRUE</span>, <span class="at">main =</span> <span class="st">"Geographic (WGS84)"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="crs_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(europe_moll, <span class="at">axes =</span> <span class="cn">TRUE</span>, <span class="at">main =</span> <span class="st">"Mollweide"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="crs_files/figure-html/unnamed-chunk-7-2.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(europe_laea, <span class="at">axes =</span> <span class="cn">TRUE</span>, <span class="at">main =</span> <span class="st">"ETRS89-LAEA"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="crs_files/figure-html/unnamed-chunk-7-3.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>You can customise projections by building a CRS definition with specific parameters. The modern way to do this uses <code>st_crs()</code> with a proj4-style string or WKT — but EPSG codes cover the vast majority of practical needs:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co"># LAEA centred on Paris</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>europe_laea_paris <span class="ot">&lt;-</span> <span class="fu">st_transform</span>(europe,</span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">crs =</span> <span class="st">"+proj=laea +lon_0=-2.35 +lat_0=48.8 +datum=WGS84"</span>)</span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a><span class="co"># LAEA centred on Moscow</span></span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>europe_laea_moscow <span class="ot">&lt;-</span> <span class="fu">st_transform</span>(europe,</span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">crs =</span> <span class="st">"+proj=laea +lon_0=37.6 +lat_0=55.7 +datum=WGS84"</span>)</span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Winkel Tripel (common in atlases; no EPSG code, proj string needed)</span></span>
+<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a>europe_wintri <span class="ot">&lt;-</span> <span class="fu">st_transform</span>(europe,</span>
+<span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">crs =</span> <span class="st">"+proj=wintri +datum=WGS84"</span>)</span>
+<span id="cb27-12"><a href="#cb27-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-13"><a href="#cb27-13" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(europe_laea_paris, <span class="at">axes =</span> <span class="cn">TRUE</span>, <span class="at">main =</span> <span class="st">"LAEA centred on Paris"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="crs_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(europe_laea_moscow, <span class="at">axes =</span> <span class="cn">TRUE</span>, <span class="at">main =</span> <span class="st">"LAEA centred on Moscow"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="crs_files/figure-html/unnamed-chunk-8-2.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(europe_wintri, <span class="at">axes =</span> <span class="cn">TRUE</span>, <span class="at">main =</span> <span class="st">"Winkel Tripel"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="crs_files/figure-html/unnamed-chunk-8-3.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The <code>lwgeom::st_transform_proj()</code> function was previously needed for some projections not supported by sf directly. This is no longer generally required — modern sf and PROJ handle a very wide range of projections via <code>st_transform()</code>.</p>
+</div>
+</div>
+<hr>
+</section>
+<section id="projections-in-ggplot2" class="level1">
+<h1>Projections in ggplot2</h1>
+<p>When plotting sf objects with <code>geom_sf()</code>, ggplot2 uses <code>coord_sf()</code> to manage the coordinate system. <code>coord_sf()</code> ensures all layers are displayed in a common CRS, which it takes automatically from the first layer that defines one. You can override this with the <code>crs</code> argument.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>coast <span class="ot">&lt;-</span> <span class="fu">read_sf</span>(<span class="st">"./data/iceland_coastline.gpkg"</span>)</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a><span class="fu">st_crs</span>(coast)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Coordinate Reference System:
+  User input: unnamed 
+  wkt:
+PROJCRS["unnamed",
+    BASEGEOGCRS["GRS 1980(IUGG, 1980)",
+        DATUM["unknown",
+            ELLIPSOID["GRS80",6378137,298.257222101,
+                LENGTHUNIT["metre",1,
+                    ID["EPSG",9001]]]],
+        PRIMEM["Greenwich",0,
+            ANGLEUNIT["degree",0.0174532925199433]]],
+    CONVERSION["unnamed",
+        METHOD["Lambert Conic Conformal (2SP)",
+            ID["EPSG",9802]],
+        PARAMETER["Latitude of 1st standard parallel",64.25,
+            ANGLEUNIT["degree",0.0174532925199433],
+            ID["EPSG",8823]],
+        PARAMETER["Latitude of 2nd standard parallel",65.75,
+            ANGLEUNIT["degree",0.0174532925199433],
+            ID["EPSG",8824]],
+        PARAMETER["Latitude of false origin",65,
+            ANGLEUNIT["degree",0.0174532925199433],
+            ID["EPSG",8821]],
+        PARAMETER["Longitude of false origin",-19,
+            ANGLEUNIT["degree",0.0174532925199433],
+            ID["EPSG",8822]],
+        PARAMETER["Easting at false origin",500000,
+            LENGTHUNIT["Meter",1],
+            ID["EPSG",8826]],
+        PARAMETER["Northing at false origin",500000,
+            LENGTHUNIT["Meter",1],
+            ID["EPSG",8827]]],
+    CS[Cartesian,2],
+        AXIS["easting",east,
+            ORDER[1],
+            LENGTHUNIT["Meter",1]],
+        AXIS["northing",north,
+            ORDER[2],
+            LENGTHUNIT["Meter",1]]]</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>depth <span class="ot">&lt;-</span> <span class="fu">read_sf</span>(<span class="st">"./data/iceland_contours.gpkg"</span>)</span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a><span class="fu">st_crs</span>(depth)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Coordinate Reference System:
+  User input: WGS 84 
+  wkt:
+GEOGCRS["WGS 84",
+    ENSEMBLE["World Geodetic System 1984 ensemble",
+        MEMBER["World Geodetic System 1984 (Transit)"],
+        MEMBER["World Geodetic System 1984 (G730)"],
+        MEMBER["World Geodetic System 1984 (G873)"],
+        MEMBER["World Geodetic System 1984 (G1150)"],
+        MEMBER["World Geodetic System 1984 (G1674)"],
+        MEMBER["World Geodetic System 1984 (G1762)"],
+        MEMBER["World Geodetic System 1984 (G2139)"],
+        MEMBER["World Geodetic System 1984 (G2296)"],
+        ELLIPSOID["WGS 84",6378137,298.257223563,
+            LENGTHUNIT["metre",1]],
+        ENSEMBLEACCURACY[2.0]],
+    PRIMEM["Greenwich",0,
+        ANGLEUNIT["degree",0.0174532925199433]],
+    CS[ellipsoidal,2],
+        AXIS["geodetic latitude (Lat)",north,
+            ORDER[1],
+            ANGLEUNIT["degree",0.0174532925199433]],
+        AXIS["geodetic longitude (Lon)",east,
+            ORDER[2],
+            ANGLEUNIT["degree",0.0174532925199433]],
+    USAGE[
+        SCOPE["Horizontal component of 3D system."],
+        AREA["World."],
+        BBOX[-90,-180,90,180]],
+    ID["EPSG",4326]]</code></pre>
+</div>
+</div>
+<p>The two objects have different CRS. Watch how <code>coord_sf()</code> handles this depending on layer order — it always adopts the CRS of the first layer:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Uses CRS of coast (first layer)</span></span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>() <span class="sc">+</span></span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_sf</span>(<span class="at">data =</span> coast, <span class="at">fill =</span> <span class="st">"darkgray"</span>) <span class="sc">+</span></span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_sf</span>(<span class="at">data =</span> depth)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="crs_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Uses CRS of depth (first layer)</span></span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>() <span class="sc">+</span></span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_sf</span>(<span class="at">data =</span> depth) <span class="sc">+</span></span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_sf</span>(<span class="at">data =</span> coast, <span class="at">fill =</span> <span class="st">"darkgray"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="crs_files/figure-html/unnamed-chunk-10-2.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Explicitly set the display CRS — best practice when mixing layers</span></span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>() <span class="sc">+</span></span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_sf</span>(<span class="at">data =</span> depth) <span class="sc">+</span></span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_sf</span>(<span class="at">data =</span> coast, <span class="at">fill =</span> <span class="st">"darkgray"</span>) <span class="sc">+</span></span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_sf</span>(<span class="at">crs =</span> <span class="dv">8088</span>) <span class="co"># ISN2016 / LAEA Iceland</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="crs_files/figure-html/unnamed-chunk-10-3.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Best practice
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>When combining sf layers with different CRS, always set <code>coord_sf(crs = ...)</code> explicitly rather than relying on layer order. This makes your code’s intent clear and avoids hard-to-spot errors if you later reorder layers.</p>
+</div>
+</div>
+<hr>
+</section>
+<section id="summary" class="level1">
+<h1>Summary</h1>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Task</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Check the CRS of an object</td>
+<td><code>st_crs(x)</code></td>
+</tr>
+<tr class="even">
+<td>Check if data is geographic (unprojected)</td>
+<td><code>st_is_longlat(x)</code></td>
+</tr>
+<tr class="odd">
+<td>Set the CRS (metadata only, no reprojection)</td>
+<td><code>st_set_crs(x, crs)</code></td>
+</tr>
+<tr class="even">
+<td>Reproject to a new CRS</td>
+<td><code>st_transform(x, crs)</code></td>
+</tr>
+<tr class="odd">
+<td>Get EPSG code</td>
+<td><code>st_crs(x)$epsg</code></td>
+</tr>
+<tr class="even">
+<td>Find a suitable CRS for your data</td>
+<td><code>crsuggest::suggest_crs(x)</code></td>
+</tr>
+<tr class="odd">
+<td>Look up CRS by code or location</td>
+<td><a href="https://epsg.io" class="uri">https://epsg.io</a></td>
+</tr>
+</tbody>
+</table>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

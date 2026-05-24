@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.37">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Introduction – Introduction to mapping and spatial analysis with R</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-7f8f88aac4f3542376d5c11b86a4c14d.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-6033a600180109c3731f6a886c29932c.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="styles.css">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="./index.html">
+    <span class="navbar-title">Introduction to mapping and spatial analysis with R</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="./index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./data.html"> 
+<span class="menu-text">Data</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-sessions" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Sessions</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-sessions">    
+        <li>
+    <a class="dropdown-item" href="./intro.html">
+ <span class="dropdown-text">Introduction</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./spatial_data.html">
+ <span class="dropdown-text">Spatial data</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./ggplot1.html">
+ <span class="dropdown-text">Mapping with ggplot - part 1</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./sf.html">
+ <span class="dropdown-text">Simple features</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./crs.html">
+ <span class="dropdown-text">Coordinate reference systems</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./ggplot2.html">
+ <span class="dropdown-text">Mapping with ggplot - part 2</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./geometric.html">
+ <span class="dropdown-text">Working with geometries in sf objects</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./spatial_ops.html">
+ <span class="dropdown-text">Spatial operations</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./rasters.html">
+ <span class="dropdown-text">Rasters</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./input_output.html">
+ <span class="dropdown-text">Reading and writing spatial data</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./qgis.html">
+ <span class="dropdown-text">R and QGIS</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./interactive.html">
+ <span class="dropdown-text">Interactive maps</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./interpolation.html">
+ <span class="dropdown-text">Interpolation</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/jmburgos/TCMSAR26"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#about-this-course" id="toc-about-this-course" class="nav-link active" data-scroll-target="#about-this-course">About this course</a></li>
+  <li><a href="#what-this-course-covers" id="toc-what-this-course-covers" class="nav-link" data-scroll-target="#what-this-course-covers">What this course covers</a>
+  <ul class="collapse">
+  <li><a href="#course-outline" id="toc-course-outline" class="nav-link" data-scroll-target="#course-outline">Course outline</a></li>
+  </ul></li>
+  <li><a href="#datasets-used-in-this-course" id="toc-datasets-used-in-this-course" class="nav-link" data-scroll-target="#datasets-used-in-this-course">Datasets used in this course</a>
+  <ul class="collapse">
+  <li><a href="#icelandic-bottom-trawl-survey-smb" id="toc-icelandic-bottom-trawl-survey-smb" class="nav-link" data-scroll-target="#icelandic-bottom-trawl-survey-smb">Icelandic bottom trawl survey (SMB)</a></li>
+  <li><a href="#ices-datras-surveys" id="toc-ices-datras-surveys" class="nav-link" data-scroll-target="#ices-datras-surveys">ICES DATRAS surveys</a></li>
+  <li><a href="#minke-whale-sightings" id="toc-minke-whale-sightings" class="nav-link" data-scroll-target="#minke-whale-sightings">Minke whale sightings</a></li>
+  <li><a href="#spatial-boundary-files" id="toc-spatial-boundary-files" class="nav-link" data-scroll-target="#spatial-boundary-files">Spatial boundary files</a></li>
+  <li><a href="#raster-data" id="toc-raster-data" class="nav-link" data-scroll-target="#raster-data">Raster data</a></li>
+  </ul></li>
+  <li><a href="#getting-started" id="toc-getting-started" class="nav-link" data-scroll-target="#getting-started">Getting started</a>
+  <ul class="collapse">
+  <li><a href="#software" id="toc-software" class="nav-link" data-scroll-target="#software">Software</a></li>
+  <li><a href="#rstudio-projects" id="toc-rstudio-projects" class="nav-link" data-scroll-target="#rstudio-projects">RStudio projects</a></li>
+  <li><a href="#installing-packages" id="toc-installing-packages" class="nav-link" data-scroll-target="#installing-packages">Installing packages</a></li>
+  <li><a href="#verify-your-installation" id="toc-verify-your-installation" class="nav-link" data-scroll-target="#verify-your-installation">Verify your installation</a></li>
+  </ul></li>
+  <li><a href="#a-note-on-reproducibility" id="toc-a-note-on-reproducibility" class="nav-link" data-scroll-target="#a-note-on-reproducibility">A note on reproducibility</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Introduction</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="about-this-course" class="level1">
+<h1>About this course</h1>
+<p>This course provides a practical introduction to mapping and spatial analysis using R. It is aimed at researchers and analysts in fisheries and marine science who already have some familiarity with R and want to work effectively with spatial data — reading and writing spatial files, manipulating vector and raster data, making maps, and applying spatial analysis methods.</p>
+<p>The course material is open source. The source code and datasets are available at:</p>
+<ul>
+<li><strong>Course website</strong>: <a href="https://heima.hafro.is/~julian/TCMSAR26/index.html" class="uri">https://heima.hafro.is/~julian/TCMSAR26/index.html</a></li>
+<li><strong>Datasets</strong>: <a href="https://heima.hafro.is/~julian/TCMSAR26/data.zip" class="uri">https://heima.hafro.is/~julian/TCMSAR26/data.zip</a></li>
+</ul>
+<p>https://github.com/jmburgos/TCMSAR26</p>
+<hr>
+</section>
+<section id="what-this-course-covers" class="level1">
+<h1>What this course covers</h1>
+<p>Spatial analysis fits naturally into the standard data science workflow of import → tidy → transform → visualise → model → communicate. This course focuses on all of these steps as they apply to <strong>spatial</strong> data specifically.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="img/data_science.png" class="img-fluid figure-img" style="width:75.0%"></p>
+<figcaption>From: Grolemund and Wickham (R for Data Science)</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>By the end of the course you will be able to:</p>
+<ul>
+<li>Understand the key concepts behind spatial data: vector and raster data models, coordinate reference systems, and projections.</li>
+<li>Read and write spatial data in common formats (GeoPackage, shapefile, GeoTIFF, CSV).</li>
+<li>Create and manipulate vector data using the <strong>sf</strong> package: points, lines, and polygons.</li>
+<li>Perform geometric operations on sf objects: buffers, centroids, intersections, spatial joins.</li>
+<li>Work with raster data using the <strong>terra</strong> package: reading, cropping, resampling, and raster algebra.</li>
+<li>Make publication-quality static maps with <strong>ggplot2</strong>.</li>
+<li>Build interactive web maps with <strong>leaflet</strong>.</li>
+<li>Apply basic spatial interpolation methods.</li>
+</ul>
+<section id="course-outline" class="level2">
+<h2 class="anchored" data-anchor-id="course-outline">Course outline</h2>
+<p>The chapters follow a logical progression from concepts to tools to applications:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 31%">
+<col style="width: 68%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Chapter</th>
+<th>Topic</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Spatial data</td>
+<td>What spatial data is; vector and raster models; the R package ecosystem</td>
+</tr>
+<tr class="even">
+<td>Mapping with ggplot2</td>
+<td>Static maps; layers, projections, colour scales, facetting</td>
+</tr>
+<tr class="odd">
+<td>Simple features</td>
+<td>The sf class; reading files; creating sf objects from coordinates</td>
+</tr>
+<tr class="even">
+<td>Coordinate reference systems</td>
+<td>Ellipsoids, datums, projections; reprojecting data</td>
+</tr>
+<tr class="odd">
+<td>Geometries in sf</td>
+<td>Geometric operations: buffers, centroids, convex hulls, grids</td>
+</tr>
+<tr class="even">
+<td>Spatial operations</td>
+<td>Spatial joins, subsetting, and binary predicates</td>
+</tr>
+<tr class="odd">
+<td>Rasters</td>
+<td>The terra package; reading, manipulating, and analysing raster data</td>
+</tr>
+<tr class="even">
+<td>Reading and writing spatial data</td>
+<td>File formats and GDAL; reading and writing with sf and terra</td>
+</tr>
+<tr class="odd">
+<td>R and QGIS</td>
+<td>Interactions between R and QGIS (including GRASS)</td>
+</tr>
+<tr class="even">
+<td>Interactive maps</td>
+<td>leaflet; basemaps, markers, polygons, layer control</td>
+</tr>
+<tr class="odd">
+<td>Interpolation</td>
+<td>Voronoi polygons, IDW, kriging, GAMs</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+</section>
+<section id="datasets-used-in-this-course" class="level1">
+<h1>Datasets used in this course</h1>
+<p>The same datasets reappear across multiple chapters, so it is worth knowing what they are from the start. All data files are available in the course data archive linked above.</p>
+<section id="icelandic-bottom-trawl-survey-smb" class="level2">
+<h2 class="anchored" data-anchor-id="icelandic-bottom-trawl-survey-smb">Icelandic bottom trawl survey (SMB)</h2>
+<p>The spring groundfish survey (<em>Spawning groundfish survey</em>, SMB) conducted annually by the Marine and Freshwater Research Institute (MFRI) of Iceland. The main files used are:</p>
+<ul>
+<li><code>is_smb.csv</code> — station data including tow positions, duration, and catch by species.</li>
+<li><code>is_smb_stations.csv</code> — station metadata.</li>
+<li><code>is_smb_biological.csv</code> — biological data (length, weight) by species and station.</li>
+<li><code>is_smb_vms2019.csv</code> — Vessel Monitoring System (VMS) positions for the 2019 survey, giving detailed vessel tracks.</li>
+<li><code>is_smb_cod_rbya.csv</code> — cod abundance by year, age, and station.</li>
+</ul>
+<p>This dataset is used to illustrate tow tracks, abundance mapping, spatial interpolation, and facetted maps across years.</p>
+</section>
+<section id="ices-datras-surveys" class="level2">
+<h2 class="anchored" data-anchor-id="ices-datras-surveys">ICES DATRAS surveys</h2>
+<p>Trawl survey data from the ICES Database of Trawl Surveys (DATRAS), covering multiple European surveys in 2018:</p>
+<ul>
+<li><code>datras_2018_haul.csv</code> — haul (station) data including positions.</li>
+<li><code>datras_2018_length.csv</code> — length frequency data by species and haul.</li>
+</ul>
+<p>Used to illustrate spatial operations, interactive maps, and working with data from multiple surveys across a broad geographic area.</p>
+</section>
+<section id="minke-whale-sightings" class="level2">
+<h2 class="anchored" data-anchor-id="minke-whale-sightings">Minke whale sightings</h2>
+<ul>
+<li><code>minke.csv</code> — positions and biological measurements of minke whales sampled in Icelandic waters.</li>
+</ul>
+<p>Used in mapping examples throughout the ggplot2 chapter.</p>
+</section>
+<section id="spatial-boundary-files" class="level2">
+<h2 class="anchored" data-anchor-id="spatial-boundary-files">Spatial boundary files</h2>
+<p>Several vector boundary files are used as reference layers:</p>
+<ul>
+<li><code>iceland_coastline.gpkg</code> — Iceland coastline.</li>
+<li><code>iceland_contours.gpkg</code> — depth contours around Iceland.</li>
+<li><code>bormicon.gpkg</code> — Bormicon reporting areas for Icelandic fisheries.</li>
+<li><code>nephrops_fu.gpkg</code> — Nephrops functional units (ICES assessment areas).</li>
+<li><code>ices_ecoregions.gpkg</code> — ICES ecoregion boundaries.</li>
+<li><code>ices_rectangles.gpkg</code> — ICES statistical rectangles.</li>
+<li><code>helcom.gpkg</code> and <code>ospar.gpkg</code> — HELCOM and OSPAR regional sea boundaries.</li>
+</ul>
+</section>
+<section id="raster-data" class="level2">
+<h2 class="anchored" data-anchor-id="raster-data">Raster data</h2>
+<ul>
+<li><code>Iceland_minbtemp.tif</code>, <code>Iceland_maxbtemp.tif</code> — minimum and maximum near-bottom temperature around Iceland (from the NISE project).</li>
+<li><code>Iceland_currentsp.tif</code> — near-bottom current speed (from Bio-ORACLE).</li>
+<li><code>nephrops.tif</code> — Nephrops trawl effort raster.</li>
+<li>Bottom depth data accessed via the <code>marmap</code> package from NOAA’s ETOPO1 database.</li>
+</ul>
+<hr>
+</section>
+</section>
+<section id="getting-started" class="level1">
+<h1>Getting started</h1>
+<section id="software" class="level2">
+<h2 class="anchored" data-anchor-id="software">Software</h2>
+<p>You will need a recent version of R and an IDE. We recommend RStudio (now distributed by Posit):</p>
+<ul>
+<li><strong>R</strong>: download from <a href="https://cran.r-project.org/">CRAN</a>. If you are on Windows, also install <a href="https://cran.r-project.org/bin/windows/Rtools">Rtools</a>. On macOS, install the Command Line Tools via <code>xcode-select --install</code> in a terminal.</li>
+<li><strong>RStudio</strong>: download from <a href="https://posit.co/download/rstudio-desktop/">posit.co</a>.</li>
+</ul>
+</section>
+<section id="rstudio-projects" class="level2">
+<h2 class="anchored" data-anchor-id="rstudio-projects">RStudio projects</h2>
+<p>We strongly recommend doing all your work inside an <strong>RStudio project</strong>. Projects keep your files, working directory, and settings organised and isolated from other work. To create one: <em>File → New Project → New Directory → New Project</em>.</p>
+<p>A sensible directory structure for this course might look like:</p>
+<pre><code>spatial_course/
+├── data/               # Downloaded course data files
+├── R/                  # Your R scripts
+├── spatial_course.Rproj
+└── my_analysis.qmd     # Your own Quarto documents</code></pre>
+<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Warning</span>Do not save your workspace
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>When RStudio asks whether to save your workspace (<code>.RData</code>) on exit, always say <strong>No</strong>. Saving the workspace causes hard-to-diagnose bugs by carrying objects from one session into the next. Instead, keep your code in scripts so you can always recreate your results from scratch.</p>
+<p>To turn this off permanently: <em>Tools → Global Options → General → Save workspace to .RData on exit → Never</em>.</p>
+</div>
+</div>
+</section>
+<section id="installing-packages" class="level2">
+<h2 class="anchored" data-anchor-id="installing-packages">Installing packages</h2>
+<p>Install all the packages used in this course by running the following. You only need to do this once:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="fu">c</span>(</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Core spatial packages</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">"sf"</span>,          <span class="co"># Vector spatial data</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="st">"terra"</span>,       <span class="co"># Raster spatial data</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="st">"stars"</span>,       <span class="co"># Spatiotemporal data cubes</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Tidyverse</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>  <span class="st">"tidyverse"</span>,   <span class="co"># Data wrangling and visualisation</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Mapping</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>  <span class="st">"ggplot2"</span>,     <span class="co"># Static maps (installed with tidyverse)</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>  <span class="st">"ggspatial"</span>,   <span class="co"># Scale bars, north arrows</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>  <span class="st">"leaflet"</span>,     <span class="co"># Interactive maps</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>  <span class="st">"mapview"</span>,     <span class="co"># Quick interactive map previews</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>  <span class="st">"rnaturalearth"</span>,   <span class="co"># Country and region boundaries</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>  <span class="st">"rnaturalearthdata"</span>,</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Raster data access</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>  <span class="st">"marmap"</span>,      <span class="co"># NOAA bathymetry data</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Interpolation</span></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>  <span class="st">"gstat"</span>,       <span class="co"># Geostatistics and interpolation</span></span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>  <span class="st">"mgcv"</span>,        <span class="co"># GAMs</span></span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>  <span class="st">"concaveman"</span>,  <span class="co"># Concave hulls</span></span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Utilities</span></span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>  <span class="st">"crsuggest"</span>,   <span class="co"># CRS selection helper</span></span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>  <span class="st">"patchwork"</span>,   <span class="co"># Combining ggplot figures</span></span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a>  <span class="st">"units"</span>        <span class="co"># Physical units for spatial measurements</span></span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>A note on raster packages
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>This course uses <strong>terra</strong> for raster data. The older <strong>raster</strong> package has similar functionality but different syntax – <code>rast()</code> replaces <code>raster()</code>, and <code>c()</code> replaces <code>stack()</code>. For the full history of the R spatial ecosystem, see the <a href="./spatial_data.html#the-r-ecosystem-for-spatial-data">Spatial data concepts</a> chapter.</p>
+</div>
+</div>
+</section>
+<section id="verify-your-installation" class="level2">
+<h2 class="anchored" data-anchor-id="verify-your-installation">Verify your installation</h2>
+<p>Once packages are installed, check that the key spatial ones load correctly:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(sf)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(terra)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(leaflet)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>If these load without errors, you are ready to begin.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Setup exercise
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ol type="1">
+<li>Create a new RStudio project for this course.</li>
+<li>Download the course data archive from <a href="https://heima.hafro.is/~julian/ftp/data.zip" class="uri">https://heima.hafro.is/~julian/ftp/data.zip</a> and unzip it into a <code>data/</code> folder inside your project.</li>
+<li>Install the packages above and verify they load.</li>
+<li>Open a new Quarto document (<em>File → New File → Quarto Document</em>) and write a short code chunk that reads <code>is_smb.csv</code> from your data folder and prints the first few rows with <code>head()</code>. Render the document to make sure everything works end to end.</li>
+</ol>
+</div>
+</div>
+<hr>
+</section>
+</section>
+<section id="a-note-on-reproducibility" class="level1">
+<h1>A note on reproducibility</h1>
+<p>One of R’s biggest advantages over point-and-click GIS tools is that your entire analysis — from reading raw data to producing a final map — can be written as a script and re-run exactly by anyone, on any machine. This course is written in <strong>Quarto</strong> (<code>.qmd</code> files), which weaves code, output, and prose into a single reproducible document. All the examples in this course are self-contained: if you have the data and the packages installed, you can run any chapter from top to bottom and get the same results.</p>
+<p>We encourage you to work the same way: keep your code in scripts or Quarto documents, and avoid manually editing data files or saving plots by hand. Everything should flow from code.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

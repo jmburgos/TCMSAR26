@@ -1,0 +1,2207 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.37">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Data – Introduction to mapping and spatial analysis with R</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-7f8f88aac4f3542376d5c11b86a4c14d.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-6033a600180109c3731f6a886c29932c.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="styles.css">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="./index.html">
+    <span class="navbar-title">Introduction to mapping and spatial analysis with R</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="./index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link active" href="./data.html" aria-current="page"> 
+<span class="menu-text">Data</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-sessions" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Sessions</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-sessions">    
+        <li>
+    <a class="dropdown-item" href="./intro.html">
+ <span class="dropdown-text">Introduction</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./spatial_data.html">
+ <span class="dropdown-text">Spatial data</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./ggplot1.html">
+ <span class="dropdown-text">Mapping with ggplot - part 1</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./sf.html">
+ <span class="dropdown-text">Simple features</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./crs.html">
+ <span class="dropdown-text">Coordinate reference systems</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./ggplot2.html">
+ <span class="dropdown-text">Mapping with ggplot - part 2</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./geometric.html">
+ <span class="dropdown-text">Working with geometries in sf objects</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./spatial_ops.html">
+ <span class="dropdown-text">Spatial operations</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./rasters.html">
+ <span class="dropdown-text">Rasters</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./input_output.html">
+ <span class="dropdown-text">Reading and writing spatial data</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./qgis.html">
+ <span class="dropdown-text">R and QGIS</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./interactive.html">
+ <span class="dropdown-text">Interactive maps</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./interpolation.html">
+ <span class="dropdown-text">Interpolation</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/jmburgos/TCMSAR26"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#downloading-the-data" id="toc-downloading-the-data" class="nav-link active" data-scroll-target="#downloading-the-data">Downloading the data</a></li>
+  <li><a href="#tabular-data" id="toc-tabular-data" class="nav-link" data-scroll-target="#tabular-data">Tabular data</a>
+  <ul class="collapse">
+  <li><a href="#datras_2018_haul.csv" id="toc-datras_2018_haul.csv" class="nav-link" data-scroll-target="#datras_2018_haul.csv"><code>datras_2018_haul.csv</code></a></li>
+  <li><a href="#datras_2018_length.csv" id="toc-datras_2018_length.csv" class="nav-link" data-scroll-target="#datras_2018_length.csv"><code>datras_2018_length.csv</code></a></li>
+  <li><a href="#minke.csv" id="toc-minke.csv" class="nav-link" data-scroll-target="#minke.csv"><code>minke.csv</code></a></li>
+  <li><a href="#small_vms.csv" id="toc-small_vms.csv" class="nav-link" data-scroll-target="#small_vms.csv"><code>small_vms.csv</code></a></li>
+  <li><a href="#is_smb_stations.csv" id="toc-is_smb_stations.csv" class="nav-link" data-scroll-target="#is_smb_stations.csv"><code>is_smb_stations.csv</code></a></li>
+  <li><a href="#is_smb_biological.csv" id="toc-is_smb_biological.csv" class="nav-link" data-scroll-target="#is_smb_biological.csv"><code>is_smb_biological.csv</code></a></li>
+  <li><a href="#smb_utbrteg.csv" id="toc-smb_utbrteg.csv" class="nav-link" data-scroll-target="#smb_utbrteg.csv"><code>smb_utbrteg.csv</code></a></li>
+  <li><a href="#smb_summary.csv" id="toc-smb_summary.csv" class="nav-link" data-scroll-target="#smb_summary.csv"><code>smb_summary.csv</code></a></li>
+  </ul></li>
+  <li><a href="#spatial-vector-data" id="toc-spatial-vector-data" class="nav-link" data-scroll-target="#spatial-vector-data">Spatial vector data</a>
+  <ul class="collapse">
+  <li><a href="#helcom.gpkg" id="toc-helcom.gpkg" class="nav-link" data-scroll-target="#helcom.gpkg"><code>helcom.gpkg</code></a></li>
+  <li><a href="#ice_lines.gpkg" id="toc-ice_lines.gpkg" class="nav-link" data-scroll-target="#ice_lines.gpkg"><code>ice_lines.gpkg</code></a></li>
+  <li><a href="#ice_points.gpkg" id="toc-ice_points.gpkg" class="nav-link" data-scroll-target="#ice_points.gpkg"><code>ice_points.gpkg</code></a></li>
+  <li><a href="#ice_polygon.gpkg" id="toc-ice_polygon.gpkg" class="nav-link" data-scroll-target="#ice_polygon.gpkg"><code>ice_polygon.gpkg</code></a></li>
+  <li><a href="#iceland_coastline.gpkg" id="toc-iceland_coastline.gpkg" class="nav-link" data-scroll-target="#iceland_coastline.gpkg"><code>iceland_coastline.gpkg</code></a></li>
+  <li><a href="#iceland_contours.gpkg" id="toc-iceland_contours.gpkg" class="nav-link" data-scroll-target="#iceland_contours.gpkg"><code>iceland_contours.gpkg</code></a></li>
+  <li><a href="#ices_ecoregions.gpkg" id="toc-ices_ecoregions.gpkg" class="nav-link" data-scroll-target="#ices_ecoregions.gpkg"><code>ices_ecoregions.gpkg</code></a></li>
+  <li><a href="#ices_rectangles.gpkg" id="toc-ices_rectangles.gpkg" class="nav-link" data-scroll-target="#ices_rectangles.gpkg"><code>ices_rectangles.gpkg</code></a></li>
+  <li><a href="#nephrops_fu.gpkg" id="toc-nephrops_fu.gpkg" class="nav-link" data-scroll-target="#nephrops_fu.gpkg"><code>nephrops_fu.gpkg</code></a></li>
+  <li><a href="#ospar_intensity_otter_2015.gpkg" id="toc-ospar_intensity_otter_2015.gpkg" class="nav-link" data-scroll-target="#ospar_intensity_otter_2015.gpkg"><code>OSPAR_intensity_Otter_2015.gpkg</code></a></li>
+  </ul></li>
+  <li><a href="#raster-data" id="toc-raster-data" class="nav-link" data-scroll-target="#raster-data">Raster data</a>
+  <ul class="collapse">
+  <li><a href="#faroes_minbtemp.tif" id="toc-faroes_minbtemp.tif" class="nav-link" data-scroll-target="#faroes_minbtemp.tif"><code>Faroes_minbtemp.tif</code></a></li>
+  <li><a href="#iceland_currentsp.tif" id="toc-iceland_currentsp.tif" class="nav-link" data-scroll-target="#iceland_currentsp.tif"><code>Iceland_currentsp.tif</code></a></li>
+  <li><a href="#iceland_maxbtemp.tif" id="toc-iceland_maxbtemp.tif" class="nav-link" data-scroll-target="#iceland_maxbtemp.tif"><code>Iceland_maxbtemp.tif</code></a></li>
+  <li><a href="#iceland_minbtemp.tif" id="toc-iceland_minbtemp.tif" class="nav-link" data-scroll-target="#iceland_minbtemp.tif"><code>Iceland_minbtemp.tif</code></a></li>
+  <li><a href="#nephrops.tif" id="toc-nephrops.tif" class="nav-link" data-scroll-target="#nephrops.tif"><code>nephrops.tif</code></a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Data</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>This page describes the datasets available in the <code>data/</code> directory. Datasets are organised into tabular (CSV), spatial vector (GeoPackage), and raster (GeoTIFF) files.</p>
+<section id="downloading-the-data" class="level2">
+<h2 class="anchored" data-anchor-id="downloading-the-data">Downloading the data</h2>
+<p>Run the code chunk below once to download all course datasets into a local <code>data/</code> directory. Files that already exist are skipped.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">timeout =</span> <span class="dv">300</span>)  <span class="co"># large files may need extra time</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>base_url <span class="ot">&lt;-</span> <span class="st">"https://raw.githubusercontent.com/jmburgos/TCMSAR26/main/data"</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>files <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Tabular</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="st">"datras_2018_haul.csv"</span>,</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  <span class="st">"datras_2018_length.csv"</span>,</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>  <span class="st">"is_smb_biological.csv"</span>,</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>  <span class="st">"is_smb_stations.csv"</span>,</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>  <span class="st">"minke.csv"</span>,</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>  <span class="st">"small_vms.csv"</span>,</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>  <span class="st">"smb_summary.csv"</span>,</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>  <span class="st">"smb_utbrteg.csv"</span>,</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Spatial vector</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>  <span class="st">"helcom.gpkg"</span>,</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>  <span class="st">"ice_lines.gpkg"</span>,</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>  <span class="st">"ice_points.gpkg"</span>,</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>  <span class="st">"ice_polygon.gpkg"</span>,</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>  <span class="st">"iceland_coastline.gpkg"</span>,</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>  <span class="st">"iceland_contours.gpkg"</span>,</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>  <span class="st">"ices_ecoregions.gpkg"</span>,</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>  <span class="st">"ices_rectangles.gpkg"</span>,</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>  <span class="st">"nephrops_fu.gpkg"</span>,</span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>  <span class="st">"OSPAR_intensity_Otter_2015.gpkg"</span>,</span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Rasters</span></span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Faroes_minbtemp.tif"</span>,</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Iceland_currentsp.tif"</span>,</span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Iceland_maxbtemp.tif"</span>,</span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Iceland_minbtemp.tif"</span>,</span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>  <span class="st">"nephrops.tif"</span></span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a><span class="fu">dir.create</span>(<span class="st">"data"</span>, <span class="at">showWarnings =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (f <span class="cf">in</span> files) {</span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>  dest <span class="ot">&lt;-</span> <span class="fu">file.path</span>(<span class="st">"data"</span>, f)</span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="sc">!</span><span class="fu">file.exists</span>(dest)) {</span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a>    <span class="fu">message</span>(<span class="st">"Downloading "</span>, f, <span class="st">" ..."</span>)</span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a>    <span class="fu">download.file</span>(<span class="fu">paste</span>(base_url, f, <span class="at">sep =</span> <span class="st">"/"</span>), <span class="at">destfile =</span> dest, <span class="at">mode =</span> <span class="st">"wb"</span>, <span class="at">quiet =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
+<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a>    <span class="fu">message</span>(<span class="st">"Skipping "</span>, f, <span class="st">" (already exists)"</span>)</span>
+<span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb1-45"><a href="#cb1-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-46"><a href="#cb1-46" aria-hidden="true" tabindex="-1"></a><span class="fu">message</span>(<span class="st">"Done."</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section>
+<section id="tabular-data" class="level2">
+<h2 class="anchored" data-anchor-id="tabular-data">Tabular data</h2>
+<hr>
+<section id="datras_2018_haul.csv" class="level3">
+<h3 class="anchored" data-anchor-id="datras_2018_haul.csv"><code>datras_2018_haul.csv</code></h3>
+<p><strong>Description:</strong> Haul-level data from the DATRAS trawl survey database for 2018, covering multiple European surveys (e.g.&nbsp;BITS, IBTS). Each row represents a single tow with associated metadata on gear, position, environmental conditions, and data quality.</p>
+<p>Read with: <code>read_csv("data/datras_2018_haul.csv")</code></p>
+<p>Rows: 3,145 | Columns: 62</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Variable</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>id</td>
+<td>chr</td>
+<td>Unique haul identifier (concatenation of survey, year, quarter, country, ship, gear, stno, haulno)</td>
+</tr>
+<tr class="even">
+<td>survey</td>
+<td>chr</td>
+<td>Survey name (e.g.&nbsp;“BITS”, “IBTS”)</td>
+</tr>
+<tr class="odd">
+<td>quarter</td>
+<td>dbl</td>
+<td>Quarter of the year (1–4)</td>
+</tr>
+<tr class="even">
+<td>country</td>
+<td>chr</td>
+<td>Country code of the vessel</td>
+</tr>
+<tr class="odd">
+<td>ship</td>
+<td>chr</td>
+<td>Vessel identifier</td>
+</tr>
+<tr class="even">
+<td>gear</td>
+<td>chr</td>
+<td>Gear type code</td>
+</tr>
+<tr class="odd">
+<td>sweeplngt</td>
+<td>dbl</td>
+<td>Sweep length (m)</td>
+</tr>
+<tr class="even">
+<td>gearexp</td>
+<td>chr</td>
+<td>Gear experience code</td>
+</tr>
+<tr class="odd">
+<td>doortype</td>
+<td>chr</td>
+<td>Type of trawl door</td>
+</tr>
+<tr class="even">
+<td>stno</td>
+<td>chr</td>
+<td>Station number</td>
+</tr>
+<tr class="odd">
+<td>haulno</td>
+<td>dbl</td>
+<td>Haul number within station</td>
+</tr>
+<tr class="even">
+<td>year</td>
+<td>dbl</td>
+<td>Year of survey</td>
+</tr>
+<tr class="odd">
+<td>month</td>
+<td>dbl</td>
+<td>Month of survey</td>
+</tr>
+<tr class="even">
+<td>day</td>
+<td>dbl</td>
+<td>Day of survey</td>
+</tr>
+<tr class="odd">
+<td>timeshot</td>
+<td>time</td>
+<td>Time the gear was shot</td>
+</tr>
+<tr class="even">
+<td>stratum</td>
+<td>chr</td>
+<td>Stratum identifier</td>
+</tr>
+<tr class="odd">
+<td>hauldur</td>
+<td>dbl</td>
+<td>Haul duration (minutes)</td>
+</tr>
+<tr class="even">
+<td>daynight</td>
+<td>chr</td>
+<td>Whether tow was during day or night</td>
+</tr>
+<tr class="odd">
+<td>shootlat</td>
+<td>dbl</td>
+<td>Latitude at gear deployment</td>
+</tr>
+<tr class="even">
+<td>shootlong</td>
+<td>dbl</td>
+<td>Longitude at gear deployment</td>
+</tr>
+<tr class="odd">
+<td>haullat</td>
+<td>dbl</td>
+<td>Latitude at gear retrieval</td>
+</tr>
+<tr class="even">
+<td>haullong</td>
+<td>dbl</td>
+<td>Longitude at gear retrieval</td>
+</tr>
+<tr class="odd">
+<td>statrec</td>
+<td>chr</td>
+<td>ICES statistical rectangle</td>
+</tr>
+<tr class="even">
+<td>depth</td>
+<td>dbl</td>
+<td>Bottom depth (m)</td>
+</tr>
+<tr class="odd">
+<td>haulval</td>
+<td>chr</td>
+<td>Haul validity code</td>
+</tr>
+<tr class="even">
+<td>hydrostno</td>
+<td>chr</td>
+<td>Hydrographic station number</td>
+</tr>
+<tr class="odd">
+<td>stdspecreccode</td>
+<td>dbl</td>
+<td>Standard species recording code</td>
+</tr>
+<tr class="even">
+<td>bycspecreccode</td>
+<td>dbl</td>
+<td>Bycatch species recording code</td>
+</tr>
+<tr class="odd">
+<td>datatype</td>
+<td>dbl</td>
+<td>Data type code</td>
+</tr>
+<tr class="even">
+<td>netopening</td>
+<td>dbl</td>
+<td>Net opening height (m)</td>
+</tr>
+<tr class="odd">
+<td>rigging</td>
+<td>chr</td>
+<td>Rigging details</td>
+</tr>
+<tr class="even">
+<td>tickler</td>
+<td>dbl</td>
+<td>Tickler chain indicator</td>
+</tr>
+<tr class="odd">
+<td>distance</td>
+<td>dbl</td>
+<td>Distance towed (nautical miles)</td>
+</tr>
+<tr class="even">
+<td>warplngt</td>
+<td>dbl</td>
+<td>Warp length (m)</td>
+</tr>
+<tr class="odd">
+<td>warpdia</td>
+<td>dbl</td>
+<td>Warp diameter (mm)</td>
+</tr>
+<tr class="even">
+<td>warpden</td>
+<td>dbl</td>
+<td>Warp density</td>
+</tr>
+<tr class="odd">
+<td>doorsurface</td>
+<td>dbl</td>
+<td>Door surface area (m²)</td>
+</tr>
+<tr class="even">
+<td>doorwgt</td>
+<td>dbl</td>
+<td>Door weight (kg)</td>
+</tr>
+<tr class="odd">
+<td>doorspread</td>
+<td>dbl</td>
+<td>Door spread (m)</td>
+</tr>
+<tr class="even">
+<td>wingspread</td>
+<td>dbl</td>
+<td>Wing spread (m)</td>
+</tr>
+<tr class="odd">
+<td>buoyancy</td>
+<td>dbl</td>
+<td>Buoyancy (kg)</td>
+</tr>
+<tr class="even">
+<td>kitedim</td>
+<td>dbl</td>
+<td>Kite dimension</td>
+</tr>
+<tr class="odd">
+<td>wgtgroundrope</td>
+<td>dbl</td>
+<td>Groundrope weight (kg)</td>
+</tr>
+<tr class="even">
+<td>towdir</td>
+<td>dbl</td>
+<td>Tow direction (degrees)</td>
+</tr>
+<tr class="odd">
+<td>groundspeed</td>
+<td>dbl</td>
+<td>Speed over ground (knots)</td>
+</tr>
+<tr class="even">
+<td>speedwater</td>
+<td>dbl</td>
+<td>Speed through water (knots)</td>
+</tr>
+<tr class="odd">
+<td>surcurdir</td>
+<td>dbl</td>
+<td>Surface current direction (degrees)</td>
+</tr>
+<tr class="even">
+<td>surcurspeed</td>
+<td>dbl</td>
+<td>Surface current speed (knots)</td>
+</tr>
+<tr class="odd">
+<td>botcurdir</td>
+<td>dbl</td>
+<td>Bottom current direction (degrees)</td>
+</tr>
+<tr class="even">
+<td>botcurspeed</td>
+<td>dbl</td>
+<td>Bottom current speed (knots)</td>
+</tr>
+<tr class="odd">
+<td>winddir</td>
+<td>dbl</td>
+<td>Wind direction (degrees)</td>
+</tr>
+<tr class="even">
+<td>windspeed</td>
+<td>dbl</td>
+<td>Wind speed (m/s)</td>
+</tr>
+<tr class="odd">
+<td>swelldir</td>
+<td>dbl</td>
+<td>Swell direction (degrees)</td>
+</tr>
+<tr class="even">
+<td>swellheight</td>
+<td>dbl</td>
+<td>Swell height (m)</td>
+</tr>
+<tr class="odd">
+<td>surtemp</td>
+<td>dbl</td>
+<td>Surface temperature (°C)</td>
+</tr>
+<tr class="even">
+<td>bottemp</td>
+<td>dbl</td>
+<td>Bottom temperature (°C)</td>
+</tr>
+<tr class="odd">
+<td>sursal</td>
+<td>dbl</td>
+<td>Surface salinity</td>
+</tr>
+<tr class="even">
+<td>botsal</td>
+<td>dbl</td>
+<td>Bottom salinity</td>
+</tr>
+<tr class="odd">
+<td>thermocline</td>
+<td>chr</td>
+<td>Thermocline presence indicator</td>
+</tr>
+<tr class="even">
+<td>thclinedepth</td>
+<td>dbl</td>
+<td>Thermocline depth (m)</td>
+</tr>
+<tr class="odd">
+<td>dateofcalculation</td>
+<td>dbl</td>
+<td>Date of calculation (numeric)</td>
+</tr>
+<tr class="even">
+<td>datetime</td>
+<td>dttm</td>
+<td>Datetime of the haul</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+<section id="datras_2018_length.csv" class="level3">
+<h3 class="anchored" data-anchor-id="datras_2018_length.csv"><code>datras_2018_length.csv</code></h3>
+<p><strong>Description:</strong> Length-frequency data linked to the 2018 DATRAS hauls. Each row represents a species–length class observed in a haul, with raw and raised counts. Join to <code>datras_2018_haul</code> via <code>id</code>.</p>
+<p>Read with: <code>read_csv("data/datras_2018_length.csv")</code></p>
+<p>Rows: 490,564 | Columns: 6</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 13%">
+<col style="width: 8%">
+<col style="width: 78%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Variable</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>id</td>
+<td>chr</td>
+<td>Haul identifier; links to <code>datras_2018_haul</code></td>
+</tr>
+<tr class="even">
+<td>latin</td>
+<td>chr</td>
+<td>Latin (scientific) species name</td>
+</tr>
+<tr class="odd">
+<td>sex</td>
+<td>chr</td>
+<td>Sex of fish (may be NA for unsexed records)</td>
+</tr>
+<tr class="even">
+<td>length</td>
+<td>dbl</td>
+<td>Length class (mm)</td>
+</tr>
+<tr class="odd">
+<td>n.raw</td>
+<td>dbl</td>
+<td>Raw count (number of fish measured in that length class)</td>
+</tr>
+<tr class="even">
+<td>n</td>
+<td>dbl</td>
+<td>Raised count (estimated total number in the tow)</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+<section id="minke.csv" class="level3">
+<h3 class="anchored" data-anchor-id="minke.csv"><code>minke.csv</code></h3>
+<p><strong>Description:</strong> Biological measurements from minke whale (<em>Balaenoptera acutorostrata</em>) caught during Icelandic research/commercial hunts. Contains individual-level data on morphometrics, age, maturity, and stomach contents.</p>
+<p>Read with: <code>read_csv("data/minke.csv")</code></p>
+<p>Rows: 190 | Columns: 13</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Variable</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>id</td>
+<td>dbl</td>
+<td>Unique whale identifier</td>
+</tr>
+<tr class="even">
+<td>date</td>
+<td>dttm</td>
+<td>Date and time of catch</td>
+</tr>
+<tr class="odd">
+<td>lon</td>
+<td>dbl</td>
+<td>Longitude of catch position</td>
+</tr>
+<tr class="even">
+<td>lat</td>
+<td>dbl</td>
+<td>Latitude of catch position</td>
+</tr>
+<tr class="odd">
+<td>area</td>
+<td>chr</td>
+<td>Named area of catch (e.g.&nbsp;“North”, “South”)</td>
+</tr>
+<tr class="even">
+<td>length</td>
+<td>dbl</td>
+<td>Body length (cm)</td>
+</tr>
+<tr class="odd">
+<td>weight</td>
+<td>dbl</td>
+<td>Body weight (kg); many NAs</td>
+</tr>
+<tr class="even">
+<td>age</td>
+<td>dbl</td>
+<td>Estimated age (years)</td>
+</tr>
+<tr class="odd">
+<td>sex</td>
+<td>chr</td>
+<td>Sex (“Female” / “Male”)</td>
+</tr>
+<tr class="even">
+<td>maturity</td>
+<td>chr</td>
+<td>Maturity status (e.g.&nbsp;“pregnant”, “mature”)</td>
+</tr>
+<tr class="odd">
+<td>stomach.volume</td>
+<td>dbl</td>
+<td>Stomach content volume (litres)</td>
+</tr>
+<tr class="even">
+<td>stomach.weight</td>
+<td>dbl</td>
+<td>Stomach content weight (kg)</td>
+</tr>
+<tr class="odd">
+<td>year</td>
+<td>dbl</td>
+<td>Year of catch</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+<section id="small_vms.csv" class="level3">
+<h3 class="anchored" data-anchor-id="small_vms.csv"><code>small_vms.csv</code></h3>
+<p><strong>Description:</strong> A small subset of Vessel Monitoring System (VMS) positions, likely from a single vessel or fishing trip near Iceland. Each row is a VMS ping with position and vessel ID.</p>
+<p>Read with: <code>read_csv("data/small_vms.csv")</code></p>
+<p>Rows: 1,070 | Columns: 3</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Variable</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>id</td>
+<td>dbl</td>
+<td>Vessel identifier</td>
+</tr>
+<tr class="even">
+<td>lon</td>
+<td>dbl</td>
+<td>Longitude of VMS ping</td>
+</tr>
+<tr class="odd">
+<td>lat</td>
+<td>dbl</td>
+<td>Latitude of VMS ping</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+<section id="is_smb_stations.csv" class="level3">
+<h3 class="anchored" data-anchor-id="is_smb_stations.csv"><code>is_smb_stations.csv</code></h3>
+<p><strong>Description:</strong> Station-level metadata for the Icelandic Spring Bottom Trawl Survey (SMB), covering surveys from 1990 onwards. Each row is one tow, with full positional, environmental, and operational detail.</p>
+<p>Read with: <code>read_csv("data/is_smb_stations.csv")</code></p>
+<p>Rows: 19,846 | Columns: 28</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Variable</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>id</td>
+<td>dbl</td>
+<td>Unique station/tow identifier; links to <code>is_smb_biological</code></td>
+</tr>
+<tr class="even">
+<td>date</td>
+<td>date</td>
+<td>Date of the tow</td>
+</tr>
+<tr class="odd">
+<td>year</td>
+<td>dbl</td>
+<td>Year of survey</td>
+</tr>
+<tr class="even">
+<td>vid</td>
+<td>dbl</td>
+<td>Vessel identifier</td>
+</tr>
+<tr class="odd">
+<td>tow_id</td>
+<td>chr</td>
+<td>Composite tow identifier</td>
+</tr>
+<tr class="even">
+<td>t1</td>
+<td>dttm</td>
+<td>Start time of tow</td>
+</tr>
+<tr class="odd">
+<td>t2</td>
+<td>dttm</td>
+<td>End time of tow</td>
+</tr>
+<tr class="even">
+<td>lon1</td>
+<td>dbl</td>
+<td>Longitude at start of tow</td>
+</tr>
+<tr class="odd">
+<td>lat1</td>
+<td>dbl</td>
+<td>Latitude at start of tow</td>
+</tr>
+<tr class="even">
+<td>lon2</td>
+<td>dbl</td>
+<td>Longitude at end of tow</td>
+</tr>
+<tr class="odd">
+<td>lat2</td>
+<td>dbl</td>
+<td>Latitude at end of tow</td>
+</tr>
+<tr class="even">
+<td>ir</td>
+<td>chr</td>
+<td>ICES rectangle code</td>
+</tr>
+<tr class="odd">
+<td>ir_lon</td>
+<td>dbl</td>
+<td>Longitude of ICES rectangle centroid</td>
+</tr>
+<tr class="even">
+<td>ir_lat</td>
+<td>dbl</td>
+<td>Latitude of ICES rectangle centroid</td>
+</tr>
+<tr class="odd">
+<td>z1</td>
+<td>dbl</td>
+<td>Bottom depth at start of tow (m)</td>
+</tr>
+<tr class="even">
+<td>z2</td>
+<td>dbl</td>
+<td>Bottom depth at end of tow (m)</td>
+</tr>
+<tr class="odd">
+<td>temp_s</td>
+<td>dbl</td>
+<td>Surface temperature (°C)</td>
+</tr>
+<tr class="even">
+<td>temp_b</td>
+<td>dbl</td>
+<td>Bottom temperature (°C)</td>
+</tr>
+<tr class="odd">
+<td>speed</td>
+<td>dbl</td>
+<td>Towing speed (knots)</td>
+</tr>
+<tr class="even">
+<td>duration</td>
+<td>dbl</td>
+<td>Tow duration (minutes)</td>
+</tr>
+<tr class="odd">
+<td>towlength</td>
+<td>dbl</td>
+<td>Tow distance (nautical miles)</td>
+</tr>
+<tr class="even">
+<td>horizontal</td>
+<td>dbl</td>
+<td>Horizontal net opening (m)</td>
+</tr>
+<tr class="odd">
+<td>verical</td>
+<td>dbl</td>
+<td>Vertical net opening (m)</td>
+</tr>
+<tr class="even">
+<td>wind</td>
+<td>dbl</td>
+<td>Wind speed</td>
+</tr>
+<tr class="odd">
+<td>wind_direction</td>
+<td>dbl</td>
+<td>Wind direction (degrees)</td>
+</tr>
+<tr class="even">
+<td>bormicon</td>
+<td>dbl</td>
+<td>Bormicon stratum code</td>
+</tr>
+<tr class="odd">
+<td>oldstrata</td>
+<td>dbl</td>
+<td>Old survey stratum code</td>
+</tr>
+<tr class="even">
+<td>newstrata</td>
+<td>dbl</td>
+<td>New survey stratum code</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+<section id="is_smb_biological.csv" class="level3">
+<h3 class="anchored" data-anchor-id="is_smb_biological.csv"><code>is_smb_biological.csv</code></h3>
+<p><strong>Description:</strong> Species-level catch data from the Icelandic SMB survey, in long format. Each row is a species recorded at a station with total weight and number. Join to <code>is_smb_stations</code> via <code>id</code>.</p>
+<p>Read with: <code>read_csv("data/is_smb_biological.csv")</code></p>
+<p>Rows: 68,834 | Columns: 4</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 14%">
+<col style="width: 8%">
+<col style="width: 76%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Variable</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>id</td>
+<td>dbl</td>
+<td>Station identifier; links to <code>is_smb_stations</code></td>
+</tr>
+<tr class="even">
+<td>species</td>
+<td>chr</td>
+<td>Common English species name (e.g.&nbsp;“cod”, “haddock”)</td>
+</tr>
+<tr class="odd">
+<td>kg</td>
+<td>dbl</td>
+<td>Total catch weight (kg)</td>
+</tr>
+<tr class="even">
+<td>n</td>
+<td>dbl</td>
+<td>Total number of fish caught</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+<section id="smb_utbrteg.csv" class="level3">
+<h3 class="anchored" data-anchor-id="smb_utbrteg.csv"><code>smb_utbrteg.csv</code></h3>
+<p><strong>Description:</strong> Raw Icelandic SMB trawl survey data with original Icelandic variable names. Used as input to generate <code>smb_summary.csv</code>. Contains tow-level catch totals for key commercial species.</p>
+<p>Read with: <code>read_csv("data/smb_utbrteg.csv")</code></p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Variable</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>ar</td>
+<td>dbl</td>
+<td>Year (Icelandic: <em>ár</em>)</td>
+</tr>
+<tr class="even">
+<td>reitur</td>
+<td>dbl</td>
+<td>ICES statistical square</td>
+</tr>
+<tr class="odd">
+<td>tog_nr</td>
+<td>dbl</td>
+<td>Tow number</td>
+</tr>
+<tr class="even">
+<td>lon1</td>
+<td>dbl</td>
+<td>Longitude at start of tow</td>
+</tr>
+<tr class="odd">
+<td>lat1</td>
+<td>dbl</td>
+<td>Latitude at start of tow</td>
+</tr>
+<tr class="even">
+<td>togtimi</td>
+<td>dbl</td>
+<td>Tow duration (minutes)</td>
+</tr>
+<tr class="odd">
+<td>torskur_kg</td>
+<td>dbl</td>
+<td>Cod catch weight (kg)</td>
+</tr>
+<tr class="even">
+<td>torskur_stk</td>
+<td>dbl</td>
+<td>Cod catch number</td>
+</tr>
+<tr class="odd">
+<td>ufsi_kg</td>
+<td>dbl</td>
+<td>Saithe catch weight (kg)</td>
+</tr>
+<tr class="even">
+<td>ufsi_stk</td>
+<td>dbl</td>
+<td>Saithe catch number</td>
+</tr>
+<tr class="odd">
+<td>ysa_kg</td>
+<td>dbl</td>
+<td>Haddock catch weight (kg)</td>
+</tr>
+<tr class="even">
+<td>ysa_stk</td>
+<td>dbl</td>
+<td>Haddock catch number</td>
+</tr>
+<tr class="odd">
+<td>hrognkelsi_kg</td>
+<td>dbl</td>
+<td>Lumpfish catch weight (kg)</td>
+</tr>
+<tr class="even">
+<td>hrognkelsi_stk</td>
+<td>dbl</td>
+<td>Lumpfish catch number</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+<section id="smb_summary.csv" class="level3">
+<h3 class="anchored" data-anchor-id="smb_summary.csv"><code>smb_summary.csv</code></h3>
+<p><strong>Description:</strong> Processed version of <code>smb_utbrteg.csv</code> with English variable names, ICES rectangle centroid coordinates added, and a tidy structure. Covers tow-level catch summaries for cod, saithe, haddock, and lumpfish.</p>
+<p>Read with: <code>read_csv("data/smb_summary.csv")</code></p>
+<p>Rows: 21,582 | Columns: 18</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Variable</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>year</td>
+<td>dbl</td>
+<td>Year of survey</td>
+</tr>
+<tr class="even">
+<td>sq</td>
+<td>dbl</td>
+<td>ICES statistical square number</td>
+</tr>
+<tr class="odd">
+<td>tow_nr</td>
+<td>dbl</td>
+<td>Tow number within square</td>
+</tr>
+<tr class="even">
+<td>lon1</td>
+<td>dbl</td>
+<td>Longitude at start of tow</td>
+</tr>
+<tr class="odd">
+<td>lat1</td>
+<td>dbl</td>
+<td>Latitude at start of tow</td>
+</tr>
+<tr class="even">
+<td>lon2</td>
+<td>dbl</td>
+<td>Longitude at end of tow</td>
+</tr>
+<tr class="odd">
+<td>lat2</td>
+<td>dbl</td>
+<td>Latitude at end of tow</td>
+</tr>
+<tr class="even">
+<td>ir_lon</td>
+<td>dbl</td>
+<td>Longitude of ICES rectangle centroid</td>
+</tr>
+<tr class="odd">
+<td>ir_lat</td>
+<td>dbl</td>
+<td>Latitude of ICES rectangle centroid</td>
+</tr>
+<tr class="even">
+<td>towtime</td>
+<td>dbl</td>
+<td>Tow duration (minutes)</td>
+</tr>
+<tr class="odd">
+<td>cod_kg</td>
+<td>dbl</td>
+<td>Cod catch weight (kg)</td>
+</tr>
+<tr class="even">
+<td>cod_n</td>
+<td>dbl</td>
+<td>Cod catch number</td>
+</tr>
+<tr class="odd">
+<td>saithe_kg</td>
+<td>dbl</td>
+<td>Saithe catch weight (kg)</td>
+</tr>
+<tr class="even">
+<td>saithe_n</td>
+<td>dbl</td>
+<td>Saithe catch number</td>
+</tr>
+<tr class="odd">
+<td>haddock_kg</td>
+<td>dbl</td>
+<td>Haddock catch weight (kg)</td>
+</tr>
+<tr class="even">
+<td>haddock_n</td>
+<td>dbl</td>
+<td>Haddock catch number</td>
+</tr>
+<tr class="odd">
+<td>lumpfish_kg</td>
+<td>dbl</td>
+<td>Lumpfish catch weight (kg)</td>
+</tr>
+<tr class="even">
+<td>lumpfish_n</td>
+<td>dbl</td>
+<td>Lumpfish catch number</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+</section>
+<section id="spatial-vector-data" class="level2">
+<h2 class="anchored" data-anchor-id="spatial-vector-data">Spatial vector data</h2>
+<hr>
+<section id="helcom.gpkg" class="level3">
+<h3 class="anchored" data-anchor-id="helcom.gpkg"><code>helcom.gpkg</code></h3>
+<p><strong>Description:</strong> HELCOM (Helsinki Commission) sub-basin polygons for the Baltic Sea, used for regional classification and reporting.</p>
+<p>Read with: <code>read_sf("data/helcom.gpkg")</code></p>
+<p>Features: 17 | Geometry: MULTIPOLYGON | CRS: WGS 84 (EPSG:4326)</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 16%">
+<col style="width: 8%">
+<col style="width: 74%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Variable</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>objectid</td>
+<td>dbl</td>
+<td>Internal object identifier</td>
+</tr>
+<tr class="even">
+<td>sb_code</td>
+<td>int</td>
+<td>Sub-basin numeric code</td>
+</tr>
+<tr class="odd">
+<td>name</td>
+<td>chr</td>
+<td>Sub-basin name (e.g.&nbsp;“Kattegat”, “Gulf of Finland”)</td>
+</tr>
+<tr class="even">
+<td>areakm2</td>
+<td>dbl</td>
+<td>Area in km² (may be 0 for some features)</td>
+</tr>
+<tr class="odd">
+<td>helcom_id</td>
+<td>chr</td>
+<td>HELCOM unique identifier (e.g.&nbsp;“SEA-001”)</td>
+</tr>
+<tr class="even">
+<td>shape_star</td>
+<td>dbl</td>
+<td>Shape start area attribute</td>
+</tr>
+<tr class="odd">
+<td>shape_stle</td>
+<td>dbl</td>
+<td>Shape start-to-end length attribute</td>
+</tr>
+<tr class="even">
+<td>shape_leng</td>
+<td>dbl</td>
+<td>Perimeter length</td>
+</tr>
+<tr class="odd">
+<td>shape_area</td>
+<td>dbl</td>
+<td>Polygon area (internal units)</td>
+</tr>
+<tr class="even">
+<td>geom</td>
+<td>geom</td>
+<td>MULTIPOLYGON geometry</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+<section id="ice_lines.gpkg" class="level3">
+<h3 class="anchored" data-anchor-id="ice_lines.gpkg"><code>ice_lines.gpkg</code></h3>
+<p><strong>Description:</strong> Line geometries representing ice edges or boundaries, stored in a projected coordinate system. Likely used as reference overlays in map exercises.</p>
+<p>Read with: <code>read_sf("data/ice_lines.gpkg")</code></p>
+<p>Features: 3 | Geometry: LINESTRING | CRS: Unnamed projected CRS (LAEA-like, units: m)</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Variable</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>geom</td>
+<td>geom</td>
+<td>LINESTRING geometry</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+<section id="ice_points.gpkg" class="level3">
+<h3 class="anchored" data-anchor-id="ice_points.gpkg"><code>ice_points.gpkg</code></h3>
+<p><strong>Description:</strong> Point geometries associated with ice observations or reference locations.</p>
+<p>Read with: <code>read_sf("data/ice_points.gpkg")</code></p>
+<p>Features: 5 | Geometry: POINT | CRS: Unnamed projected CRS (units: m)</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Variable</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>geom</td>
+<td>geom</td>
+<td>POINT geometry</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+<section id="ice_polygon.gpkg" class="level3">
+<h3 class="anchored" data-anchor-id="ice_polygon.gpkg"><code>ice_polygon.gpkg</code></h3>
+<p><strong>Description:</strong> Polygon geometries representing ice-covered areas.</p>
+<p>Read with: <code>read_sf("data/ice_polygon.gpkg")</code></p>
+<p>Features: 2 | Geometry: POLYGON | CRS: Unnamed projected CRS (units: m)</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Variable</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>geom</td>
+<td>geom</td>
+<td>POLYGON geometry</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+<section id="iceland_coastline.gpkg" class="level3">
+<h3 class="anchored" data-anchor-id="iceland_coastline.gpkg"><code>iceland_coastline.gpkg</code></h3>
+<p><strong>Description:</strong> Coastline polygon for Iceland, stored in a projected CRS (LAEA). Contains a single feature representing the full Icelandic landmass.</p>
+<p>Read with: <code>read_sf("data/iceland_coastline.gpkg")</code></p>
+<p>Features: 1 | Geometry: MULTIPOLYGON | CRS: Unnamed projected CRS (LAEA, units: m)</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Variable</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>ID_0</td>
+<td>chr</td>
+<td>Country numeric code (“104”)</td>
+</tr>
+<tr class="even">
+<td>NAME_0</td>
+<td>chr</td>
+<td>Country name (“Iceland”)</td>
+</tr>
+<tr class="odd">
+<td>geom</td>
+<td>geom</td>
+<td>MULTIPOLYGON geometry</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+<section id="iceland_contours.gpkg" class="level3">
+<h3 class="anchored" data-anchor-id="iceland_contours.gpkg"><code>iceland_contours.gpkg</code></h3>
+<p><strong>Description:</strong> Depth contour lines around Iceland at standard bathymetric levels (-100, -200, -300, -500, -1000, -2000 m). Useful for adding depth reference lines to maps.</p>
+<p>Read with: <code>read_sf("data/iceland_contours.gpkg")</code></p>
+<p>Features: 6 | Geometry: MULTILINESTRING | CRS: WGS 84 (EPSG:4326)</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Variable</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>level</td>
+<td>chr</td>
+<td>Depth contour level in metres (e.g.&nbsp;“-200”)</td>
+</tr>
+<tr class="even">
+<td>geom</td>
+<td>geom</td>
+<td>MULTILINESTRING geometry</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+<section id="ices_ecoregions.gpkg" class="level3">
+<h3 class="anchored" data-anchor-id="ices_ecoregions.gpkg"><code>ices_ecoregions.gpkg</code></h3>
+<p><strong>Description:</strong> ICES ecoregion polygons covering the North Atlantic and adjacent seas, used for fish stock assessment reporting areas.</p>
+<p>Read with: <code>read_sf("data/ices_ecoregions.gpkg")</code></p>
+<p>Features: 17 | Geometry: MULTIPOLYGON | CRS: WGS 84 (EPSG:4326)</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 14%">
+<col style="width: 8%">
+<col style="width: 77%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Variable</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>ecoregion</td>
+<td>chr</td>
+<td>Ecoregion name (e.g.&nbsp;“Icelandic Waters”, “Barents Sea”)</td>
+</tr>
+<tr class="even">
+<td>area_km2</td>
+<td>dbl</td>
+<td>Ecoregion area (km²)</td>
+</tr>
+<tr class="odd">
+<td>geom</td>
+<td>geom</td>
+<td>MULTIPOLYGON geometry</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+<section id="ices_rectangles.gpkg" class="level3">
+<h3 class="anchored" data-anchor-id="ices_rectangles.gpkg"><code>ices_rectangles.gpkg</code></h3>
+<p><strong>Description:</strong> ICES statistical rectangles (0.5° latitude × 1° longitude grid) covering the North Atlantic, used as the standard spatial reporting unit in ICES stock assessments.</p>
+<p>Read with: <code>read_sf("data/ices_rectangles.gpkg")</code></p>
+<p>Features: 6,758 | Geometry: POLYGON | CRS: WGS 84 (EPSG:4326)</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Variable</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>id</td>
+<td>dbl</td>
+<td>Internal identifier</td>
+</tr>
+<tr class="even">
+<td>icesname</td>
+<td>chr</td>
+<td>ICES rectangle name (e.g.&nbsp;“47A0”)</td>
+</tr>
+<tr class="odd">
+<td>south</td>
+<td>dbl</td>
+<td>Southern boundary latitude</td>
+</tr>
+<tr class="even">
+<td>west</td>
+<td>dbl</td>
+<td>Western boundary longitude</td>
+</tr>
+<tr class="odd">
+<td>north</td>
+<td>dbl</td>
+<td>Northern boundary latitude</td>
+</tr>
+<tr class="even">
+<td>east</td>
+<td>dbl</td>
+<td>Eastern boundary longitude</td>
+</tr>
+<tr class="odd">
+<td>area_km2</td>
+<td>int</td>
+<td>Rectangle area (km²)</td>
+</tr>
+<tr class="even">
+<td>objectid</td>
+<td>dbl</td>
+<td>Additional object identifier</td>
+</tr>
+<tr class="odd">
+<td>icesname_1</td>
+<td>chr</td>
+<td>Duplicate of icesname (join artifact)</td>
+</tr>
+<tr class="even">
+<td>ecoregion</td>
+<td>chr</td>
+<td>ICES ecoregion the rectangle belongs to</td>
+</tr>
+<tr class="odd">
+<td>area</td>
+<td>dbl</td>
+<td>Fraction of rectangle area</td>
+</tr>
+<tr class="even">
+<td>percentage</td>
+<td>dbl</td>
+<td>Percentage of rectangle within ecoregion</td>
+</tr>
+<tr class="odd">
+<td>objectid_1</td>
+<td>dbl</td>
+<td>Additional join artifact identifier</td>
+</tr>
+<tr class="even">
+<td>icesname_2</td>
+<td>chr</td>
+<td>Second duplicate of icesname</td>
+</tr>
+<tr class="odd">
+<td>shape_st_ar</td>
+<td>dbl</td>
+<td>Shape area attribute</td>
+</tr>
+<tr class="even">
+<td>shape_st_le</td>
+<td>dbl</td>
+<td>Shape length attribute</td>
+</tr>
+<tr class="odd">
+<td>geom</td>
+<td>geom</td>
+<td>POLYGON geometry</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+<section id="nephrops_fu.gpkg" class="level3">
+<h3 class="anchored" data-anchor-id="nephrops_fu.gpkg"><code>nephrops_fu.gpkg</code></h3>
+<p><strong>Description:</strong> Nephrops (<em>Nephrops norvegicus</em>, Norway lobster) functional unit polygons as defined by ICES, covering the Northeast Atlantic.</p>
+<p>Read with: <code>read_sf("data/nephrops_fu.gpkg")</code></p>
+<p>Features: 30 | Geometry: POLYGON | CRS: WGS 84 (EPSG:4326)</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Variable</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>name</td>
+<td>chr</td>
+<td>Functional unit name (e.g.&nbsp;“Noup”, “North Minch”)</td>
+</tr>
+<tr class="even">
+<td>fu</td>
+<td>chr</td>
+<td>Functional unit code number</td>
+</tr>
+<tr class="odd">
+<td>geom</td>
+<td>geom</td>
+<td>POLYGON geometry</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+<section id="ospar_intensity_otter_2015.gpkg" class="level3">
+<h3 class="anchored" data-anchor-id="ospar_intensity_otter_2015.gpkg"><code>OSPAR_intensity_Otter_2015.gpkg</code></h3>
+<p><strong>Description:</strong> OSPAR 2015 otter trawl fishing intensity data on a 0.05° c-square grid, covering the Northeast Atlantic. Includes swept area ratios (SAR) and effort metrics used in bottom-impact assessments.</p>
+<p>Read with: <code>read_sf("data/OSPAR_intensity_Otter_2015.gpkg")</code></p>
+<p>Features: 91,190 | Geometry: POLYGON | CRS: WGS 84 (EPSG:4326)</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Variable</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>c_square</td>
+<td>chr</td>
+<td>C-square identifier for the 0.05° grid cell</td>
+</tr>
+<tr class="even">
+<td>mid_lat</td>
+<td>dbl</td>
+<td>Latitude of grid cell centre</td>
+</tr>
+<tr class="odd">
+<td>mid_lon</td>
+<td>dbl</td>
+<td>Longitude of grid cell centre</td>
+</tr>
+<tr class="even">
+<td>SubsurfSAR</td>
+<td>dbl</td>
+<td>Subsurface swept area ratio (SAR)</td>
+</tr>
+<tr class="odd">
+<td>SurfSAR</td>
+<td>dbl</td>
+<td>Surface swept area ratio (SAR)</td>
+</tr>
+<tr class="even">
+<td>SurfSA</td>
+<td>dbl</td>
+<td>Surface swept area (km²)</td>
+</tr>
+<tr class="odd">
+<td>totweight</td>
+<td>dbl</td>
+<td>Total catch weight (tonnes)</td>
+</tr>
+<tr class="even">
+<td>totvalue</td>
+<td>dbl</td>
+<td>Total catch value</td>
+</tr>
+<tr class="odd">
+<td>KWfishingH</td>
+<td>dbl</td>
+<td>Kilowatt fishing hours</td>
+</tr>
+<tr class="even">
+<td>FishingH</td>
+<td>dbl</td>
+<td>Fishing hours</td>
+</tr>
+<tr class="odd">
+<td>geom</td>
+<td>geom</td>
+<td>POLYGON geometry</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+</section>
+<section id="raster-data" class="level2">
+<h2 class="anchored" data-anchor-id="raster-data">Raster data</h2>
+<hr>
+<section id="faroes_minbtemp.tif" class="level3">
+<h3 class="anchored" data-anchor-id="faroes_minbtemp.tif"><code>Faroes_minbtemp.tif</code></h3>
+<p><strong>Description:</strong> Minimum bottom temperature raster for the Faroe Islands area. Values in °C. Stored in a LAEA projected coordinate system.</p>
+<p>Read with: <code>rast("data/Faroes_minbtemp.tif")</code></p>
+<p>Dimensions: 175 rows × 200 cols | Resolution: 2000 m | CRS: LAEA (lon_0=-4, lat_0=69) | Range: -1.23 to 8.91 °C</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Layer</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Faroes_minbtemp</td>
+<td>Minimum bottom temperature (°C)</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+<section id="iceland_currentsp.tif" class="level3">
+<h3 class="anchored" data-anchor-id="iceland_currentsp.tif"><code>Iceland_currentsp.tif</code></h3>
+<p><strong>Description:</strong> Ocean current speed raster for the waters around Iceland. Likely a climatological mean or seasonal average. Values in m/s.</p>
+<p>Read with: <code>rast("data/Iceland_currentsp.tif")</code></p>
+<p>Dimensions: 300 rows × 1080 cols | Resolution: ~0.017° | CRS: WGS 84 (EPSG:4326) | Range: 0.002 to 0.291 m/s</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Layer</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Iceland_currentsp</td>
+<td>Current speed (m/s)</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+<section id="iceland_maxbtemp.tif" class="level3">
+<h3 class="anchored" data-anchor-id="iceland_maxbtemp.tif"><code>Iceland_maxbtemp.tif</code></h3>
+<p><strong>Description:</strong> Maximum bottom temperature raster for Icelandic waters. Values in °C. Stored in a LAEA projected coordinate system matching <code>Iceland_minbtemp.tif</code>.</p>
+<p>Read with: <code>rast("data/Iceland_maxbtemp.tif")</code></p>
+<p>Dimensions: 340 rows × 375 cols | Resolution: 2000 m | CRS: LAEA (lon_0=-4, lat_0=69) | Range: -0.99 to 9.82 °C</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Layer</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Iceland_maxbtemp</td>
+<td>Maximum bottom temperature (°C)</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+<section id="iceland_minbtemp.tif" class="level3">
+<h3 class="anchored" data-anchor-id="iceland_minbtemp.tif"><code>Iceland_minbtemp.tif</code></h3>
+<p><strong>Description:</strong> Minimum bottom temperature raster for Icelandic waters. Values in °C. Same grid as <code>Iceland_maxbtemp.tif</code>; together they represent the seasonal range of bottom temperatures.</p>
+<p>Read with: <code>rast("data/Iceland_minbtemp.tif")</code></p>
+<p>Dimensions: 340 rows × 375 cols | Resolution: 2000 m | CRS: LAEA (lon_0=-4, lat_0=69) | Range: -1.00 to 8.60 °C</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Layer</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Iceland_minbtemp</td>
+<td>Minimum bottom temperature (°C)</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+<section id="nephrops.tif" class="level3">
+<h3 class="anchored" data-anchor-id="nephrops.tif"><code>nephrops.tif</code></h3>
+<p><strong>Description:</strong> Raster representing Nephrops (<em>Nephrops norvegicus</em>) distribution or habitat quality around Iceland. Values are integer scores (1–40), possibly a suitability or abundance index.</p>
+<p>Read with: <code>rast("data/nephrops.tif")</code></p>
+<p>Dimensions: 2401 rows × 8129 cols | Resolution: ~0.0013° × 0.00065° | CRS: WGS 84 (EPSG:4326) | Range: 1 to 40</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Layer</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>nephrops</td>
+<td>Nephrops distribution index (integer score 1–40)</td>
+</tr>
+</tbody>
+</table>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
