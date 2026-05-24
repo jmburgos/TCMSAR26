@@ -25,7 +25,6 @@ files <- c(
   "minke.csv",
   "small_vms.csv",
   "smb_summary.csv",
-  "smb_utbrteg.csv",
   # Spatial vector
   "helcom.gpkg",
   "ice_lines.gpkg",
@@ -36,13 +35,16 @@ files <- c(
   "ices_ecoregions.gpkg",
   "ices_rectangles.gpkg",
   "nephrops_fu.gpkg",
+  "ospar.gpkg",
   "OSPAR_intensity_Otter_2015.gpkg",
   # Rasters
+  "Iceland_btemp.tif",
   "Faroes_minbtemp.tif",
   "Iceland_currentsp.tif",
   "Iceland_maxbtemp.tif",
   "Iceland_minbtemp.tif",
-  "nephrops.tif"
+  "nephrops.tif",
+  "Iceland_depth.tif"
 )
 
 dir.create("data", showWarnings = FALSE)
@@ -73,7 +75,7 @@ Read with: `read_csv("data/datras_2018_haul.csv")`
 Rows: 3,145 \| Columns: 62
 
 | Variable | Type | Description |
-|----|----|----|
+|------------------------|------------------------|------------------------|
 | id | chr | Unique haul identifier (concatenation of survey, year, quarter, country, ship, gear, stno, haulno) |
 | survey | chr | Survey name (e.g. "BITS", "IBTS") |
 | quarter | dbl | Quarter of the year (1–4) |
@@ -209,7 +211,7 @@ Read with: `read_csv("data/is_smb_stations.csv")`
 Rows: 19,846 \| Columns: 28
 
 | Variable | Type | Description |
-|----|----|----|
+|------------------------|------------------------|------------------------|
 | id | dbl | Unique station/tow identifier; links to `is_smb_biological` |
 | date | date | Date of the tow |
 | year | dbl | Year of survey |

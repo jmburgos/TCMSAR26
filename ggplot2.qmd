@@ -1,9 +1,8 @@
 ---
 title: "Mapping with ggplot2 — part 2"
-
 ---
 
-# Getting started
+# Setup
 
 ## Libraries
 
@@ -19,17 +18,16 @@ library(patchwork)
 ## Data
 
 ```{r data}
-minke <- read_csv("data/minke.csv")
-smb   <- read_csv("data/smb_summary.csv")
+minke_df <- read_csv("data/minke.csv")
+smb      <- read_csv("data/smb_summary.csv")
 
 # Convert minke whale positions to sf
-minke_sf <- minke |>
+minke_sf <- minke_df |>
   st_as_sf(coords = c("lon", "lat"), crs = 4326)
 
 # Country polygons from rnaturalearth
-iceland_sf <- ne_countries(country = "Iceland", scale = "medium",
-                           returnclass = "sf")
-world_sf   <- ne_countries(scale = "medium", returnclass = "sf")
+iceland_sf <- ne_countries(country = "Iceland", scale = "medium")
+world_sf   <- ne_countries(scale = "medium")
 
 # Nephrops functional units — used for labelling examples
 nfu <- read_sf("data/nephrops_fu.gpkg")
@@ -38,58 +36,59 @@ nfu <- read_sf("data/nephrops_fu.gpkg")
 coast    <- read_sf("data/iceland_coastline.gpkg")
 contours <- read_sf("data/iceland_contours.gpkg")
 
-# SMB 2019 tows
-smb2019 <- smb |> filter(year == 2019)
+# SMB 2019 tows, as both a data frame and an sf object
+smb2019     <- smb |> filter(year == 2019)
+smb2019_pts <- smb2019 |>
+  st_as_sf(coords = c("lon1", "lat1"), crs = 4326)
 ```
 
 ---
 
-# From `ggplot1` to `geom_sf()`
+# From `geom_polygon()` to `geom_sf()`
 
-In `ggplot1` we used `map_data()` from the **maps** package to get country
-outlines as plain data frames, and plotted them with `geom_polygon()`. That
-approach works, but it has limitations: it requires a specific data structure
-with a column named `group` to draw polygons correctly, it cannot represent
-lines or arbitrary polygon boundaries, and the projection (`coord_quickmap`) is
-only an approximation.
+In part 1 we used `map_data()` from the **maps** package to get country
+outlines as plain data frames, plotted with `geom_polygon()`. That approach
+works but has real limitations:
 
-The modern approach is `geom_sf()`. It accepts any sf object — point, line, or
-polygon — and uses `coord_sf()` to manage the coordinate system exactly. Because
-the geometry is stored in the sf object itself, there is no need to manage
-coordinate column names or polygon ordering manually.
+- it requires a `group` column to draw multi-part polygons correctly;
+- it cannot represent lines or point geometries;
+- the projection (`coord_quickmap()`) is only an approximation.
+
+The modern approach is `geom_sf()`. It accepts any `sf` object — point, line,
+or polygon — and pairs with `coord_sf()` for exact coordinate system handling.
+Because the geometry is stored in the `sf` object itself, there is no need to
+manage coordinate column names or polygon ordering manually.
 
 ```{r}
-# ggplot1 approach — a data frame with long/lat columns
 iceland_df <- map_data("world", region = "Iceland")
 
 p_old <- ggplot() +
-  geom_polygon(data = iceland_df, aes(long, lat, group = group),
+  geom_polygon(data = iceland_df,
+               aes(long, lat, group = group),
                fill = "grey80", colour = "white") +
   coord_quickmap(xlim = c(-27, -11), ylim = c(62.5, 67.5)) +
-  labs(title = "maps / geom_polygon") +
+  labs(title = "maps / geom_polygon (part 1 approach)") +
   theme_bw()
 
-# Modern approach — an sf object
 p_new <- ggplot() +
   geom_sf(data = iceland_sf, fill = "grey80", colour = "white") +
   coord_sf(xlim = c(-27, -11), ylim = c(62.5, 67.5)) +
-  labs(title = "rnaturalearth / geom_sf") +
+  labs(title = "rnaturalearth / geom_sf (modern approach)") +
   theme_bw()
 
 p_old + p_new
 ```
 
-`geom_sf()` selects the appropriate rendering (points, lines, or polygons)
-automatically based on the geometry column. A single call handles all geometry
-types — no need to choose between `geom_point()`, `geom_path()`, and
-`geom_polygon()` depending on what you have.
+`geom_sf()` selects the correct rendering automatically (points, lines, or
+filled polygons) based on the geometry type stored in the `sf` object. A
+single call handles all geometry types.
 
 ---
 
 # Basemaps with `rnaturalearth`
 
-The **rnaturalearth** package provides country and coastline polygons as sf
-objects at several resolutions (`"small"`, `"medium"`, `"large"`), and is a
+The **rnaturalearth** package provides country and coastline polygons as `sf`
+objects at several resolutions (`"small"`, `"medium"`, `"large"`). It is a
 well-maintained replacement for the **maps** package for basemap data.
 
 ```{r}
@@ -98,28 +97,31 @@ ggplot() +
   theme_bw()
 ```
 
-Adding data on top follows exactly the same layering logic as `ggplot1`: the
-basemap goes first, then data layers. Here we add the minke whale observations:
+Adding data on top follows the same layering logic as part 1: basemap first,
+then data layers. Here we overlay the minke whale observations:
 
 ```{r}
 ggplot() +
   geom_sf(data = iceland_sf, fill = "grey80") +
   geom_sf(data = minke_sf, aes(colour = sex), size = 2, alpha = 0.7) +
   scale_colour_brewer(name = "Sex", palette = "Set1") +
-  labs(x = NULL, y = NULL) +
+  scale_x_continuous(NULL, NULL) +
+  scale_y_continuous(NULL, NULL) +
   theme_bw()
 ```
 
-For a regional view, zoom with `coord_sf(xlim, ylim)`. Values are in the units
-of the active CRS — decimal degrees for the WGS84 default:
+Zoom with `coord_sf(xlim, ylim)`. Values are in the units of the active CRS —
+decimal degrees for the WGS84 default. Recall from part 1 that setting limits
+inside `coord_sf()` zooms the *view* without clipping any features:
 
 ```{r}
 ggplot() +
   geom_sf(data = world_sf, fill = "grey80") +
   geom_sf(data = minke_sf, aes(colour = sex), alpha = 0.8) +
-  coord_sf(xlim = c(-26, -12), ylim = c(62.5, 67.5)) +
+  coord_sf(xlim = c(-24, -18), ylim = c(63, 65)) +
   scale_colour_brewer(name = "Sex", palette = "Set1") +
-  labs(x = NULL, y = NULL) +
+#  scale_x_continuous(NULL, NULL) +
+#  scale_y_continuous(NULL, NULL) +
   theme_bw()
 ```
 
@@ -127,14 +129,12 @@ ggplot() +
 
 # Projections with `coord_sf()`
 
-`coord_sf()` controls the CRS used when rendering all map layers. Every layer is
-automatically reprojected to match — you never need to reproject your data
-manually just for plotting.
+`coord_sf()` controls the CRS used when rendering all layers. Every layer is
+automatically reprojected to match — you never need to reproject data manually
+just for plotting. This connects directly to what you learned in the [CRS
+chapter](crs.qmd): pass any EPSG code to the `crs` argument.
 
-This connects directly to what you learned in the [CRS chapter](crs.qmd): pass
-any EPSG code or proj string to the `crs` argument.
-
-```{r}
+```{r fig.width=10, fig.height=4}
 p_base <- ggplot() +
   geom_sf(data = iceland_sf, fill = "grey80") +
   geom_sf(data = minke_sf, aes(colour = sex), alpha = 0.7) +
@@ -143,76 +143,211 @@ p_base <- ggplot() +
   scale_y_continuous(NULL, NULL)
 
 p1 <- p_base + coord_sf(crs = 4326) +
-  labs(title = "WGS84 (geographic)")
+  labs(title = "WGS84 (geographic)", subtitle = "EPSG:4326")
 
-p2 <- p_base + coord_sf(crs = "+proj=laea +lat_0=65 +lon_0=-19") +
-  labs(title = "LAEA centred on Iceland")
+p2 <- p_base + coord_sf(crs = 3057) +
+  labs(title = "ISN93 / Lambert conformal", subtitle = "EPSG:3057")
 
-p3 <- p_base + coord_sf(crs = "+proj=stere +lat_0=90 +lat_ts=65 +lon_0=-19") +
-  labs(title = "Stereographic")
+p3 <- p_base + coord_sf(crs = st_crs("+proj=stere +lat_0=90 +lat_ts=65 +lon_0=-19")) +
+  labs(title = "Polar stereographic", subtitle = "centred on Iceland")
 
 p1 + p2 + p3
 ```
 
+::: {.callout-note}
+## Prefer EPSG codes over proj strings
+The first two panels use EPSG codes (`crs = 4326`, `crs = 3057`). This is
+more robust than raw proj strings (e.g. `"+proj=laea ..."`), which became
+unreliable after PROJ 6. Use `crsuggest::suggest_crs()` to find the right
+EPSG code for your area. Proj strings are still needed for custom projections
+that have no EPSG entry, as in the third panel.
+:::
+
 ## Mixing layers with different CRS
 
-When your layers have different CRS — a common situation when combining data
-from different sources — `coord_sf()` aligns them automatically. The display CRS
-defaults to the first layer's CRS, but setting it explicitly is best practice:
+When layers come from different sources with different CRS, `coord_sf()`
+aligns them automatically. Without an explicit `crs` argument it uses the CRS
+of the first layer, which can produce unexpected results if the layer order
+changes. Setting it explicitly is safer:
 
 ```{r}
-# coast and contours are loaded in the setup chunk above
-# coast: projected LAEA — contours: WGS84
+# coast: Iceland coastline in a projected LAEA CRS
+# contours: depth contours in WGS84 (EPSG:4326)
+# — these would not align without coord_sf() handling the reprojection
 
-# Explicit CRS avoids surprises when layer order changes
-ggplot() +
+# Without explicit CRS — display CRS taken from first layer (contours = WGS84)
+p_implicit <- ggplot() +
   geom_sf(data = contours, colour = "steelblue", linewidth = 0.3) +
-  geom_sf(data = coast,    fill = "grey80") +
-  coord_sf(crs = 8088) +   # ISN2016 / LAEA Iceland — Iceland's official CRS
-  theme_bw()
+  geom_sf(data = coast, fill = "grey80") +
+  theme_bw() +
+  labs(title = "Implicit CRS (first layer wins)", subtitle = "WGS84")
+
+# With explicit CRS — ISN2016 / LAEA Iceland (Iceland's official CRS)
+p_explicit <- ggplot() +
+  geom_sf(data = contours, colour = "steelblue", linewidth = 0.3) +
+  geom_sf(data = coast, fill = "grey80") +
+  coord_sf(crs = 8088) +
+  theme_bw() +
+  labs(title = "Explicit CRS", subtitle = "ISN2016 / LAEA Iceland (EPSG:8088)")
+
+p_implicit + p_explicit
 ```
+
+::: {.callout-important}
+Always set `crs` explicitly in `coord_sf()` when combining layers from
+different sources. The implicit default can change silently if you reorder
+your layers.
+:::
+
+---
+
+# Colour scales
+
+Choosing an appropriate colour scale is one of the most consequential decisions
+in map design. By this point in the course you are working with `geom_sf()` and
+real polygon data, so the stakes are higher — a poor choice can completely hide
+spatial structure.
+
+## Continuous data: viridis palettes
+
+The **viridis** palettes (`"viridis"`, `"magma"`, `"plasma"`, `"inferno"`,
+`"cividis"`, `"mako"`, `"rocket"`, `"turbo"`) are built into ggplot2. They are
+perceptually uniform, readable in greyscale, and colour-blind safe — a reliable
+default for scientific maps:
+
+```{r}
+s <- smb |>
+  filter(year == 2019) |>
+  group_by(ir_lon, ir_lat) |>
+  summarise(Cod = mean(cod_n), .groups = "drop") |>
+  st_as_sf(coords = c("ir_lon", "ir_lat"), crs = 4326)
+
+p_raster <- ggplot() +
+  geom_sf(data = s, aes(colour = Cod), size = 3) +
+  geom_sf(data = iceland_sf, fill = "grey60", colour = NA) +
+  coord_sf(xlim = c(-27, -11), ylim = c(62.5, 67.5)) +
+  scale_x_continuous(NULL, NULL) +
+  scale_y_continuous(NULL, NULL) +
+  theme_bw()
+
+p1 <- p_raster + scale_colour_viridis_c(option = "D", name = "viridis")
+p2 <- p_raster + scale_colour_viridis_c(option = "B", direction = -1,
+                                         name = "magma (rev)")
+p3 <- p_raster + scale_colour_viridis_c(option = "C", name = "plasma")
+
+p1 + p2 + p3
+```
+
+## Colour scale transformations
+
+Catch data are strongly right-skewed: most tows catch few fish and a few catch
+a lot. On an untransformed scale, almost all the colour gradient is consumed by
+the rare high values, obscuring variation among typical tows. Transforming the
+scale spreads the gradient more evenly:
+
+```{r}
+p_log  <- p_raster +
+  scale_colour_viridis_c(option = "B", direction = -1,
+                         transform = "log1p", name = "log1p")
+p_sqrt <- p_raster +
+  scale_colour_viridis_c(option = "B", direction = -1,
+                         transform = "sqrt", name = "sqrt")
+
+p_log + p_sqrt
+```
+
+`log1p` (log(x + 1)) handles zeros and compresses high values strongly.
+`sqrt` is a milder compression. Both typically reveal spatial structure that
+a linear scale hides.
+
+## Discrete intervals with `cut()`
+
+Binning into labelled classes trades precision for legibility — often the
+right choice for reports or presentations:
+
+```{r}
+s_cut <- s |>
+  mutate(Cod_class = cut(Cod,
+                         breaks = c(0, 23, 62, 145, Inf),
+                         labels = c("Low", "Medium", "High", "Very high"),
+                         include.lowest = TRUE))
+
+ggplot() +
+  geom_sf(data = s_cut, aes(colour = Cod_class), size = 3) +
+  geom_sf(data = iceland_sf, fill = "grey60", colour = NA) +
+  coord_sf(xlim = c(-27, -11), ylim = c(62.5, 67.5)) +
+  scale_colour_viridis_d(option = "B", direction = -1,
+                         name = "Cod abundance",
+                         na.value = "grey80") +
+  scale_x_continuous(NULL, NULL) +
+  scale_y_continuous(NULL, NULL) +
+  theme_bw() +
+  labs(title = "Cod abundance classes — SMB 2019")
+```
+
+::: {.callout-note}
+## Which colour scale to choose?
+
+| Situation | Recommended approach |
+|---|---|
+| Precise values matter, data roughly symmetric | Continuous gradient |
+| Data are strongly right-skewed (e.g. catch counts) | Continuous with `transform = "log1p"` or `"sqrt"` |
+| Communicating to a non-technical audience or for a report | Discrete bins with `cut()` |
+:::
 
 ---
 
 # Labels: `geom_sf_text()` and `geom_sf_label()`
 
-For labelling polygon or point features, `geom_sf_text()` and `geom_sf_label()`
-place text at the geometry's position (centroid for polygons). A useful pattern
-is to compute centroid positions first with `st_centroid()` and use those as the
-label layer:
+`geom_sf_text()` and `geom_sf_label()` place text at the geometry's position
+(centroid for polygons). A reliable pattern is to compute centroids first with
+`st_centroid()` and use those as a separate label layer:
 
 ```{r}
 nfu_centroids <- st_centroid(nfu)
 
 ggplot() +
   geom_sf(data = nfu, fill = NA, colour = "steelblue") +
-  geom_sf_label(data = nfu_centroids, aes(label = name),
-                size = 2.5, label.padding = unit(0.15, "lines")) +
-  theme_bw()
+  geom_sf_label(data = nfu_centroids,
+                aes(label = name),
+                size          = 2.5,
+                label.padding = unit(0.15, "lines")) +
+  theme_bw() +
+  labs(title = "Nephrops functional units")
 ```
 
-`geom_sf_text()` omits the label box; use it for point labels where you do not
-want the visual weight of a background rectangle.
+`geom_sf_text()` omits the label background box. Use it where you want
+lighter annotation without the visual weight of a rectangle.
+
+::: {.callout-tip}
+## Exercise
+Replace `geom_sf_label()` with `geom_sf_text()`. Then try mapping `name` to
+`colour` to give each unit a distinct colour. Does it improve or clutter the
+map?
+:::
 
 ---
 
 # Facetting
 
-Facetting splits data into panels by one or two grouping variables. It is
-particularly effective for showing how species distributions shift over time.
+Facetting splits data into panels by one or more grouping variables. It is
+particularly effective for showing how spatial distributions change over time.
 
 ## `facet_wrap()`
 
-`facet_wrap()` arranges panels in a single ribbon, filling rows left to right.
-Here, cod abundance is mapped for six survey years:
+`facet_wrap()` arranges panels in a ribbon, filling rows left to right. Here
+we convert the 2019 SMB tows to `sf` and map cod abundance for six survey
+years:
 
 ```{r}
-smb_sel <- smb |> filter(year %in% c(1995, 2000, 2005, 2010, 2015, 2019))
+smb_sel_sf <- smb |>
+  filter(year %in% c(1995, 2000, 2005, 2010, 2015, 2019)) |>
+  st_as_sf(coords = c("lon1", "lat1"), crs = 4326)
 
 ggplot() +
   geom_sf(data = iceland_sf, fill = "grey80") +
-  geom_point(data = smb_sel, aes(lon1, lat1, size = cod_n),
-             alpha = 0.15, colour = "red") +
+  geom_sf(data = smb_sel_sf, aes(size = cod_n),
+          alpha = 0.15, colour = "red") +
   scale_size_area(max_size = 12, name = "Cod (n)") +
   coord_sf(xlim = c(-27, -11), ylim = c(62.5, 67.5)) +
   scale_x_continuous(NULL, NULL) +
@@ -223,22 +358,25 @@ ggplot() +
 
 ## `facet_grid()`
 
-`facet_grid(rows ~ cols)` creates a matrix of panels defined by two variables.
-This is useful for comparing species and years simultaneously. We pivot the SMB
-data to long format first so both species can be a facet variable:
+`facet_grid(rows ~ cols)` creates a matrix of panels. This is useful for
+comparing two variables simultaneously — here species and year. We pivot to
+long format first so both species can act as a facet variable:
 
 ```{r}
-smb_long <- smb |>
+smb_long_sf <- smb |>
   filter(year %in% c(2005, 2010, 2015, 2019)) |>
-  pivot_longer(cols = c(cod_n, haddock_n),
+  pivot_longer(cols      = c(cod_n, haddock_n),
                names_to  = "species",
                values_to = "n") |>
-  mutate(species = recode(species, cod_n = "Cod", haddock_n = "Haddock"))
+  mutate(species = case_match(species,
+                              "cod_n"     ~ "Cod",
+                              "haddock_n" ~ "Haddock")) |>
+  st_as_sf(coords = c("lon1", "lat1"), crs = 4326)
 
 ggplot() +
   geom_sf(data = iceland_sf, fill = "grey80") +
-  geom_point(data = smb_long, aes(lon1, lat1, size = n),
-             alpha = 0.2, colour = "red") +
+  geom_sf(data = smb_long_sf, aes(size = n),
+          alpha = 0.2, colour = "red") +
   scale_size_area(max_size = 8, name = "Catch (n)") +
   coord_sf(xlim = c(-27, -11), ylim = c(62.5, 67.5)) +
   scale_x_continuous(NULL, NULL) +
@@ -248,7 +386,15 @@ ggplot() +
 ```
 
 In `facet_grid(rows ~ cols)`, the first variable defines rows and the second
-defines columns. Use `. ~ year` for columns only, or `species ~ .` for rows only.
+defines columns. Use `. ~ year` to facet columns only, or `species ~ .` for
+rows only. Note the `.` is a placeholder meaning "no variable".
+
+::: {.callout-tip}
+## Exercise
+Add `saithe_n` as a third species to the `pivot_longer()` call. Does the
+three-row grid remain legible, or would `facet_wrap()` be a better choice
+here?
+:::
 
 ---
 
@@ -256,14 +402,16 @@ defines columns. Use `. ~ year` for columns only, or `species ~ .` for rows only
 
 ## Geographic degree labels
 
-The helper functions below produce properly formatted degree–direction axis labels:
+`coord_sf()` draws graticule lines and labelled axes automatically. The
+default labels are plain numbers; the helper functions below format them with
+direction suffixes (N, S, E, W):
 
 ```{r}
 scale_longitude <- function(min = -180, max = 180, step = 1, ...) {
   breaks <- seq(min, max, step)
   labels <- ifelse(breaks < 0,
                    paste0(abs(breaks), "\u00B0W"),
-                   paste0(breaks, "\u00B0E"))
+                   paste0(breaks,      "\u00B0E"))
   scale_x_continuous(name = NULL, breaks = breaks, labels = labels, ...)
 }
 
@@ -271,7 +419,7 @@ scale_latitude <- function(min = -90, max = 90, step = 0.5, ...) {
   breaks <- seq(min, max, step)
   labels <- ifelse(breaks < 0,
                    paste0(abs(breaks), "\u00B0S"),
-                   paste0(breaks, "\u00B0N"))
+                   paste0(breaks,      "\u00B0N"))
   scale_y_continuous(name = NULL, breaks = breaks, labels = labels, ...)
 }
 
@@ -279,26 +427,35 @@ ggplot() +
   geom_sf(data = iceland_sf, fill = "grey80") +
   coord_sf(xlim = c(-25, -12), ylim = c(63, 67)) +
   scale_longitude(min = -25, max = -12, step = 2) +
-  scale_latitude(min = 63, max = 67, step = 1) +
-  theme_bw()
+  scale_latitude( min =  63, max =  67, step = 1) +
+  theme_bw() +
+  labs(title = "Geographic degree labels")
 ```
 
 ## ICES statistical rectangle labels
 
-ICES rectangles use a notation like "40G1" rather than decimal degrees. The functions below relabel axes accordingly. They require the **geo** package (`remotes::install_github("hafro/geo")`):
+ICES rectangles use a notation such as "40G1" rather than decimal degrees.
+The functions below relabel axes accordingly. They require the **geo** package,
+which is maintained by MFRI and available from GitHub:
 
-```{r eval=FALSE}
+```{r}
+#| eval: false
+
+# Install once:
+# install.packages("remotes")
+# remotes::install_github("hafro/geo")
+
 library(geo)
 
 scale_longitude_ices <- function(min = -44, max = 68.5, step = 1, ...) {
   breaks <- seq(min + 0.5, max - 0.5, step)
-  labels <- geo::d2ir(60, breaks) %>% stringr::str_sub(3)
+  labels <- geo::d2ir(60, breaks) |> stringr::str_sub(3)
   scale_x_continuous(name = NULL, breaks = breaks, labels = labels, ...)
 }
 
 scale_latitude_ices <- function(min = 36, max = 84.5, step = 0.5, ...) {
   breaks <- seq(min + 0.25, max - 0.25, step)
-  labels <- geo::d2ir(breaks, 0) %>% stringr::str_sub(1, 2)
+  labels <- geo::d2ir(breaks, 0) |> stringr::str_sub(1, 2)
   scale_y_continuous(name = NULL, breaks = breaks, labels = labels, ...)
 }
 
@@ -307,10 +464,11 @@ ggplot() +
   coord_sf(xlim = c(-25, -12), ylim = c(63, 67)) +
   scale_longitude_ices() +
   scale_latitude_ices() +
+  theme_bw() +
   theme(panel.grid.major = element_blank(),
         panel.grid.minor = element_line(linewidth = 0.5),
-        axis.ticks = element_blank()) +
-  theme_bw()
+        axis.ticks       = element_blank()) +
+  labs(title = "ICES rectangle labels")
 ```
 
 ---
@@ -319,22 +477,32 @@ ggplot() +
 
 ## Scale bars and north arrows with `ggspatial`
 
+The **ggspatial** package adds cartographic annotations to `geom_sf()` maps.
+`annotation_scale()` draws a scale bar that updates automatically when you
+zoom; `annotation_north_arrow()` adds a north arrow:
+
 ```{r}
 ggplot() +
   geom_sf(data = iceland_sf, fill = "grey80") +
   annotation_scale(location = "bl", width_hint = 0.4) +
   annotation_north_arrow(
-    location = "bl", which_north = "true",
-    pad_x = unit(0.6, "in"), pad_y = unit(0.4, "in"),
-    style = north_arrow_fancy_orienteering
+    location   = "bl",
+    which_north = "true",
+    pad_x      = unit(0.6, "in"),
+    pad_y      = unit(0.4, "in"),
+    style      = north_arrow_fancy_orienteering
   ) +
   coord_sf() +
-  theme_bw()
+  theme_bw() +
+  labs(title = "Scale bar and north arrow")
 ```
 
 ## Themes for maps
 
-`theme_void()` removes axes, grid lines, and background — often the cleanest choice for publication maps that carry their own spatial reference:
+`theme_bw()` is a good general-purpose theme that keeps axis labels and grid
+lines, which aid spatial orientation. `theme_void()` strips everything — axes,
+grid lines, and background — producing a cleaner result for publication figures
+that already carry a scale bar and north arrow as their own spatial reference:
 
 ```{r}
 ggplot() +
@@ -344,25 +512,39 @@ ggplot() +
   annotation_scale(location = "br") +
   annotation_north_arrow(
     location = "tl",
-    style = north_arrow_minimal,
-    height = unit(0.8, "cm"), width = unit(0.8, "cm")
+    style    = north_arrow_minimal,
+    height   = unit(0.8, "cm"),
+    width    = unit(0.8, "cm")
   ) +
   coord_sf() +
   theme_void() +
-  theme(legend.position = "bottom",
-        plot.title = element_text(face = "bold")) +
-  labs(title = "Minke whale sightings", caption = "Source: MFRI")
+  theme(legend.position          = "bottom",
+        plot.title               = element_text(face = "bold")) +
+  labs(title   = "Minke whale sightings",
+       caption = "Source: MFRI")
 ```
+
+Use `theme_void()` when the map is the entire figure and spatial context comes
+from its own annotations. Use `theme_bw()` when the map sits alongside other
+plots or when axis labels help readers orient themselves.
 
 ## Inset maps with `inset_element()`
 
-`inset_element()` places one plot inside another — useful for a small context map within a detailed regional map:
+`inset_element()` from **patchwork** places one plot inside another — useful
+for a small context map inside a detailed regional map. Here we derive the
+bounding box of the detail map programmatically so the red rectangle always
+stays in sync:
 
 ```{r}
+# Define the extent of the detail map explicitly so we can reuse it
+detail_xlim <- c(-27, -11)
+detail_ylim <- c(62.5, 67.5)
+
 context_map <- ggplot() +
   geom_sf(data = world_sf, fill = "grey80", colour = "white",
           linewidth = 0.2) +
-  geom_rect(aes(xmin = -27, xmax = -11, ymin = 62.5, ymax = 67.5),
+  geom_rect(aes(xmin = detail_xlim[1], xmax = detail_xlim[2],
+                ymin = detail_ylim[1], ymax = detail_ylim[2]),
             fill = NA, colour = "red", linewidth = 1) +
   coord_sf(xlim = c(-40, 30), ylim = c(45, 80)) +
   theme_void()
@@ -371,53 +553,31 @@ detail_map <- ggplot() +
   geom_sf(data = iceland_sf, fill = "grey80") +
   geom_sf(data = minke_sf, aes(colour = sex), alpha = 0.8) +
   scale_colour_brewer(name = "Sex", palette = "Set1") +
-  coord_sf() + theme_bw() +
+  coord_sf(xlim = detail_xlim, ylim = detail_ylim) +
+  theme_bw() +
   labs(title = "Minke whale sightings")
 
 detail_map +
   inset_element(context_map,
-                left = 0.65, right = 1.0,
-                bottom = 0.0, top = 0.35)
+                left   = 0.65, right  = 1.0,
+                bottom = 0.0,  top    = 0.35)
 ```
+
+::: {.callout-tip}
+## Exercise
+Move the inset to the top-left corner by adjusting the `left`, `right`,
+`bottom`, and `top` arguments. Then try making the context map show a wider
+extent (e.g. the full North Atlantic) and see whether the inset remains
+informative at that scale.
+:::
 
 ---
 
-# Gridding point data
+# Gridding point data with `st_make_grid()`
 
-## Using `grade()` for custom grids
-
-The `grade()` function bins coordinates to a regular grid and returns the midpoint of each cell — useful for summarising survey data at a chosen resolution:
-
-```{r}
-grade <- function(x, dx) {
-  if (dx > 1) warning("Not tested for grids larger than one degree")
-  brks <- seq(floor(min(x)), ceiling(max(x)), dx)
-  ints <- findInterval(x, brks, all.inside = TRUE)
-  (brks[ints] + brks[ints + 1]) / 2
-}
-
-smb2019_gridded <- smb2019 |>
-  mutate(glon = grade(lon1, 0.5),
-         glat = grade(lat1, 0.25)) |>
-  group_by(glon, glat) |>
-  summarise(Cod = mean(cod_n), .groups = "drop")
-
-ggplot() +
-  geom_tile(data = smb2019_gridded,
-            aes(x = glon, y = glat, fill = Cod)) +
-  geom_sf(data = iceland_sf, fill = "grey60") +
-  coord_sf(xlim = c(-27, -11), ylim = c(62.5, 67.5)) +
-  scale_fill_viridis_c(option = "B", direction = -1,
-                       transform = "log1p",
-                       name = "Mean cod (n)") +
-  scale_x_continuous(NULL, NULL) +
-  scale_y_continuous(NULL, NULL) +
-  theme_bw()
-```
-
-## Using `st_make_grid()` for spatial polygon grids
-
-For a more rigorous approach that produces proper `sf` polygon grids respecting the CRS, use `st_make_grid()` then join with a spatial join:
+In part 1, the `grade()` function provided a quick way to bin points to a
+regular lon–lat grid. A more rigorous approach uses `st_make_grid()` to
+create proper `sf` polygon cells, then a spatial join to aggregate:
 
 ```{r}
 bbox_sfc <- st_bbox(c(xmin = -27, xmax = -11,
@@ -425,97 +585,128 @@ bbox_sfc <- st_bbox(c(xmin = -27, xmax = -11,
                     crs = 4326) |>
   st_as_sfc()
 
+# Create the grid and label each cell with a unique ID
 grid_sf <- st_make_grid(bbox_sfc,
                         cellsize = c(0.5, 0.25),
-                        what = "polygons") |>
-  st_as_sf()
+                        what     = "polygons") |>
+  st_as_sf() |>
+  mutate(cell_id = row_number())
 
-smb2019_pts <- smb2019 |>
-  st_as_sf(coords = c("lon1", "lat1"), crs = 4326)
-
+# Spatial join: each tow point picks up the cell it falls in
 grid_summary <- grid_sf |>
   st_join(smb2019_pts |> select(cod_n)) |>
-  group_by(x) |>
+  group_by(cell_id) |>                          # group by cell, not geometry
   summarise(Cod = mean(cod_n, na.rm = TRUE), .groups = "drop")
 
 ggplot() +
   geom_sf(data = grid_summary, aes(fill = Cod), colour = NA) +
   geom_sf(data = iceland_sf, fill = "grey60") +
   coord_sf(xlim = c(-27, -11), ylim = c(62.5, 67.5)) +
-  scale_fill_viridis_c(option = "B", direction = -1,
-                       name = "Mean cod (n)",
-                       na.value = "white") +
+  scale_fill_viridis_c(option    = "B",
+                       direction = -1,
+                       transform = "log1p",
+                       name      = "Mean cod (n)\n(log scale)",
+                       na.value  = "white") +
   scale_x_continuous(NULL, NULL) +
   scale_y_continuous(NULL, NULL) +
-  theme_bw()
+  theme_bw() +
+  labs(title   = "Cod catch — spatial polygon grid (SMB 2019)",
+       caption = "Grid: 0.5° × 0.25°; cells with no tows shown in white")
 ```
+
+This approach is more rigorous than `grade()` because the grid cells are true
+`sf` polygons with a known CRS, so the result integrates cleanly with other
+spatial operations (e.g. clipping to an EEZ, spatial filtering).
+
+::: {.callout-note}
+## `grade()` vs `st_make_grid()`
+
+| | `grade()` + `geom_tile()` | `st_make_grid()` + `st_join()` |
+|---|---|---|
+| Requires `sf`? | No | Yes |
+| Result is spatial? | No (data frame) | Yes (sf object) |
+| CRS-aware? | No | Yes |
+| Suits further spatial ops? | No | Yes |
+| Speed | Fast | Slower for large data |
+
+Use `grade()` for quick exploration; use `st_make_grid()` when the gridded
+output needs to participate in further spatial analysis or be exported as a
+spatial file.
+:::
+
+::: {.callout-tip}
+## Exercise
+Change the grid resolution to `cellsize = c(1.0, 0.5)` (ICES rectangle size).
+Compare the result to the ICES rectangle summary from part 1 — do they agree?
+:::
 
 ---
 
-# Mapping fishing intensity with `patchwork`
+# Case study: fishing intensity with `patchwork`
 
-The OSPAR otter trawl intensity layer (`OSPAR_intensity_Otter_2015.gpkg`) is a
-large, real-world polygon dataset that rewards careful colour-scale choices.
-With 91,190 cells and strongly right-skewed distributions, it illustrates several
-techniques introduced in this chapter: `geom_sf()` with a continuous fill,
-viridis colour scales, log transforms, and `patchwork` for multi-panel figures.
+The OSPAR otter trawl intensity layer is a large, real-world polygon dataset
+with strongly right-skewed values, making it an ideal test case for the
+colour-scale techniques introduced above.
 
-```{r ospar-ggplot-data, message=FALSE}
+```{r ospar-data}
 ospar_int <- read_sf("data/OSPAR_intensity_Otter_2015.gpkg") |>
   select(FishingH, KWfishingH, SurfSAR)
 ```
 
-A basic starting map — note the heavy skew in the raw values:
+First, inspect the raw values to understand the skew:
 
-```{r ospar-ggplot-raw, message=FALSE}
+```{r ospar-raw}
 ggplot(ospar_int) +
   geom_sf(aes(fill = SurfSAR), colour = NA) +
   scale_fill_viridis_c(option = "plasma") +
   theme_bw() +
-  labs(title = "SurfSAR — raw scale (hard to read)")
+  labs(title    = "SurfSAR — raw scale",
+       subtitle = "High skew obscures most spatial variation")
 ```
 
-A log1p transform reveals the spatial structure across the whole range:
+A log1p transform reveals the full spatial structure:
 
-```{r ospar-ggplot-log, message=FALSE}
+```{r ospar-log}
 ggplot(ospar_int) +
-  geom_sf(aes(fill = SurfSAR), colour = NA) +
-  scale_fill_viridis_c(option = "plasma", direction = -1,
-                       transform = "log1p",
-                       name = "SurfSAR\n(log scale)") +
-  labs(title = "Surface swept area ratio",
-       subtitle = "OSPAR VMS data 2015",
-       caption  = "Source: OSPAR Commission") +
-  theme_bw()
-```
-
-## Side-by-side comparison with `patchwork`
-
-Two effort metrics measure slightly different things: `SurfSAR` is already
-normalised by cell area, whereas `KWfishingH` weighs fishing hours by vessel
-engine power. The `patchwork` `+` operator places them side by side so spatial
-patterns can be compared directly.
-
-```{r ospar-patchwork, message=FALSE, fig.width=11, fig.height=5}
-p_sar <- ggplot(ospar_int) +
   geom_sf(aes(fill = SurfSAR), colour = NA) +
   scale_fill_viridis_c(option    = "plasma",
                        direction = -1,
                        transform = "log1p",
                        name      = "SurfSAR (log)") +
+  labs(title    = "Surface swept area ratio",
+       subtitle = "OSPAR VMS data 2015",
+       caption  = "Source: OSPAR Commission") +
+  theme_bw()
+```
+
+## Comparing two effort metrics
+
+`SurfSAR` is normalised by cell area; `KWfishingH` weights fishing hours by
+vessel engine power. Placing them side by side with `patchwork` lets you
+compare their spatial patterns directly:
+
+```{r ospar-patchwork, fig.width=11, fig.height=5}
+p_sar <- ggplot(ospar_int) +
+  geom_sf(aes(fill = SurfSAR), colour = NA) +
+  scale_fill_viridis_c(option    = "viridis",
+                       direction = -1,
+                       transform = "log1p",
+                       name      = "SurfSAR (log)") +
   labs(title = "Surface swept area ratio") +
   theme_bw() +
-  theme(axis.text = element_blank(), axis.ticks = element_blank())
+  theme(axis.text  = element_blank(),
+        axis.ticks = element_blank())
 
 p_kw <- ggplot(ospar_int) +
   geom_sf(aes(fill = KWfishingH), colour = NA) +
-  scale_fill_viridis_c(option    = "inferno",
+  scale_fill_viridis_c(option    = "viridis",
                        direction = -1,
                        transform = "log1p",
                        name      = "kW·h (log)") +
   labs(title = "Effort (kW-fishing hours)") +
   theme_bw() +
-  theme(axis.text = element_blank(), axis.ticks = element_blank())
+  theme(axis.text  = element_blank(),
+        axis.ticks = element_blank())
 
 p_sar + p_kw +
   plot_annotation(
@@ -525,39 +716,46 @@ p_sar + p_kw +
   )
 ```
 
-The two panels do not always agree: areas with many hours of fishing by small
-vessels can have high `FishingH` but modest `KWfishingH`, whereas a few large
-industrial vessels can dominate `KWfishingH` while contributing fewer hours.
+Both panels use the same viridis palette and direction so the colours are
+directly comparable. Areas with many tows by small vessels can show high
+`FishingH` but modest `KWfishingH`; a few large industrial vessels can
+dominate `KWfishingH` while contributing fewer hours.
 
 ::: {.callout-note}
 ## Exercise
 
-1. Filter the OSPAR layer to cells in the North Sea only (roughly −3° to 9°E,
-   51° to 57°N using `st_crop()`). Recreate the two-panel patchwork for this
-   subregion. Does the spatial pattern look different at this scale?
-2. Add a third panel to the patchwork showing `totvalue` (total landed value)
-   on the same log1p scale. Use `plot_layout(ncol = 3)` to arrange all three
-   in a single row.
-3. The colour scales currently use different viridis options (`plasma` vs
-   `inferno`). Change both to `viridis` with `direction = -1` so the panels are
-   directly comparable. Does this make the comparison easier or harder to
-   interpret?
+Work through these steps in order:
+
+1. **Subset.** Filter the OSPAR layer to the North Sea (roughly −3° to 9°E,
+   51° to 57°N) using `st_crop()`. Recreate the two-panel patchwork for this
+   subregion. Does the spatial pattern look different at this finer scale?
+
+2. **Extend.** The `select()` call in the data-loading chunk above drops
+   `FishingH`. Add it back, then add a third panel showing `FishingH` on the
+   same log1p / viridis scale. Use `plot_layout(ncol = 3)` to arrange all
+   three panels in a single row.
+
+3. **Reflect.** The two original panels used different viridis options
+   (`plasma` vs `inferno`) in the original file. Both now use `"viridis"`.
+   What was the problem with using different palettes for a side-by-side
+   comparison, and when might deliberately different palettes be appropriate?
 :::
 
 ---
 
-::: {.callout-note}
-## Final exercise
+# Final exercise
 
-Using the tools from this chapter:
+Bring together the techniques from both sessions:
 
-1. Choose a species from `is_smb_biological.csv`. Join it to `is_smb_stations.csv`
-   on `id` and fill zeros for stations where the species was absent.
-2. Create a `facet_wrap()` map showing its spatial distribution for selected years,
-   using a gridded summary (`geom_tile()`) with an appropriate colour scale and
+1. Choose a species from `is_smb_biological.csv`. Join it to
+   `is_smb_stations.csv` on `id`. Fill zeros for stations where the species
+   was absent.
+2. Convert the stations to `sf` and create a `facet_wrap()` map showing the
+   species' spatial distribution for five or more years, using an
+   `st_make_grid()` summary with an appropriate colour scale and
    transformation.
-3. Add proper degree-labelled axes, a scale bar, and a north arrow.
-4. Compose a final two-panel figure using `patchwork` that places your facetted
-   map alongside a time series (line chart) of total annual catch for the same
-   species.
-:::
+3. Add properly formatted degree-labelled axes (using `scale_longitude()` /
+   `scale_latitude()`), a scale bar, and a north arrow.
+4. Compose a final two-panel figure with `patchwork`: your facetted map on the
+   left, and a time-series line chart of total annual catch for the same
+   species on the right.

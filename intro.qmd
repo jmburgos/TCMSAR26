@@ -9,7 +9,7 @@ This course provides a practical introduction to mapping and spatial analysis us
 The course material is open source. The source code and datasets are available at:
 
 - **Course website**: <https://heima.hafro.is/~julian/TCMSAR26/index.html>
-- **Datasets**: <https://heima.hafro.is/~julian/ftp/data.zip>
+- **Datasets**: <https://heima.hafro.is/~julian/TCMSAR26/data.zip>
 
 https://github.com/jmburgos/TCMSAR26
 
@@ -38,18 +38,19 @@ By the end of the course you will be able to:
 
 The chapters follow a logical progression from concepts to tools to applications:
 
-| Chapter | Topic |
-|---|---|
-| Spatial data | What spatial data is; vector and raster models; the R package ecosystem |
-| Simple features | The sf class; reading files; creating sf objects from coordinates |
-| Geometries in sf | Geometric operations: buffers, centroids, convex hulls, grids |
-| Spatial operations | Spatial joins, subsetting, and binary predicates |
-| Coordinate reference systems | Ellipsoids, datums, projections; reprojecting data |
-| Rasters | The terra package; reading, manipulating, and analysing raster data |
-| Reading and writing spatial data | File formats and GDAL; reading and writing with sf and terra |
-| Mapping with ggplot2 | Static maps; layers, projections, colour scales, facetting |
-| Interactive maps | leaflet; basemaps, markers, polygons, layer control |
-| Interpolation | Voronoi polygons, IDW, kriging, GAMs |
+| Chapter                          | Topic                                                                   |
+|----------------------------------|-------------------------------------------------------------------------|
+| Spatial data                     | What spatial data is; vector and raster models; the R package ecosystem |
+| Mapping with ggplot2             | Static maps; layers, projections, colour scales, facetting              |
+| Simple features                  | The sf class; reading files; creating sf objects from coordinates       |
+| Coordinate reference systems     | Ellipsoids, datums, projections; reprojecting data                      |
+| Geometries in sf                 | Geometric operations: buffers, centroids, convex hulls, grids           |
+| Spatial operations               | Spatial joins, subsetting, and binary predicates                        |
+| Rasters                          | The terra package; reading, manipulating, and analysing raster data     |
+| Reading and writing spatial data | File formats and GDAL; reading and writing with sf and terra            |
+| R and QGIS                       | Interactions between R and QGIS (including GRASS)                       |
+| Interactive maps                 | leaflet; basemaps, markers, polygons, layer control                     |
+| Interpolation                    | Voronoi polygons, IDW, kriging, GAMs                                    |
 
 ---
 
@@ -124,6 +125,7 @@ A sensible directory structure for this course might look like:
 spatial_course/
 ├── data/               # Downloaded course data files
 ├── R/                  # Your R scripts
+├── plots/              # Plots and maps
 ├── spatial_course.Rproj
 └── my_analysis.qmd     # Your own Quarto documents
 ```

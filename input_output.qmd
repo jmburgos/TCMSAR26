@@ -139,7 +139,7 @@ CSV is not a spatial format, but it is commonly used to store point data with co
 
 ```{r}
 # Read a CSV with coordinates and convert to sf
-minke <- read_csv("ftp://ftp.hafro.is/pub/data/csv/minke.csv") %>%
+minke <- read_csv("./data/minke.csv") %>%
   st_as_sf(coords = c("lon", "lat"), crs = 4326)
 
 glimpse(minke)
