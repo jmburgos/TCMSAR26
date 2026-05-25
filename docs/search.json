@@ -767,7 +767,7 @@
     "href": "intro.html",
     "title": "Introduction",
     "section": "",
-    "text": "This course provides a practical introduction to mapping and spatial analysis using R. It is aimed at researchers and analysts in fisheries and marine science who already have some familiarity with R and want to work effectively with spatial data — reading and writing spatial files, manipulating vector and raster data, making maps, and applying spatial analysis methods.\nThe course material is open source. The source code and datasets are available at:\n\nCourse website: https://jmburgos.github.io/TCMSAR26/\nSource: https://github.com/jmburgos/TCMSAR26"
+    "text": "This course provides a practical introduction to mapping and spatial analysis using R. It is aimed at researchers and analysts in fisheries and marine science who already have some familiarity with R and want to work effectively with spatial data — reading and writing spatial files, manipulating vector and raster data, making maps, and applying spatial analysis methods.\nThe course material is open source. The source code and datasets are available at:\n\nCourse website: https://jmburgos.github.io/TCMSAR26/\nSource: https://github.com/jmburgos/TCMSAR26/"
   },
   {
     "objectID": "intro.html#course-outline",
@@ -915,6 +915,13 @@
     "title": "Mapping with ggplot2 — part 1",
     "section": "geom_path() — vessel tracks",
     "text": "geom_path() — vessel tracks\ngeom_path() connects points in the order they appear in the data — the right choice for time-ordered GPS tracks. geom_line() would sort by x first, scrambling any track that doubles back on itself:\n\nbasemap +\n  geom_path(data     = track,\n            aes(x = lon, y = lat, colour = factor(id)),\n            linewidth = 0.4, alpha = 0.8) +\n  scale_colour_brewer(name = \"Vessel\", palette = \"Set1\") +\n  labs(title = \"VMS vessel tracks — SMB 2019\")"
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "TCMSAR26",
+    "section": "",
+    "text": "Course website: https://jmburgos.github.io/TCMSAR26/ Source: https://github.com/jmburgos/TCMSAR26/"
   },
   {
     "objectID": "index.html#schedule-flexblethings-can-change",
