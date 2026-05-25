@@ -266,10 +266,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>This course provides a practical introduction to mapping and spatial analysis using R. It is aimed at researchers and analysts in fisheries and marine science who already have some familiarity with R and want to work effectively with spatial data — reading and writing spatial files, manipulating vector and raster data, making maps, and applying spatial analysis methods.</p>
 <p>The course material is open source. The source code and datasets are available at:</p>
 <ul>
-<li><strong>Course website</strong>: <a href="https://heima.hafro.is/~julian/TCMSAR26/index.html" class="uri">https://heima.hafro.is/~julian/TCMSAR26/index.html</a></li>
-<li><strong>Datasets</strong>: <a href="https://heima.hafro.is/~julian/TCMSAR26/data.zip" class="uri">https://heima.hafro.is/~julian/TCMSAR26/data.zip</a></li>
+<li><strong>Course website</strong>: <a href="https://jmburgos.github.io/TCMSAR26/" class="uri">https://jmburgos.github.io/TCMSAR26/</a></li>
+<li><strong>Source</strong>: <a href="https://github.com/jmburgos/TCMSAR26" class="uri">https://github.com/jmburgos/TCMSAR26</a></li>
 </ul>
-<p>https://github.com/jmburgos/TCMSAR26</p>
 <hr>
 </section>
 <section id="what-this-course-covers" class="level1">
@@ -424,6 +423,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li><strong>R</strong>: download from <a href="https://cran.r-project.org/">CRAN</a>. If you are on Windows, also install <a href="https://cran.r-project.org/bin/windows/Rtools">Rtools</a>. On macOS, install the Command Line Tools via <code>xcode-select --install</code> in a terminal.</li>
 <li><strong>RStudio</strong>: download from <a href="https://posit.co/download/rstudio-desktop/">posit.co</a>.</li>
 </ul>
+<p>There are other editors. <strong>Positron</strong> is a new editor by the creators of RStudio. And <strong>Emacs</strong> with <strong>ESS</strong> is a less user friendly but extremely customizable option.</p>
 </section>
 <section id="rstudio-projects" class="level2">
 <h2 class="anchored" data-anchor-id="rstudio-projects">RStudio projects</h2>
@@ -456,34 +456,63 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="fu">c</span>(</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Core spatial packages</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">"sf"</span>,          <span class="co"># Vector spatial data</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="st">"terra"</span>,       <span class="co"># Raster spatial data</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="st">"stars"</span>,       <span class="co"># Spatiotemporal data cubes</span></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Tidyverse</span></span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>  <span class="st">"tidyverse"</span>,   <span class="co"># Data wrangling and visualisation</span></span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Mapping</span></span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>  <span class="st">"ggplot2"</span>,     <span class="co"># Static maps (installed with tidyverse)</span></span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>  <span class="st">"ggspatial"</span>,   <span class="co"># Scale bars, north arrows</span></span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>  <span class="st">"leaflet"</span>,     <span class="co"># Interactive maps</span></span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>  <span class="st">"mapview"</span>,     <span class="co"># Quick interactive map previews</span></span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>  <span class="st">"rnaturalearth"</span>,   <span class="co"># Country and region boundaries</span></span>
-<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>  <span class="st">"rnaturalearthdata"</span>,</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">"sf"</span>,               <span class="co"># Vector spatial data</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="st">"terra"</span>,            <span class="co"># Raster spatial data</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="st">"stars"</span>,            <span class="co"># Spatiotemporal data cubes</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  <span class="st">"sp"</span>,               <span class="co"># Legacy spatial classes (needed by some packages)</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>  <span class="st">"tidyterra"</span>,        <span class="co"># ggplot2 / tidyverse integration for terra objects</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Tidyverse</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>  <span class="st">"tidyverse"</span>,        <span class="co"># Data wrangling and visualisation</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Static mapping</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>  <span class="st">"ggplot2"</span>,          <span class="co"># Static maps (installed with tidyverse)</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>  <span class="st">"ggspatial"</span>,        <span class="co"># Scale bars, north arrows</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>  <span class="st">"tmap"</span>,             <span class="co"># Thematic maps (static and interactive)</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>  <span class="st">"maps"</span>,             <span class="co"># Basic country outlines as data frames</span></span>
 <span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Raster data access</span></span>
-<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>  <span class="st">"marmap"</span>,      <span class="co"># NOAA bathymetry data</span></span>
-<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Interpolation</span></span>
-<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>  <span class="st">"gstat"</span>,       <span class="co"># Geostatistics and interpolation</span></span>
-<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>  <span class="st">"mgcv"</span>,        <span class="co"># GAMs</span></span>
-<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>  <span class="st">"concaveman"</span>,  <span class="co"># Concave hulls</span></span>
-<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Utilities</span></span>
-<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>  <span class="st">"crsuggest"</span>,   <span class="co"># CRS selection helper</span></span>
-<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>  <span class="st">"patchwork"</span>,   <span class="co"># Combining ggplot figures</span></span>
-<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a>  <span class="st">"units"</span>        <span class="co"># Physical units for spatial measurements</span></span>
-<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Interactive mapping</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>  <span class="st">"leaflet"</span>,          <span class="co"># Interactive maps</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>  <span class="st">"leaflet.extras"</span>,   <span class="co"># Extra leaflet plugins</span></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>  <span class="st">"leafem"</span>,           <span class="co"># Extra leaflet / mapview utilities</span></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>  <span class="st">"leafpop"</span>,          <span class="co"># HTML popups for leaflet / mapview</span></span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>  <span class="st">"leafgl"</span>,           <span class="co"># WebGL rendering for large datasets in leaflet</span></span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>  <span class="st">"mapgl"</span>,            <span class="co"># MapLibre GL JS wrapper</span></span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>  <span class="st">"mapview"</span>,          <span class="co"># Quick interactive map previews</span></span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>  <span class="st">"ggiraph"</span>,          <span class="co"># Interactive ggplot2 graphics</span></span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Reference data</span></span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a>  <span class="st">"rnaturalearth"</span>,    <span class="co"># Country and region boundaries</span></span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>  <span class="st">"rnaturalearthdata"</span>,<span class="co"># Data for rnaturalearth</span></span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a>  <span class="st">"marmap"</span>,           <span class="co"># NOAA bathymetry data</span></span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Interpolation and geostatistics</span></span>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a>  <span class="st">"gstat"</span>,            <span class="co"># Geostatistics and interpolation</span></span>
+<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a>  <span class="st">"automap"</span>,          <span class="co"># Automatic variogram fitting</span></span>
+<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a>  <span class="st">"mgcv"</span>,             <span class="co"># GAMs</span></span>
+<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Coordinate reference systems</span></span>
+<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a>  <span class="st">"crsuggest"</span>,        <span class="co"># CRS selection helper</span></span>
+<span id="cb2-40"><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-41"><a href="#cb2-41" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Input / output</span></span>
+<span id="cb2-42"><a href="#cb2-42" aria-hidden="true" tabindex="-1"></a>  <span class="st">"RPostgres"</span>,        <span class="co"># PostgreSQL / PostGIS connection</span></span>
+<span id="cb2-43"><a href="#cb2-43" aria-hidden="true" tabindex="-1"></a>  <span class="st">"rmapshaper"</span>,       <span class="co"># Simplify and modify vector geometries</span></span>
+<span id="cb2-44"><a href="#cb2-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-45"><a href="#cb2-45" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Utilities</span></span>
+<span id="cb2-46"><a href="#cb2-46" aria-hidden="true" tabindex="-1"></a>  <span class="st">"patchwork"</span>,        <span class="co"># Combining ggplot figures</span></span>
+<span id="cb2-47"><a href="#cb2-47" aria-hidden="true" tabindex="-1"></a>  <span class="st">"units"</span>,            <span class="co"># Physical units for spatial measurements</span></span>
+<span id="cb2-48"><a href="#cb2-48" aria-hidden="true" tabindex="-1"></a>  <span class="st">"htmlwidgets"</span>,      <span class="co"># Save interactive widgets as HTML</span></span>
+<span id="cb2-49"><a href="#cb2-49" aria-hidden="true" tabindex="-1"></a>  <span class="st">"shiny"</span>             <span class="co"># Interactive web applications</span></span>
+<span id="cb2-50"><a href="#cb2-50" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb2-51"><a href="#cb2-51" aria-hidden="true" tabindex="-1"></a>))</span>
+<span id="cb2-52"><a href="#cb2-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-53"><a href="#cb2-53" aria-hidden="true" tabindex="-1"></a><span class="co"># Requires QGIS (with the 'processing' plugin) to be installed:</span></span>
+<span id="cb2-54"><a href="#cb2-54" aria-hidden="true" tabindex="-1"></a><span class="co"># https://qgis.org/download/</span></span>
+<span id="cb2-55"><a href="#cb2-55" aria-hidden="true" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">"qgisprocess"</span>)</span>
+<span id="cb2-56"><a href="#cb2-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-57"><a href="#cb2-57" aria-hidden="true" tabindex="-1"></a><span class="co"># Requires GRASS GIS to be installed on your system first:</span></span>
+<span id="cb2-58"><a href="#cb2-58" aria-hidden="true" tabindex="-1"></a><span class="co"># https://grass.osgeo.org/download/</span></span>
+<span id="cb2-59"><a href="#cb2-59" aria-hidden="true" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">"rgrass"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">

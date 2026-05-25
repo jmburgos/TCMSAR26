@@ -1,0 +1,1 @@
+This is the source code for the ICES training course "Introduction to mapping and spatial analysis with R"

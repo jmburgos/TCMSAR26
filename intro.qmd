@@ -9,7 +9,7 @@ This course provides a practical introduction to mapping and spatial analysis us
 The course material is open source. The source code and datasets are available at:
 
 - **Course website**: <https://jmburgos.github.io/TCMSAR26/>
-- **Source**: <https://github.com/jmburgos/TCMSAR26>
+- **Source**: <https://github.com/jmburgos/TCMSAR26/>
 
 ---
 
