@@ -809,21 +809,21 @@
     "href": "ggplot1.html",
     "title": "Mapping with ggplot2 — part 1",
     "section": "",
-    "text": "library(tidyverse)    # ggplot2, dplyr, readr, etc.\nlibrary(maps)         # basic country outlines as data frames\nlibrary(patchwork)    # combining multiple plots\nlibrary(marmap)       # NOAA bathymetry data\nlibrary(metR)         # Includes contour labelling\n\n\n\n\n\nminke_df &lt;- read_csv(\"data/minke.csv\")        # renamed: avoids overwriting later\nsmb      &lt;- read_csv(\"data/smb_summary.csv\")\ntrack    &lt;- read_csv(\"data/small_vms.csv\")    # vessel VMS tracks\n\nxlim &lt;- c(-30.0, -10.0)\nylim &lt;- c( 62.5,  67.5)\n\ndepth &lt;-\n  getNOAA.bathy(lon1 = xlim[1], lon2 = xlim[2],\n                lat1 = ylim[1], lat2 = ylim[2],\n                resolution = 1, keep = TRUE, path = \"./data/\") |&gt; # keep the bathymetric data in local memory\n  fortify() |&gt;    # convert the bathy object to a plain data frame\n  filter(z &lt;= 0)  # keep only sea cells (negative depth)"
+    "text": "library(tidyverse)    # ggplot2, dplyr, readr, etc.\nlibrary(maps)         # basic country outlines as data frames\nlibrary(patchwork)    # combining multiple plots\nlibrary(marmap)       # NOAA bathymetry data\n\n\n\n\n\nminke_df &lt;- read_csv(\"data/minke.csv\")        # renamed: avoids overwriting later\nsmb      &lt;- read_csv(\"data/smb_summary.csv\")\ntrack    &lt;- read_csv(\"data/small_vms.csv\")    # vessel VMS tracks\n\nxlim &lt;- c(-30.0, -10.0)\nylim &lt;- c( 62.5,  67.5)\n\ndepth &lt;-\n  getNOAA.bathy(lon1 = xlim[1], lon2 = xlim[2],\n                lat1 = ylim[1], lat2 = ylim[2],\n                resolution = 1) |&gt;\n  fortify() |&gt;    # convert the bathy object to a plain data frame\n  filter(z &lt;= 0)  # keep only sea cells (negative depth)"
   },
   {
     "objectID": "ggplot1.html#libraries",
     "href": "ggplot1.html#libraries",
     "title": "Mapping with ggplot2 — part 1",
     "section": "",
-    "text": "library(tidyverse)    # ggplot2, dplyr, readr, etc.\nlibrary(maps)         # basic country outlines as data frames\nlibrary(patchwork)    # combining multiple plots\nlibrary(marmap)       # NOAA bathymetry data\nlibrary(metR)         # Includes contour labelling"
+    "text": "library(tidyverse)    # ggplot2, dplyr, readr, etc.\nlibrary(maps)         # basic country outlines as data frames\nlibrary(patchwork)    # combining multiple plots\nlibrary(marmap)       # NOAA bathymetry data"
   },
   {
     "objectID": "ggplot1.html#data",
     "href": "ggplot1.html#data",
     "title": "Mapping with ggplot2 — part 1",
     "section": "",
-    "text": "minke_df &lt;- read_csv(\"data/minke.csv\")        # renamed: avoids overwriting later\nsmb      &lt;- read_csv(\"data/smb_summary.csv\")\ntrack    &lt;- read_csv(\"data/small_vms.csv\")    # vessel VMS tracks\n\nxlim &lt;- c(-30.0, -10.0)\nylim &lt;- c( 62.5,  67.5)\n\ndepth &lt;-\n  getNOAA.bathy(lon1 = xlim[1], lon2 = xlim[2],\n                lat1 = ylim[1], lat2 = ylim[2],\n                resolution = 1, keep = TRUE, path = \"./data/\") |&gt; # keep the bathymetric data in local memory\n  fortify() |&gt;    # convert the bathy object to a plain data frame\n  filter(z &lt;= 0)  # keep only sea cells (negative depth)"
+    "text": "minke_df &lt;- read_csv(\"data/minke.csv\")        # renamed: avoids overwriting later\nsmb      &lt;- read_csv(\"data/smb_summary.csv\")\ntrack    &lt;- read_csv(\"data/small_vms.csv\")    # vessel VMS tracks\n\nxlim &lt;- c(-30.0, -10.0)\nylim &lt;- c( 62.5,  67.5)\n\ndepth &lt;-\n  getNOAA.bathy(lon1 = xlim[1], lon2 = xlim[2],\n                lat1 = ylim[1], lat2 = ylim[2],\n                resolution = 1) |&gt;\n  fortify() |&gt;    # convert the bathy object to a plain data frame\n  filter(z &lt;= 0)  # keep only sea cells (negative depth)"
   },
   {
     "objectID": "ggplot1.html#the-three-key-components",
@@ -837,7 +837,7 @@
     "href": "ggplot1.html#saving-a-plot",
     "title": "Mapping with ggplot2 — part 1",
     "section": "Saving a plot",
-    "text": "Saving a plot\nA ggplot can be stored as an R object and extended or shared later:\n\np &lt;- ggplot(minke_df) + geom_point(aes(lon, lat, colour = sex))\nclass(p)                    # \"gg\" \"ggplot\"\np |&gt; write_rds(\"minke.rds\") # save to disk\nread_rds(\"minke.rds\")       # retrieve later, or share with a colleague\n\nExport to an image file with ggsave(). Always set width, height, and dpi explicitly — the defaults rarely produce publication-ready output:\n\nggsave(\"minke.png\", plot = p, width = 18, height = 12, units = \"cm\", dpi = 300)\n# see ?ggsave for all format and size options\n\nAfter saving it, you can embed the plot in a Quarto or R Markdown document.\n\n\n\n\n\n\nTipExercise\n\n\n\nCreate a scatter plot of minke whale sightings with lon on the x-axis, lat on the y-axis, and weight mapped to size. Add scale_size_area(). What does this scale change, and why does it give a more honest representation than the default scale_size()?"
+    "text": "Saving a plot\nA ggplot can be stored as an R object and extended or shared later:\n\np &lt;- ggplot(minke_df) + geom_point(aes(lon, lat, colour = sex))\nclass(p)                    # \"gg\" \"ggplot\"\np |&gt; write_rds(\"minke.rds\") # save to disk\nread_rds(\"minke.rds\")       # retrieve later, or share with a colleague\n\nExport to an image file with ggsave(). Always set width, height, and dpi explicitly — the defaults rarely produce publication-ready output:\n\nggsave(\"minke.png\", plot = p, width = 18, height = 12, units = \"cm\", dpi = 300)\n# see ?ggsave for all format and size options\n\nEmbed in another Quarto or R Markdown document:\n\nknitr::include_graphics(\"minke.png\") \n\n![](./img/old_map.jpg)\n\n\n\n\n\n\nTipExercise\n\n\n\nCreate a scatter plot of minke whale sightings with lon on the x-axis, lat on the y-axis, and weight mapped to size. Add scale_size_area(). What does this scale change, and why does it give a more honest representation than the default scale_size()?"
   },
   {
     "objectID": "ggplot1.html#building-a-reusable-base-map",
@@ -879,7 +879,7 @@
     "href": "ggplot1.html#geom_path-vessel-tracks",
     "title": "Mapping with ggplot2 — part 1",
     "section": "geom_path() — vessel tracks",
-    "text": "geom_path() — vessel tracks\ngeom_path() connects points in the order they appear in the data — the right choice for time-ordered GPS tracks. geom_line() would sort by x first, scrambling any track that doubles back on itself:\n\nbasemap +\n  geom_path(data     = track,\n            aes(x = lon, y = lat, colour = factor(id)),\n            linewidth = 0.4, alpha = 0.8) +\n  scale_colour_brewer(name = \"Vessel\", palette = \"Set1\") +\n  labs(title = \"VMS vessel tracks — SMB 2019\")"
+    "text": "geom_path() — vessel tracks\ngeom_path() connects points in the order they appear in the data — the right choice for time-ordered GPS tracks. geom_line() would sort by x first, scrambling any track that doubles back on itself:\n\nbasemap +\n  geom_path(data = track,\n            aes(x = lon, y = lat, colour = factor(id)),\n            linewidth = 0.4, alpha = 0.8) +\n  scale_colour_manual(values = colorRampPalette(RColorBrewer::brewer.pal(9, \"Set1\"))(n_distinct(track$id))) +\n  guides(colour = \"none\") +\n    coord_quickmap(xlim = c(-23, -11), ylim = c(65, 68)) +\n  labs(title = \"VMS vessel tracks — SMB 2019\")"
   },
   {
     "objectID": "index.html",
