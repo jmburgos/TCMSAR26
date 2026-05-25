@@ -1,0 +1,1599 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.37">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>content_notes – Introduction to mapping and spatial analysis with R</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-7f8f88aac4f3542376d5c11b86a4c14d.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-6033a600180109c3731f6a886c29932c.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="styles.css">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="./index.html">
+    <span class="navbar-title">Introduction to mapping and spatial analysis with R</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="./index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./data.html"> 
+<span class="menu-text">Data</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-sessions" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Sessions</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-sessions">    
+        <li>
+    <a class="dropdown-item" href="./intro.html">
+ <span class="dropdown-text">Introduction</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./spatial_data.html">
+ <span class="dropdown-text">Spatial data</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./ggplot1.html">
+ <span class="dropdown-text">Mapping with ggplot - part 1</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./sf.html">
+ <span class="dropdown-text">Simple features</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./crs.html">
+ <span class="dropdown-text">Coordinate reference systems</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./ggplot2.html">
+ <span class="dropdown-text">Mapping with ggplot - part 2</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./geometric.html">
+ <span class="dropdown-text">Working with geometries in sf objects</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./spatial_ops.html">
+ <span class="dropdown-text">Spatial operations</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./rasters.html">
+ <span class="dropdown-text">Rasters</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./input_output.html">
+ <span class="dropdown-text">Reading and writing spatial data</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./qgis.html">
+ <span class="dropdown-text">R and QGIS</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./interactive.html">
+ <span class="dropdown-text">Interactive maps</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./interpolation.html">
+ <span class="dropdown-text">Interpolation</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/jmburgos/TCMSAR26"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#content-notes-tcmsar26" id="toc-content-notes-tcmsar26" class="nav-link active" data-scroll-target="#content-notes-tcmsar26">Content Notes — TCMSAR26</a>
+  <ul class="collapse">
+  <li><a href="#participant-profile-and-course-alignment" id="toc-participant-profile-and-course-alignment" class="nav-link" data-scroll-target="#participant-profile-and-course-alignment">0. Participant profile and course alignment</a>
+  <ul class="collapse">
+  <li><a href="#who-is-in-the-room" id="toc-who-is-in-the-room" class="nav-link" data-scroll-target="#who-is-in-the-room">Who is in the room</a></li>
+  <li><a href="#primary-use-cases-non-exclusive" id="toc-primary-use-cases-non-exclusive" class="nav-link" data-scroll-target="#primary-use-cases-non-exclusive">Primary use cases (non-exclusive)</a></li>
+  <li><a href="#alignment-with-current-course-content" id="toc-alignment-with-current-course-content" class="nav-link" data-scroll-target="#alignment-with-current-course-content">Alignment with current course content</a></li>
+  <li><a href="#the-unused-ospar-dataset-is-the-most-direct-missed-opportunity" id="toc-the-unused-ospar-dataset-is-the-most-direct-missed-opportunity" class="nav-link" data-scroll-target="#the-unused-ospar-dataset-is-the-most-direct-missed-opportunity">The unused OSPAR dataset is the most direct missed opportunity</a></li>
+  </ul></li>
+  <li><a href="#schedule-sequencing" id="toc-schedule-sequencing" class="nav-link" data-scroll-target="#schedule-sequencing">1. Schedule sequencing</a>
+  <ul class="collapse">
+  <li><a href="#current-schedule" id="toc-current-schedule" class="nav-link" data-scroll-target="#current-schedule">Current schedule</a></li>
+  <li><a href="#the-core-problem-crs.qmd-is-taught-too-late" id="toc-the-core-problem-crs.qmd-is-taught-too-late" class="nav-link" data-scroll-target="#the-core-problem-crs.qmd-is-taught-too-late">The core problem: <code>crs.qmd</code> is taught too late</a></li>
+  <li><a href="#secondary-issue-geom_sf-used-informally-throughout-before-ggplot2.qmd" id="toc-secondary-issue-geom_sf-used-informally-throughout-before-ggplot2.qmd" class="nav-link" data-scroll-target="#secondary-issue-geom_sf-used-informally-throughout-before-ggplot2.qmd">Secondary issue: <code>geom_sf()</code> used informally throughout before <code>ggplot2.qmd</code></a></li>
+  <li><a href="#secondary-issue-input_output.qmd-is-late-but-defensibly-so" id="toc-secondary-issue-input_output.qmd-is-late-but-defensibly-so" class="nav-link" data-scroll-target="#secondary-issue-input_output.qmd-is-late-but-defensibly-so">Secondary issue: <code>input_output.qmd</code> is late, but defensibly so</a></li>
+  <li><a href="#proposed-alternative-schedule" id="toc-proposed-alternative-schedule" class="nav-link" data-scroll-target="#proposed-alternative-schedule">Proposed alternative schedule</a></li>
+  </ul></li>
+  <li><a href="#ggplot2.qmd-content-structure-and-raster-split" id="toc-ggplot2.qmd-content-structure-and-raster-split" class="nav-link" data-scroll-target="#ggplot2.qmd-content-structure-and-raster-split">2. <code>ggplot2.qmd</code> — content structure and raster split</a>
+  <ul class="collapse">
+  <li><a href="#content-structure" id="toc-content-structure" class="nav-link" data-scroll-target="#content-structure">Content structure</a></li>
+  <li><a href="#raster-visualisation-lives-in-rasters.qmd" id="toc-raster-visualisation-lives-in-rasters.qmd" class="nav-link" data-scroll-target="#raster-visualisation-lives-in-rasters.qmd">Raster visualisation lives in <code>rasters.qmd</code></a></li>
+  </ul></li>
+  <li><a href="#cross-document-content-overlap" id="toc-cross-document-content-overlap" class="nav-link" data-scroll-target="#cross-document-content-overlap">3. Cross-document content overlap</a>
+  <ul class="collapse">
+  <li><a href="#geom_sf-coord_sf-resolved-by-proposed-schedule" id="toc-geom_sf-coord_sf-resolved-by-proposed-schedule" class="nav-link" data-scroll-target="#geom_sf-coord_sf-resolved-by-proposed-schedule"><code>geom_sf()</code> / <code>coord_sf()</code> — resolved by proposed schedule</a></li>
+  <li><a href="#geom_spatraster-resolved-by-raster-split" id="toc-geom_spatraster-resolved-by-raster-split" class="nav-link" data-scroll-target="#geom_spatraster-resolved-by-raster-split"><code>geom_spatraster()</code> — resolved by raster split</a></li>
+  <li><a href="#raster-data-model-spatial_data.qmd-rasters.qmd" id="toc-raster-data-model-spatial_data.qmd-rasters.qmd" class="nav-link" data-scroll-target="#raster-data-model-spatial_data.qmd-rasters.qmd">Raster data model — <code>spatial_data.qmd</code> ↔︎ <code>rasters.qmd</code></a></li>
+  <li><a href="#r-ecosystem-history-sp-sf-raster-terra-five-files" id="toc-r-ecosystem-history-sp-sf-raster-terra-five-files" class="nav-link" data-scroll-target="#r-ecosystem-history-sp-sf-raster-terra-five-files">R ecosystem history (sp → sf, raster → terra) — five files</a></li>
+  <li><a href="#always-project-before-geometric-operations-three-independent-callouts" id="toc-always-project-before-geometric-operations-three-independent-callouts" class="nav-link" data-scroll-target="#always-project-before-geometric-operations-three-independent-callouts">“Always project before geometric operations” — three independent callouts</a></li>
+  <li><a href="#read_sf-vs-st_read-explained-twice" id="toc-read_sf-vs-st_read-explained-twice" class="nav-link" data-scroll-target="#read_sf-vs-st_read-explained-twice"><code>read_sf()</code> vs <code>st_read()</code> — explained twice</a></li>
+  <li><a href="#datasets-used-as-primary-examples-in-multiple-chapters" id="toc-datasets-used-as-primary-examples-in-multiple-chapters" class="nav-link" data-scroll-target="#datasets-used-as-primary-examples-in-multiple-chapters">Datasets used as primary examples in multiple chapters</a></li>
+  </ul></li>
+  <li><a href="#full-data-usage-tally" id="toc-full-data-usage-tally" class="nav-link" data-scroll-target="#full-data-usage-tally">4. Full data usage tally</a>
+  <ul class="collapse">
+  <li><a href="#tabular-csv" id="toc-tabular-csv" class="nav-link" data-scroll-target="#tabular-csv">Tabular (CSV)</a></li>
+  <li><a href="#spatial-vector-geopackage" id="toc-spatial-vector-geopackage" class="nav-link" data-scroll-target="#spatial-vector-geopackage">Spatial vector (GeoPackage)</a></li>
+  <li><a href="#rasters-geotiff" id="toc-rasters-geotiff" class="nav-link" data-scroll-target="#rasters-geotiff">Rasters (GeoTIFF)</a></li>
+  <li><a href="#package-web-data" id="toc-package-web-data" class="nav-link" data-scroll-target="#package-web-data">Package / web data</a></li>
+  <li><a href="#files-used-in-chapters-but-absent-from-data.qmd-download-script" id="toc-files-used-in-chapters-but-absent-from-data.qmd-download-script" class="nav-link" data-scroll-target="#files-used-in-chapters-but-absent-from-data.qmd-download-script">Files used in chapters but absent from <code>data.qmd</code> download script</a></li>
+  <li><a href="#files-in-data.qmd-but-unused-in-any-chapter" id="toc-files-in-data.qmd-but-unused-in-any-chapter" class="nav-link" data-scroll-target="#files-in-data.qmd-but-unused-in-any-chapter">Files in <code>data.qmd</code> but unused in any chapter</a></li>
+  <li><a href="#ftp-vs-local-data-inconsistency" id="toc-ftp-vs-local-data-inconsistency" class="nav-link" data-scroll-target="#ftp-vs-local-data-inconsistency">FTP vs local <code>data/</code> inconsistency</a></li>
+  </ul></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"></header>
+
+
+
+
+<section id="content-notes-tcmsar26" class="level1">
+<h1>Content Notes — TCMSAR26</h1>
+<p>Compiled from a full read of all <code>.qmd</code> files and participant registration data, May 2026. For course authors: covers participant profile, schedule sequencing, content gaps, cross-chapter overlap, and a full data usage tally.</p>
+<hr>
+<section id="participant-profile-and-course-alignment" class="level2">
+<h2 class="anchored" data-anchor-id="participant-profile-and-course-alignment">0. Participant profile and course alignment</h2>
+<p>Source: <code>data-raw/TCMSAR26_Participants_info-for-instructors.xlsx</code> (n = 25).</p>
+<section id="who-is-in-the-room" class="level3">
+<h3 class="anchored" data-anchor-id="who-is-in-the-room">Who is in the room</h3>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Status</th>
+<th>n</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Researcher</td>
+<td>7</td>
+</tr>
+<tr class="even">
+<td>Practitioner</td>
+<td>6</td>
+</tr>
+<tr class="odd">
+<td>PhD student / researcher</td>
+<td>5</td>
+</tr>
+<tr class="even">
+<td>Data analyst</td>
+<td>3</td>
+</tr>
+<tr class="odd">
+<td>Technical officer</td>
+<td>2</td>
+</tr>
+<tr class="even">
+<td>MSc student</td>
+<td>2</td>
+</tr>
+</tbody>
+</table>
+<p>Institutions span Ireland (Marine Institute, 6 participants), Poland (National Marine Fisheries Research Institute, 4), Spain (IEO Santander, CETMAR, IMEDEA), the Netherlands (Wageningen), Sweden (SLU), Finland (LUKE), Northern Ireland (AFBI, 2), Latvia (BIOR, 2), Italy (Sicily Marine Centre, University of Bari), Germany (Hamburg), and England (Natural England, 2).</p>
+<p>Most participants have R experience and use it regularly; the course is not starting from zero. Six participants currently use QGIS or ArcGIS as their primary spatial tool and want to move workflows into R. One participant explicitly still uses the legacy <strong>sp</strong> package.</p>
+</section>
+<section id="primary-use-cases-non-exclusive" class="level3">
+<h3 class="anchored" data-anchor-id="primary-use-cases-non-exclusive">Primary use cases (non-exclusive)</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Use case</th>
+<th>n</th>
+<th>Key participants</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Fisheries surveys, VMS, ICES data</td>
+<td>12</td>
+<td>DATRAS, SMB, OSPAR VMS data calls</td>
+</tr>
+<tr class="even">
+<td>Offshore renewable energy / MSP</td>
+<td>11</td>
+<td>ORE site selection, buffer/impact zones</td>
+</tr>
+<tr class="odd">
+<td>Seabed habitat mapping</td>
+<td>7</td>
+<td>Multibeam rasters, benthic classification</td>
+</tr>
+<tr class="even">
+<td>Marine ecology / species distribution</td>
+<td>7</td>
+<td>SDMs, climate range shifts, biodiversity</td>
+</tr>
+</tbody>
+</table>
+<p>The two largest groups — fisheries and ORE/MSP — partially overlap: several participants work on fishing footprint or trawling intensity in the context of wind farm development.</p>
+</section>
+<section id="alignment-with-current-course-content" class="level3">
+<h3 class="anchored" data-anchor-id="alignment-with-current-course-content">Alignment with current course content</h3>
+<p><strong>Well served:</strong></p>
+<ul>
+<li><em>Fisheries/ICES cohort</em>: The course dataset is near-perfect for this group. DATRAS (spatial_ops.qmd), SMB survey data (sf, rasters, interpolation, interactive), and <code>small_vms.csv</code> map directly onto what these participants do daily. The ICES working group members (participants 9, 10, 13, 14, 15) will recognise the data immediately.</li>
+<li><em>GIS-to-R transition</em>: The practical chapter-by-chapter approach, with code that runs on real data, is exactly what GIS practitioners need. The <code>input_output.qmd</code> chapter (file formats, GDAL) is specifically useful for people arriving from QGIS/ArcGIS.</li>
+<li><em>sp-to-sf transition</em>: The “sp class (legacy)” section in <code>sf.qmd</code> with conversion code directly addresses the one participant still using sp — and likely others who have inherited sp-based code.</li>
+<li><em>Interpolation / species distribution</em>: The kriging and IDW examples in <code>interpolation.qmd</code> are directly applicable to habitat and ecology participants building species distribution models.</li>
+</ul>
+<p><strong>Underserved:</strong></p>
+<ul>
+<li><p><em>ORE / MSP cohort (11 participants)</em>: This is the most significant gap. Nearly half the participants work in offshore wind or marine spatial planning, yet no chapter uses this framing. The operations they need — buffers around protected areas, intersection of proposed development zones with fishing intensity layers, suitability analysis — are all covered technically in <code>geometric.qmd</code> and <code>spatial_ops.qmd</code>, but the examples use fisheries survey data only. At minimum, the exercises in those two chapters could offer an ORE/MSP variant alongside the fisheries variant.</p></li>
+<li><p><em>Large rasters from acoustic surveys (seabed mapping, 7 participants)</em>: <code>rasters.qmd</code> covers <code>terra</code> thoroughly but its examples use relatively small climatological rasters. Participants who will be processing multibeam DEMs would benefit from a note on handling large rasters (chunked reading, windowed writing, <code>terraOptions(memfrac = ...)</code>).</p></li>
+</ul>
+</section>
+<section id="the-unused-ospar-dataset-is-the-most-direct-missed-opportunity" class="level3">
+<h3 class="anchored" data-anchor-id="the-unused-ospar-dataset-is-the-most-direct-missed-opportunity">The unused OSPAR dataset is the most direct missed opportunity</h3>
+<p><code>OSPAR_intensity_Otter_2015.gpkg</code> (91,190 polygon features of otter trawl fishing intensity, already in <code>data/</code>) is described in <code>data.qmd</code> but used nowhere in the course. It is simultaneously the most relevant dataset for the fisheries cohort (direct output of the ICES VMS Data Call workflow several participants contribute to) and for the ORE/MSP cohort (trawling intensity is a standard input to wind farm impact assessments). It is also large enough to make a good performance example in <code>spatial_ops.qmd</code> or <code>interactive.qmd</code>.</p>
+<p>Key columns: <code>FishingH</code> (fishing hours), <code>KWfishingH</code> (kW-fishing hours, a proxy for effort), <code>SurfSAR</code> (surface swept area ratio), <code>totweight</code>, <code>totvalue</code>.</p>
+<p>Suggested uses:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Chapter</th>
+<th>Exercise suggestion</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>spatial_ops.qmd</code></td>
+<td>Spatial join with <code>ices_ecoregions.gpkg</code> → aggregate <code>FishingH</code> or <code>SurfSAR</code> by ecoregion; compare to a protected area polygon</td>
+</tr>
+<tr class="even">
+<td><code>ggplot2.qmd</code></td>
+<td>Side-by-side maps of <code>SurfSAR</code> vs <code>KWfishingH</code> using <code>patchwork</code>; <code>geom_sf</code> with viridis fill and log transform</td>
+</tr>
+<tr class="odd">
+<td><code>interactive.qmd</code></td>
+<td>Leaflet choropleth of fishing intensity, giving participants a meaningful large-polygon interactive map exercise</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+</section>
+<section id="schedule-sequencing" class="level2">
+<h2 class="anchored" data-anchor-id="schedule-sequencing">1. Schedule sequencing</h2>
+<section id="current-schedule" class="level3">
+<h3 class="anchored" data-anchor-id="current-schedule">Current schedule</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Day</th>
+<th>Time</th>
+<th>Chapter</th>
+<th>Content duration</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Mon</td>
+<td>10:00–17:00</td>
+<td>intro → spatial_data → ggplot1</td>
+<td>5h30m</td>
+</tr>
+<tr class="even">
+<td>Tue</td>
+<td>09:00–17:00</td>
+<td>sf → geometric → spatial_ops (start)</td>
+<td>6h30m</td>
+</tr>
+<tr class="odd">
+<td>Wed</td>
+<td>09:00–17:00</td>
+<td>spatial_ops (cont.) → <strong>crs</strong> → rasters</td>
+<td>6h15m</td>
+</tr>
+<tr class="even">
+<td>Thu</td>
+<td>09:00–17:00</td>
+<td>rasters (cont.) → input_output → ggplot2 → interactive</td>
+<td>6h30m</td>
+</tr>
+<tr class="odd">
+<td>Fri</td>
+<td>09:00–14:00</td>
+<td>interpolation → wrap-up</td>
+<td>3h45m</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="the-core-problem-crs.qmd-is-taught-too-late" class="level3">
+<h3 class="anchored" data-anchor-id="the-core-problem-crs.qmd-is-taught-too-late">The core problem: <code>crs.qmd</code> is taught too late</h3>
+<p><code>crs.qmd</code> (Wednesday, session 8) is a prerequisite for <code>geometric.qmd</code> (Tuesday, session 5) and <code>spatial_ops.qmd</code> (sessions 6–7). Both chapters use <code>st_transform()</code> with bare EPSG codes before students have been taught what an EPSG code is, what an ellipsoid or datum is, or how to choose a projection:</p>
+<ul>
+<li><code>geometric.qmd</code> opens with <code>nfu |&gt; st_transform(3395)</code> inside a <code>callout-important</code> that says “always project your data before geometric operations” — but cannot explain <em>why 3395</em>, what World Mercator implies, or how a student would find an appropriate CRS for their own data.</li>
+<li><code>spatial_ops.qmd</code> uses <code>st_transform(3035)</code> (ETRS89-LAEA) in the distance-based subsetting section and explains that “distances in degrees are meaningless” — the conceptual foundation for this statement arrives the next morning.</li>
+<li>The “CRS must match” callout in <code>spatial_ops.qmd</code> tells students to use <code>st_crs(a) == st_crs(b)</code> — a function not introduced until <code>crs.qmd</code>.</li>
+</ul>
+<p>The effect is that students are told to use tools (<code>st_transform</code>, <code>st_crs</code>, <code>st_is_longlat</code>) and accept specific projection choices on faith for an entire day before the chapter that explains them.</p>
+</section>
+<section id="secondary-issue-geom_sf-used-informally-throughout-before-ggplot2.qmd" class="level3">
+<h3 class="anchored" data-anchor-id="secondary-issue-geom_sf-used-informally-throughout-before-ggplot2.qmd">Secondary issue: <code>geom_sf()</code> used informally throughout before <code>ggplot2.qmd</code></h3>
+<p>In the current schedule, <code>geom_sf()</code> and <code>coord_sf()</code> are used as visualisation tools in <code>sf.qmd</code>, <code>geometric.qmd</code>, <code>spatial_ops.qmd</code>, and <code>crs.qmd</code> (sessions 4–8) before <code>ggplot2.qmd</code> (session 11, Thursday) formally introduces them. <code>sf.qmd</code> acknowledges this with a brief note (“see the CRS chapter for details on <code>coord_sf()</code>”). The proposed schedule below resolves this almost entirely by moving <code>ggplot2.qmd</code> to Tuesday.</p>
+</section>
+<section id="secondary-issue-input_output.qmd-is-late-but-defensibly-so" class="level3">
+<h3 class="anchored" data-anchor-id="secondary-issue-input_output.qmd-is-late-but-defensibly-so">Secondary issue: <code>input_output.qmd</code> is late, but defensibly so</h3>
+<p><code>read_sf()</code>, <code>rast()</code>, and <code>read_csv()</code> are used throughout the course from Tuesday onwards, but the formal treatment of file formats, GDAL, and format choices (<code>input_output.qmd</code>) is placed on Thursday morning. This “learn by doing first, then understand the infrastructure” ordering is deliberate and defensible. Students can read files without knowing about GDAL; knowing they are using GeoPackages rather than shapefiles, and why that matters, can wait.</p>
+<hr>
+</section>
+<section id="proposed-alternative-schedule" class="level3">
+<h3 class="anchored" data-anchor-id="proposed-alternative-schedule">Proposed alternative schedule</h3>
+<p>Two changes resolve the main sequencing problems: move <code>crs.qmd</code> to Tuesday afternoon and place <code>ggplot2.qmd</code> immediately after it — still on Tuesday. This creates a tight conceptual sequence on day 2: the sf class → CRS → drawing sf maps with proper projections. <code>geometric.qmd</code> and <code>spatial_ops.qmd</code> then follow on Wednesday with full knowledge of CRS, projection choices, and how to visualise their outputs with <code>geom_sf()</code>. The Thursday slot freed by moving <code>ggplot2.qmd</code> is absorbed by <code>interactive.qmd</code>, which benefits from the extra time.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Day</th>
+<th>Time</th>
+<th>Chapter</th>
+<th>Duration</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Mon</td>
+<td>10:00–13:00</td>
+<td>intro + spatial_data</td>
+<td>unchanged</td>
+</tr>
+<tr class="even">
+<td>Mon</td>
+<td>14:00–17:00</td>
+<td>ggplot1</td>
+<td>unchanged</td>
+</tr>
+<tr class="odd">
+<td><strong>Tue</strong></td>
+<td>09:00–12:00</td>
+<td>sf</td>
+<td>2h45m (unchanged)</td>
+</tr>
+<tr class="even">
+<td><strong>Tue</strong></td>
+<td>13:00–15:15</td>
+<td><strong>crs</strong></td>
+<td>2h15m (moved from Wed)</td>
+</tr>
+<tr class="odd">
+<td><strong>Tue</strong></td>
+<td>15:30–17:00</td>
+<td><strong>ggplot2</strong></td>
+<td>1h30m (moved from Thu)</td>
+</tr>
+<tr class="even">
+<td><strong>Wed</strong></td>
+<td>09:00–10:45</td>
+<td>geometric — generators</td>
+<td>sampling, centroids, buffers, hulls, grids, simplification</td>
+</tr>
+<tr class="odd">
+<td><strong>Wed</strong></td>
+<td>11:00–12:00</td>
+<td>geometric — measurements</td>
+<td>area, length, distance, aggregation, AGR</td>
+</tr>
+<tr class="even">
+<td><strong>Wed</strong></td>
+<td>13:00–14:30</td>
+<td>spatial_ops</td>
+<td>1h30m</td>
+</tr>
+<tr class="odd">
+<td><strong>Wed</strong></td>
+<td>14:45–17:00</td>
+<td>rasters (start)</td>
+<td>2h15m</td>
+</tr>
+<tr class="even">
+<td>Thu</td>
+<td>09:00–09:30</td>
+<td>rasters (cont.)</td>
+<td>unchanged</td>
+</tr>
+<tr class="odd">
+<td>Thu</td>
+<td>09:30–10:30</td>
+<td>input_output</td>
+<td>unchanged</td>
+</tr>
+<tr class="even">
+<td>Thu</td>
+<td>10:45–12:00</td>
+<td><strong>interactive (start)</strong></td>
+<td>1h15m earlier start</td>
+</tr>
+<tr class="odd">
+<td>Thu</td>
+<td>13:00–17:00</td>
+<td>interactive (cont.)</td>
+<td>unchanged</td>
+</tr>
+<tr class="even">
+<td>Fri</td>
+<td>09:00–14:00</td>
+<td>interpolation + wrap-up</td>
+<td>unchanged</td>
+</tr>
+</tbody>
+</table>
+<p>The learning arc for Tuesday becomes coherent end to end: “here is the sf class” → “here is what CRS means” → “here is how to draw sf maps with the right projection.” <code>geometric.qmd</code> and <code>spatial_ops.qmd</code> on Wednesday no longer need to ask students to take projection choices on faith, and every <code>geom_sf()</code> call in those chapters is backed by formal knowledge from the evening before.</p>
+<p><code>ggplot2.qmd</code> gets 1h30m — compact but workable given its content (see §2). The only unavoidable forward reference that remains is <code>sf.qmd</code>’s brief use of <code>geom_sf()</code> on Tuesday morning, before the formal introduction in Tuesday evening’s <code>ggplot2.qmd</code>. This is minor: <code>sf.qmd</code> needs to show how sf objects look, and telling students “this is <code>geom_sf()</code>, we cover it fully after lunch on Thursday” → “we cover it fully later today” is a much shorter gap.</p>
+<hr>
+</section>
+</section>
+<section id="ggplot2.qmd-content-structure-and-raster-split" class="level2">
+<h2 class="anchored" data-anchor-id="ggplot2.qmd-content-structure-and-raster-split">2. <code>ggplot2.qmd</code> — content structure and raster split</h2>
+<section id="content-structure" class="level3">
+<h3 class="anchored" data-anchor-id="content-structure">Content structure</h3>
+<p><code>ggplot2.qmd</code> (<code>execute: enabled: false</code>) covers sf-native vector mapping only. Raster visualisation has been split out and lives in <code>rasters.qmd</code> (see below).</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Section</th>
+<th>Content</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Setup</td>
+<td>Libraries: <code>sf</code>, <code>rnaturalearth</code>, <code>rnaturalearthdata</code>, <code>ggspatial</code>, <code>patchwork</code>; data: <code>minke_sf</code>, <code>iceland_sf</code>, <code>world_sf</code>, <code>nfu</code>, <code>coast</code>, <code>contours</code>, <code>smb</code>, <code>smb2019</code></td>
+</tr>
+<tr class="even">
+<td>From ggplot1 to <code>geom_sf()</code></td>
+<td>Side-by-side: <code>maps</code>/<code>geom_polygon</code> (ggplot1 approach) vs <code>rnaturalearth</code>/<code>geom_sf</code> (modern approach)</td>
+</tr>
+<tr class="odd">
+<td>Basemaps with rnaturalearth</td>
+<td><code>ne_countries()</code>, adding sf point layers, zooming with <code>coord_sf(xlim, ylim)</code></td>
+</tr>
+<tr class="even">
+<td>Projections with <code>coord_sf()</code></td>
+<td>WGS84 / LAEA / Stereographic comparison; mixing layers with different CRS — cross-reference to <code>crs.qmd</code></td>
+</tr>
+<tr class="odd">
+<td>Labels</td>
+<td><code>geom_sf_label()</code> with centroid positions; brief note on <code>geom_sf_text()</code></td>
+</tr>
+<tr class="even">
+<td>Facetting</td>
+<td><code>facet_wrap()</code> (cod by year); <code>facet_grid()</code> (cod vs haddock × year, via <code>pivot_longer</code> on <code>smb_summary.csv</code>)</td>
+</tr>
+<tr class="odd">
+<td>Axis formatting</td>
+<td><code>scale_longitude()</code> / <code>scale_latitude()</code> helpers; ICES rectangle labels (requires <code>hafro/geo</code>)</td>
+</tr>
+<tr class="even">
+<td>Map embellishments</td>
+<td><code>annotation_scale()</code>, <code>annotation_north_arrow()</code> (ggspatial); <code>theme_void()</code>; <code>inset_element()</code></td>
+</tr>
+<tr class="odd">
+<td>Gridding</td>
+<td><code>grade()</code> function; <code>st_make_grid()</code> + <code>st_join()</code></td>
+</tr>
+<tr class="even">
+<td>Final exercise</td>
+<td>Join <code>is_smb_biological.csv</code> to <code>is_smb_stations.csv</code>, facetted map + time series</td>
+</tr>
+</tbody>
+</table>
+<p>No raster-specific libraries (<code>terra</code>, <code>tidyterra</code>, <code>marmap</code>) are loaded.</p>
+</section>
+<section id="raster-visualisation-lives-in-rasters.qmd" class="level3">
+<h3 class="anchored" data-anchor-id="raster-visualisation-lives-in-rasters.qmd">Raster visualisation lives in <code>rasters.qmd</code></h3>
+<p><code>rasters.qmd</code> already has a “Rasters and ggplot” section covering <code>geom_spatraster()</code> and <code>geom_raster()</code>. This is the appropriate home: students see terra’s data model first, then immediately see how to visualise it with ggplot. With <code>rasters.qmd</code> on Wednesday afternoon (after <code>ggplot2.qmd</code> on Tuesday), students arrive already knowing <code>geom_sf()</code> and <code>coord_sf()</code>, so the <code>geom_spatraster()</code> section in <code>rasters.qmd</code> only needs to introduce the tidyterra layer — the ggplot grammar around it is already familiar.</p>
+<p><code>interpolation.qmd</code> also uses <code>geom_spatraster()</code> on Friday, by which point students have seen it twice (rasters.qmd Wednesday, repeated use in any rasters exercises). No redundancy problem there.</p>
+<p><strong>Remaining issue:</strong> <code>execute: enabled: false</code>. The file should render cleanly once enabled. The <code>getNOAA.bathy()</code> call (used in <code>ggplot1.qmd</code>) is not present in <code>ggplot2.qmd</code>, so no internet dependency here. The <code>coord_sf</code> example reads <code>iceland_coastline.gpkg</code> and <code>iceland_contours.gpkg</code> from local <code>data/</code> — both available via the download script.</p>
+<hr>
+</section>
+</section>
+<section id="cross-document-content-overlap" class="level2">
+<h2 class="anchored" data-anchor-id="cross-document-content-overlap">3. Cross-document content overlap</h2>
+<section id="geom_sf-coord_sf-resolved-by-proposed-schedule" class="level3">
+<h3 class="anchored" data-anchor-id="geom_sf-coord_sf-resolved-by-proposed-schedule"><code>geom_sf()</code> / <code>coord_sf()</code> — resolved by proposed schedule</h3>
+<p>Under the current schedule, <code>geom_sf()</code> is used in <code>sf.qmd</code>, <code>geometric.qmd</code>, and <code>spatial_ops.qmd</code> with no prior formal introduction. Under the proposed schedule, <code>ggplot2.qmd</code> (Tuesday evening) is the formal introduction, and <code>geometric.qmd</code> and <code>spatial_ops.qmd</code> follow on Wednesday — so the forward-reference problem is eliminated for those chapters.</p>
+<p><code>crs.qmd</code> has a dedicated “Projections in ggplot2” section covering <code>coord_sf()</code>’s CRS-handling behaviour. With <code>ggplot2.qmd</code> immediately following <code>crs.qmd</code> in the proposed schedule, this section serves as a direct preview that students act on minutes later. The two treatments are complementary: <code>crs.qmd</code> explains <em>why</em> to set a CRS; <code>ggplot2.qmd</code> shows <em>how</em> to use it for maps. No editing needed.</p>
+</section>
+<section id="geom_spatraster-resolved-by-raster-split" class="level3">
+<h3 class="anchored" data-anchor-id="geom_spatraster-resolved-by-raster-split"><code>geom_spatraster()</code> — resolved by raster split</h3>
+<p><code>rasters.qmd</code> is now the canonical home. <code>interpolation.qmd</code> uses it on Friday after students have already seen it on Wednesday. The old <code>ggplot.qmd</code> is superseded. No remaining redundancy.</p>
+</section>
+<section id="raster-data-model-spatial_data.qmd-rasters.qmd" class="level3">
+<h3 class="anchored" data-anchor-id="raster-data-model-spatial_data.qmd-rasters.qmd">Raster data model — <code>spatial_data.qmd</code> ↔︎ <code>rasters.qmd</code></h3>
+<p>Both files embed the same two images (<code>img/raster1.png</code>, <code>img/raster2.png</code>) and independently explain cells, extent, resolution, and origin with near-identical prose. <code>spatial_data.qmd</code> introduces the concept on Monday; <code>rasters.qmd</code> re-introduces it from scratch on Wednesday without referring back. A one-line forward reference in <code>spatial_data.qmd</code> and a one-line back-reference in <code>rasters.qmd</code> would resolve this.</p>
+</section>
+<section id="r-ecosystem-history-sp-sf-raster-terra-five-files" class="level3">
+<h3 class="anchored" data-anchor-id="r-ecosystem-history-sp-sf-raster-terra-five-files">R ecosystem history (sp → sf, raster → terra) — five files</h3>
+<p>The transition is restated independently in: <code>spatial_data.qmd</code> (full history), <code>intro.qmd</code> (package list), <code>sf.qmd</code> (sp legacy section with conversion code), <code>rasters.qmd</code> (callout), and <code>input_output.qmd</code> (rgdal retirement callout). The <code>spatial_data.qmd</code> treatment is authoritative; the others are restatements that could be replaced with a cross-reference.</p>
+</section>
+<section id="always-project-before-geometric-operations-three-independent-callouts" class="level3">
+<h3 class="anchored" data-anchor-id="always-project-before-geometric-operations-three-independent-callouts">“Always project before geometric operations” — three independent callouts</h3>
+<p><code>geometric.qmd</code>, <code>spatial_ops.qmd</code>, and <code>interpolation.qmd</code> each contain a <code>callout-important</code> making the same point without cross-referencing <code>crs.qmd</code>. Under the proposed schedule, <code>crs.qmd</code> precedes both <code>geometric.qmd</code> and <code>spatial_ops.qmd</code>, so these callouts can be simplified to a one-line reference (“as covered in the <a href="./crs.html">CRS chapter</a>”) rather than restating the concept. <code>interpolation.qmd</code> is further downstream and can do the same.</p>
+</section>
+<section id="read_sf-vs-st_read-explained-twice" class="level3">
+<h3 class="anchored" data-anchor-id="read_sf-vs-st_read-explained-twice"><code>read_sf()</code> vs <code>st_read()</code> — explained twice</h3>
+<p>Both <code>sf.qmd</code> (callout note) and <code>input_output.qmd</code> explain the difference independently. The note in <code>sf.qmd</code> is appropriate as a brief practical aside; the paragraph in <code>input_output.qmd</code> is redundant and can be removed.</p>
+</section>
+<section id="datasets-used-as-primary-examples-in-multiple-chapters" class="level3">
+<h3 class="anchored" data-anchor-id="datasets-used-as-primary-examples-in-multiple-chapters">Datasets used as primary examples in multiple chapters</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Dataset</th>
+<th>Chapters</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>nephrops_fu.gpkg</code></td>
+<td>sf, geometric, spatial_ops, <strong>ggplot2</strong>, interactive</td>
+</tr>
+<tr class="even">
+<td><code>ices_ecoregions.gpkg</code></td>
+<td>sf, geometric, spatial_ops, interactive</td>
+</tr>
+<tr class="odd">
+<td><code>is_smb_stations.csv</code></td>
+<td>sf, rasters, interactive, interpolation</td>
+</tr>
+<tr class="even">
+<td><code>smb_summary.csv</code></td>
+<td>ggplot1, <strong>ggplot2</strong>, interactive</td>
+</tr>
+<tr class="odd">
+<td><code>minke.csv</code></td>
+<td>ggplot1, <strong>ggplot2</strong>, interactive, input_output</td>
+</tr>
+<tr class="even">
+<td><code>datras_2018_haul.csv</code></td>
+<td>spatial_ops, interactive (exercise)</td>
+</tr>
+<tr class="odd">
+<td><code>Iceland_minbtemp.tif</code></td>
+<td>rasters, interactive, input_output</td>
+</tr>
+<tr class="even">
+<td><code>iceland_coastline.gpkg</code></td>
+<td><strong>ggplot2</strong>, crs, rasters, interpolation</td>
+</tr>
+</tbody>
+</table>
+<p>Reuse is generally good. <code>nephrops_fu.gpkg</code> now appears in five chapters; by the time students reach <code>interactive.qmd</code> they know the dataset well, so the loading boilerplate in that chapter could be collapsed to a brief reminder.</p>
+<hr>
+</section>
+</section>
+<section id="full-data-usage-tally" class="level2">
+<h2 class="anchored" data-anchor-id="full-data-usage-tally">4. Full data usage tally</h2>
+<p><code>(ex)</code> = exercise/callout only &nbsp;<code>(ftp)</code> = read via FTP URL not local <code>data/</code> &nbsp;<code>(cmtd)</code> = commented out</p>
+<section id="tabular-csv" class="level3">
+<h3 class="anchored" data-anchor-id="tabular-csv">Tabular (CSV)</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 6%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>File</th>
+<th style="text-align: center;">ggplot1</th>
+<th style="text-align: center;">ggplot2</th>
+<th style="text-align: center;">sf</th>
+<th style="text-align: center;">spatial_ops</th>
+<th style="text-align: center;">rasters</th>
+<th style="text-align: center;">input_output</th>
+<th style="text-align: center;">interactive</th>
+<th style="text-align: center;">interpolation</th>
+<th style="text-align: center;"><strong>n</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>minke.csv</code></td>
+<td style="text-align: center;">✓</td>
+<td style="text-align: center;">✓</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;">✓(ftp)</td>
+<td style="text-align: center;">✓</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"><strong>4</strong></td>
+</tr>
+<tr class="even">
+<td><code>smb_summary.csv</code></td>
+<td style="text-align: center;">✓</td>
+<td style="text-align: center;">✓</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;">✓</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"><strong>3</strong></td>
+</tr>
+<tr class="odd">
+<td><code>is_smb_stations.csv</code></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;">✓</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;">✓(ftp)</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;">✓</td>
+<td style="text-align: center;">✓(ftp)</td>
+<td style="text-align: center;"><strong>4</strong></td>
+</tr>
+<tr class="even">
+<td><code>is_smb_biological.csv</code></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;">✓</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;">✓(ftp)</td>
+<td style="text-align: center;"><strong>2</strong></td>
+</tr>
+<tr class="odd">
+<td><code>small_vms.csv</code></td>
+<td style="text-align: center;">✓(cmtd)</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;">✓</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"><strong>1</strong></td>
+</tr>
+<tr class="even">
+<td><code>datras_2018_haul.csv</code></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;">✓</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;">✓(ex)</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"><strong>2</strong></td>
+</tr>
+<tr class="odd">
+<td><code>datras_2018_length.csv</code></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;">✓</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"><strong>1</strong></td>
+</tr>
+<tr class="even">
+<td><code>smb_utbrteg.csv</code></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"><strong>0</strong></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="spatial-vector-geopackage" class="level3">
+<h3 class="anchored" data-anchor-id="spatial-vector-geopackage">Spatial vector (GeoPackage)</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 6%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>File</th>
+<th style="text-align: center;">ggplot2</th>
+<th style="text-align: center;">sf</th>
+<th style="text-align: center;">geometric</th>
+<th style="text-align: center;">spatial_ops</th>
+<th style="text-align: center;">crs</th>
+<th style="text-align: center;">rasters</th>
+<th style="text-align: center;">input_output</th>
+<th style="text-align: center;">interactive</th>
+<th style="text-align: center;"><strong>n</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>nephrops_fu.gpkg</code></td>
+<td style="text-align: center;">✓</td>
+<td style="text-align: center;">✓</td>
+<td style="text-align: center;">✓</td>
+<td style="text-align: center;">✓</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;">✓</td>
+<td style="text-align: center;"><strong>5</strong></td>
+</tr>
+<tr class="even">
+<td><code>ices_ecoregions.gpkg</code></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;">✓</td>
+<td style="text-align: center;">✓</td>
+<td style="text-align: center;">✓</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;">✓</td>
+<td style="text-align: center;"><strong>4</strong></td>
+</tr>
+<tr class="odd">
+<td><code>iceland_coastline.gpkg</code></td>
+<td style="text-align: center;">✓</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;">✓(ftp)</td>
+<td style="text-align: center;">✓(ftp)</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;">✓(ftp)</td>
+</tr>
+<tr class="even">
+<td><code>helcom.gpkg</code></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;">✓(ex)</td>
+<td style="text-align: center;">✓(ftp)</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"><strong>2</strong></td>
+</tr>
+<tr class="odd">
+<td><code>iceland_contours.gpkg</code></td>
+<td style="text-align: center;">✓</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;">✓(ftp)</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"><strong>2</strong></td>
+</tr>
+<tr class="even">
+<td><code>ice_points.gpkg</code></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;">✓(ftp)</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"><strong>1</strong></td>
+</tr>
+<tr class="odd">
+<td><code>ice_lines.gpkg</code></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;">✓(ftp)</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"><strong>1</strong></td>
+</tr>
+<tr class="even">
+<td><code>ice_polygon.gpkg</code></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;">✓(ftp)</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"><strong>1</strong></td>
+</tr>
+<tr class="odd">
+<td><code>ices_rectangles.gpkg</code></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"><strong>0</strong></td>
+</tr>
+<tr class="even">
+<td><code>OSPAR_intensity_Otter_2015.gpkg</code></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"><strong>0</strong></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="rasters-geotiff" class="level3">
+<h3 class="anchored" data-anchor-id="rasters-geotiff">Rasters (GeoTIFF)</h3>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>File</th>
+<th style="text-align: center;">rasters</th>
+<th style="text-align: center;">input_output</th>
+<th style="text-align: center;">interactive</th>
+<th style="text-align: center;"><strong>n</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>Iceland_minbtemp.tif</code></td>
+<td style="text-align: center;">✓(ftp)†</td>
+<td style="text-align: center;">✓(ftp)</td>
+<td style="text-align: center;">✓</td>
+<td style="text-align: center;"><strong>3</strong></td>
+</tr>
+<tr class="even">
+<td><code>Iceland_maxbtemp.tif</code></td>
+<td style="text-align: center;">✓(ftp)</td>
+<td style="text-align: center;">✓(ftp)</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"><strong>2</strong></td>
+</tr>
+<tr class="odd">
+<td><code>Iceland_currentsp.tif</code></td>
+<td style="text-align: center;">✓(ftp)</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"><strong>1</strong></td>
+</tr>
+<tr class="even">
+<td><code>Faroes_minbtemp.tif</code></td>
+<td style="text-align: center;">✓(ftp)</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"><strong>1</strong></td>
+</tr>
+<tr class="odd">
+<td><code>nephrops.tif</code></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"><strong>0</strong></td>
+</tr>
+</tbody>
+</table>
+<p>† <code>rasters.qmd</code> line 66 reads <code>"./data/Iceland_btemp.tif"</code> — wrong filename, will fail when <code>execute: enabled</code> is turned on. Correct name: <code>Iceland_minbtemp.tif</code>.</p>
+</section>
+<section id="package-web-data" class="level3">
+<h3 class="anchored" data-anchor-id="package-web-data">Package / web data</h3>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Source</th>
+<th>Used in</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>map_data("world", "Iceland")</code> [maps package]</td>
+<td>ggplot1</td>
+</tr>
+<tr class="even">
+<td><code>getNOAA.bathy()</code> [marmap]</td>
+<td>ggplot1, rasters</td>
+</tr>
+<tr class="odd">
+<td><code>ne_countries()</code> [rnaturalearth]</td>
+<td>ggplot2, crs, interactive</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="files-used-in-chapters-but-absent-from-data.qmd-download-script" class="level3">
+<h3 class="anchored" data-anchor-id="files-used-in-chapters-but-absent-from-data.qmd-download-script">Files used in chapters but absent from <code>data.qmd</code> download script</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>File</th>
+<th>Used in</th>
+<th>Nature of use</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>ospar.gpkg</code></td>
+<td><code>spatial_ops.qmd</code> (polygon join, main example); <code>sf.qmd</code> (exercise)</td>
+<td>Active code — will fail</td>
+</tr>
+<tr class="even">
+<td><code>bormicon.gpkg</code></td>
+<td><code>rasters.qmd</code> (rasterization example, via ftp)</td>
+<td>Active code</td>
+</tr>
+<tr class="odd">
+<td><code>is_smb.csv</code></td>
+<td><code>interactive.qmd</code> (Shiny example, via ftp)</td>
+<td>Active code</td>
+</tr>
+<tr class="even">
+<td><code>is_smb_vms2019.csv</code></td>
+<td><code>ggplot1.qmd</code> (commented out)</td>
+<td>Commented out only</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="files-in-data.qmd-but-unused-in-any-chapter" class="level3">
+<h3 class="anchored" data-anchor-id="files-in-data.qmd-but-unused-in-any-chapter">Files in <code>data.qmd</code> but unused in any chapter</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>File</th>
+<th>Note</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>smb_utbrteg.csv</code></td>
+<td>Described as the raw source for <code>smb_summary.csv</code>; no exercise uses it</td>
+</tr>
+<tr class="even">
+<td><code>ices_rectangles.gpkg</code></td>
+<td>Listed; not used in any chapter</td>
+</tr>
+<tr class="odd">
+<td><code>OSPAR_intensity_Otter_2015.gpkg</code></td>
+<td>Listed; not used in any chapter</td>
+</tr>
+<tr class="even">
+<td><code>nephrops.tif</code></td>
+<td>Listed; not used in any chapter</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="ftp-vs-local-data-inconsistency" class="level3">
+<h3 class="anchored" data-anchor-id="ftp-vs-local-data-inconsistency">FTP vs local <code>data/</code> inconsistency</h3>
+<p>Several files that exist in <code>data/</code> are still read via <code>ftp://ftp.hafro.is/...</code> in some chapters. Those chapters will fail offline even though the files are available locally via the download script.</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>File</th>
+<th>Chapters reading via FTP</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>iceland_coastline.gpkg</code></td>
+<td>crs, rasters, interpolation</td>
+</tr>
+<tr class="even">
+<td><code>helcom.gpkg</code></td>
+<td>geometric</td>
+</tr>
+<tr class="odd">
+<td><code>Iceland_minbtemp.tif</code></td>
+<td>rasters, input_output</td>
+</tr>
+<tr class="even">
+<td><code>Iceland_maxbtemp.tif</code></td>
+<td>rasters, input_output</td>
+</tr>
+<tr class="odd">
+<td><code>Iceland_currentsp.tif</code></td>
+<td>rasters</td>
+</tr>
+<tr class="even">
+<td><code>Faroes_minbtemp.tif</code></td>
+<td>rasters</td>
+</tr>
+<tr class="odd">
+<td><code>ice_points/lines/polygon.gpkg</code></td>
+<td>rasters</td>
+</tr>
+<tr class="even">
+<td><code>is_smb_stations.csv</code></td>
+<td>rasters, interpolation</td>
+</tr>
+<tr class="odd">
+<td><code>is_smb_biological.csv</code></td>
+<td>interpolation</td>
+</tr>
+<tr class="even">
+<td><code>minke.csv</code></td>
+<td>input_output</td>
+</tr>
+</tbody>
+</table>
+
+
+</section>
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
