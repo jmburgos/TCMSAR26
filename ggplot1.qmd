@@ -26,7 +26,7 @@ ylim <- c( 62.5,  67.5)
 depth <-
   getNOAA.bathy(lon1 = xlim[1], lon2 = xlim[2],
                 lat1 = ylim[1], lat2 = ylim[2],
-                resolution = 1) |>
+                resolution = 1, keep = TRUE, path = "./data/") |> # keep the bathymetric data in local memory
   fortify() |>    # convert the bathy object to a plain data frame
   filter(z <= 0)  # keep only sea cells (negative depth)
 ```
