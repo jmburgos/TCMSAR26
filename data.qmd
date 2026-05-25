@@ -75,7 +75,7 @@ Read with: `read_csv("data/datras_2018_haul.csv")`
 Rows: 3,145 \| Columns: 62
 
 | Variable | Type | Description |
-|------------------------|------------------------|------------------------|
+|----|----|----|
 | id | chr | Unique haul identifier (concatenation of survey, year, quarter, country, ship, gear, stno, haulno) |
 | survey | chr | Survey name (e.g. "BITS", "IBTS") |
 | quarter | dbl | Quarter of the year (1–4) |
@@ -211,7 +211,7 @@ Read with: `read_csv("data/is_smb_stations.csv")`
 Rows: 19,846 \| Columns: 28
 
 | Variable | Type | Description |
-|------------------------|------------------------|------------------------|
+|----|----|----|
 | id | dbl | Unique station/tow identifier; links to `is_smb_biological` |
 | date | date | Date of the tow |
 | year | dbl | Year of survey |
