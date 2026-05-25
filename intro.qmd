@@ -8,10 +8,8 @@ This course provides a practical introduction to mapping and spatial analysis us
 
 The course material is open source. The source code and datasets are available at:
 
-- **Course website**: <https://heima.hafro.is/~julian/TCMSAR26/index.html>
-- **Datasets**: <https://heima.hafro.is/~julian/TCMSAR26/data.zip>
-
-https://github.com/jmburgos/TCMSAR26
+- **Course website**: <https://jmburgos.github.io/TCMSAR26/>
+- **Source**: <https://github.com/jmburgos/TCMSAR26>
 
 ---
 
@@ -115,6 +113,8 @@ You will need a recent version of R and an IDE. We recommend RStudio (now distri
 - **R**: download from [CRAN](https://cran.r-project.org/). If you are on Windows, also install [Rtools](https://cran.r-project.org/bin/windows/Rtools). On macOS, install the Command Line Tools via `xcode-select --install` in a terminal.
 - **RStudio**: download from [posit.co](https://posit.co/download/rstudio-desktop/).
 
+There are other editors.  **Positron** is a new editor by the creators of RStudio.  And **Emacs** with **ESS** is a less user friendly but extremely customizable option.
+
 ## RStudio projects
 
 We strongly recommend doing all your work inside an **RStudio project**. Projects keep your files, working directory, and settings organised and isolated from other work. To create one: *File → New Project → New Directory → New Project*.
@@ -142,36 +142,68 @@ To turn this off permanently: *Tools → Global Options → General → Save wor
 Install all the packages used in this course by running the following. You only need to do this once:
 
 ```{r install, eval=FALSE}
+
 install.packages(c(
   # Core spatial packages
-  "sf",          # Vector spatial data
-  "terra",       # Raster spatial data
-  "stars",       # Spatiotemporal data cubes
+  "sf",               # Vector spatial data
+  "terra",            # Raster spatial data
+  "stars",            # Spatiotemporal data cubes
+  "sp",               # Legacy spatial classes (needed by some packages)
+  "tidyterra",        # ggplot2 / tidyverse integration for terra objects
 
   # Tidyverse
-  "tidyverse",   # Data wrangling and visualisation
+  "tidyverse",        # Data wrangling and visualisation
 
-  # Mapping
-  "ggplot2",     # Static maps (installed with tidyverse)
-  "ggspatial",   # Scale bars, north arrows
-  "leaflet",     # Interactive maps
-  "mapview",     # Quick interactive map previews
-  "rnaturalearth",   # Country and region boundaries
-  "rnaturalearthdata",
+  # Static mapping
+  "ggplot2",          # Static maps (installed with tidyverse)
+  "ggspatial",        # Scale bars, north arrows
+  "tmap",             # Thematic maps (static and interactive)
+  "maps",             # Basic country outlines as data frames
 
-  # Raster data access
-  "marmap",      # NOAA bathymetry data
+  # Interactive mapping
+  "leaflet",          # Interactive maps
+  "leaflet.extras",   # Extra leaflet plugins
+  "leafem",           # Extra leaflet / mapview utilities
+  "leafpop",          # HTML popups for leaflet / mapview
+  "leafgl",           # WebGL rendering for large datasets in leaflet
+  "mapgl",            # MapLibre GL JS wrapper
+  "mapview",          # Quick interactive map previews
+  "ggiraph",          # Interactive ggplot2 graphics
 
-  # Interpolation
-  "gstat",       # Geostatistics and interpolation
-  "mgcv",        # GAMs
-  "concaveman",  # Concave hulls
+  # Reference data
+  "rnaturalearth",    # Country and region boundaries
+  "rnaturalearthdata",# Data for rnaturalearth
+  "marmap",           # NOAA bathymetry data
+
+  # Interpolation and geostatistics
+  "gstat",            # Geostatistics and interpolation
+  "automap",          # Automatic variogram fitting
+  "mgcv",             # GAMs
+
+  # Coordinate reference systems
+  "crsuggest",        # CRS selection helper
+
+  # Input / output
+  "RPostgres",        # PostgreSQL / PostGIS connection
+  "rmapshaper",       # Simplify and modify vector geometries
 
   # Utilities
-  "crsuggest",   # CRS selection helper
-  "patchwork",   # Combining ggplot figures
-  "units"        # Physical units for spatial measurements
+  "patchwork",        # Combining ggplot figures
+  "units",            # Physical units for spatial measurements
+  "htmlwidgets",      # Save interactive widgets as HTML
+  "shiny"             # Interactive web applications
+  
 ))
+
+# Requires QGIS (with the 'processing' plugin) to be installed:
+# https://qgis.org/download/
+install.packages("qgisprocess")
+
+# Requires GRASS GIS to be installed on your system first:
+# https://grass.osgeo.org/download/
+install.packages("rgrass")
+
+
 ```
 
 ::: {.callout-note}
