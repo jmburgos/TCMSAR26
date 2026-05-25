@@ -12,3 +12,5 @@ qgis_map.qgz
 /data-raw/
 .DS_Store
 TCMSAR26.org
+to_delete.R
+content_notes.md

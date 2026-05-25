@@ -260,34 +260,9 @@ Rows: 68,834 \| Columns: 4
 
 ------------------------------------------------------------------------
 
-### `smb_utbrteg.csv`
-
-**Description:** Raw Icelandic SMB trawl survey data with original Icelandic variable names. Used as input to generate `smb_summary.csv`. Contains tow-level catch totals for key commercial species.
-
-Read with: `read_csv("data/smb_utbrteg.csv")`
-
-| Variable       | Type | Description                |
-|----------------|------|----------------------------|
-| ar             | dbl  | Year (Icelandic: *ár*)     |
-| reitur         | dbl  | ICES statistical square    |
-| tog_nr         | dbl  | Tow number                 |
-| lon1           | dbl  | Longitude at start of tow  |
-| lat1           | dbl  | Latitude at start of tow   |
-| togtimi        | dbl  | Tow duration (minutes)     |
-| torskur_kg     | dbl  | Cod catch weight (kg)      |
-| torskur_stk    | dbl  | Cod catch number           |
-| ufsi_kg        | dbl  | Saithe catch weight (kg)   |
-| ufsi_stk       | dbl  | Saithe catch number        |
-| ysa_kg         | dbl  | Haddock catch weight (kg)  |
-| ysa_stk        | dbl  | Haddock catch number       |
-| hrognkelsi_kg  | dbl  | Lumpfish catch weight (kg) |
-| hrognkelsi_stk | dbl  | Lumpfish catch number      |
-
-------------------------------------------------------------------------
-
 ### `smb_summary.csv`
 
-**Description:** Processed version of `smb_utbrteg.csv` with English variable names, ICES rectangle centroid coordinates added, and a tidy structure. Covers tow-level catch summaries for cod, saithe, haddock, and lumpfish.
+**Description:** Icelandic SMB trawl survey data with English variable names. Contain, ICES rectangle centroid coordinates added, and a tidy structure. Covers tow-level catch summaries for cod, saithe, haddock, and lumpfish.
 
 Read with: `read_csv("data/smb_summary.csv")`
 

@@ -220,14 +220,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <ul class="collapse">
   <li><a href="#course-outline" id="toc-course-outline" class="nav-link" data-scroll-target="#course-outline">Course outline</a></li>
   </ul></li>
-  <li><a href="#datasets-used-in-this-course" id="toc-datasets-used-in-this-course" class="nav-link" data-scroll-target="#datasets-used-in-this-course">Datasets used in this course</a>
-  <ul class="collapse">
-  <li><a href="#icelandic-bottom-trawl-survey-smb" id="toc-icelandic-bottom-trawl-survey-smb" class="nav-link" data-scroll-target="#icelandic-bottom-trawl-survey-smb">Icelandic bottom trawl survey (SMB)</a></li>
-  <li><a href="#ices-datras-surveys" id="toc-ices-datras-surveys" class="nav-link" data-scroll-target="#ices-datras-surveys">ICES DATRAS surveys</a></li>
-  <li><a href="#minke-whale-sightings" id="toc-minke-whale-sightings" class="nav-link" data-scroll-target="#minke-whale-sightings">Minke whale sightings</a></li>
-  <li><a href="#spatial-boundary-files" id="toc-spatial-boundary-files" class="nav-link" data-scroll-target="#spatial-boundary-files">Spatial boundary files</a></li>
-  <li><a href="#raster-data" id="toc-raster-data" class="nav-link" data-scroll-target="#raster-data">Raster data</a></li>
-  </ul></li>
+  <li><a href="#datasets-used-in-this-course" id="toc-datasets-used-in-this-course" class="nav-link" data-scroll-target="#datasets-used-in-this-course">Datasets used in this course</a></li>
   <li><a href="#getting-started" id="toc-getting-started" class="nav-link" data-scroll-target="#getting-started">Getting started</a>
   <ul class="collapse">
   <li><a href="#software" id="toc-software" class="nav-link" data-scroll-target="#software">Software</a></li>
@@ -361,58 +354,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="datasets-used-in-this-course" class="level1">
 <h1>Datasets used in this course</h1>
-<p>The same datasets reappear across multiple chapters, so it is worth knowing what they are from the start. All data files are available in the course data archive linked above.</p>
-<section id="icelandic-bottom-trawl-survey-smb" class="level2">
-<h2 class="anchored" data-anchor-id="icelandic-bottom-trawl-survey-smb">Icelandic bottom trawl survey (SMB)</h2>
-<p>The spring groundfish survey (<em>Spawning groundfish survey</em>, SMB) conducted annually by the Marine and Freshwater Research Institute (MFRI) of Iceland. The main files used are:</p>
-<ul>
-<li><code>is_smb.csv</code> — station data including tow positions, duration, and catch by species.</li>
-<li><code>is_smb_stations.csv</code> — station metadata.</li>
-<li><code>is_smb_biological.csv</code> — biological data (length, weight) by species and station.</li>
-<li><code>is_smb_vms2019.csv</code> — Vessel Monitoring System (VMS) positions for the 2019 survey, giving detailed vessel tracks.</li>
-<li><code>is_smb_cod_rbya.csv</code> — cod abundance by year, age, and station.</li>
-</ul>
-<p>This dataset is used to illustrate tow tracks, abundance mapping, spatial interpolation, and facetted maps across years.</p>
-</section>
-<section id="ices-datras-surveys" class="level2">
-<h2 class="anchored" data-anchor-id="ices-datras-surveys">ICES DATRAS surveys</h2>
-<p>Trawl survey data from the ICES Database of Trawl Surveys (DATRAS), covering multiple European surveys in 2018:</p>
-<ul>
-<li><code>datras_2018_haul.csv</code> — haul (station) data including positions.</li>
-<li><code>datras_2018_length.csv</code> — length frequency data by species and haul.</li>
-</ul>
-<p>Used to illustrate spatial operations, interactive maps, and working with data from multiple surveys across a broad geographic area.</p>
-</section>
-<section id="minke-whale-sightings" class="level2">
-<h2 class="anchored" data-anchor-id="minke-whale-sightings">Minke whale sightings</h2>
-<ul>
-<li><code>minke.csv</code> — positions and biological measurements of minke whales sampled in Icelandic waters.</li>
-</ul>
-<p>Used in mapping examples throughout the ggplot2 chapter.</p>
-</section>
-<section id="spatial-boundary-files" class="level2">
-<h2 class="anchored" data-anchor-id="spatial-boundary-files">Spatial boundary files</h2>
-<p>Several vector boundary files are used as reference layers:</p>
-<ul>
-<li><code>iceland_coastline.gpkg</code> — Iceland coastline.</li>
-<li><code>iceland_contours.gpkg</code> — depth contours around Iceland.</li>
-<li><code>bormicon.gpkg</code> — Bormicon reporting areas for Icelandic fisheries.</li>
-<li><code>nephrops_fu.gpkg</code> — Nephrops functional units (ICES assessment areas).</li>
-<li><code>ices_ecoregions.gpkg</code> — ICES ecoregion boundaries.</li>
-<li><code>ices_rectangles.gpkg</code> — ICES statistical rectangles.</li>
-<li><code>helcom.gpkg</code> and <code>ospar.gpkg</code> — HELCOM and OSPAR regional sea boundaries.</li>
-</ul>
-</section>
-<section id="raster-data" class="level2">
-<h2 class="anchored" data-anchor-id="raster-data">Raster data</h2>
-<ul>
-<li><code>Iceland_minbtemp.tif</code>, <code>Iceland_maxbtemp.tif</code> — minimum and maximum near-bottom temperature around Iceland (from the NISE project).</li>
-<li><code>Iceland_currentsp.tif</code> — near-bottom current speed (from Bio-ORACLE).</li>
-<li><code>nephrops.tif</code> — Nephrops trawl effort raster.</li>
-<li>Bottom depth data accessed via the <code>marmap</code> package from NOAA’s ETOPO1 database.</li>
-</ul>
+<p>The same datasets reappear across multiple chapters, so it is worth knowing what they are from the start. You can find a description of the datasets in the <a href="./data.html">data</a> page.</p>
 <hr>
-</section>
 </section>
 <section id="getting-started" class="level1">
 <h1>Getting started</h1>
@@ -470,49 +413,50 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>  <span class="st">"ggspatial"</span>,        <span class="co"># Scale bars, north arrows</span></span>
 <span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>  <span class="st">"tmap"</span>,             <span class="co"># Thematic maps (static and interactive)</span></span>
 <span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>  <span class="st">"maps"</span>,             <span class="co"># Basic country outlines as data frames</span></span>
-<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Interactive mapping</span></span>
-<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>  <span class="st">"leaflet"</span>,          <span class="co"># Interactive maps</span></span>
-<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>  <span class="st">"leaflet.extras"</span>,   <span class="co"># Extra leaflet plugins</span></span>
-<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>  <span class="st">"leafem"</span>,           <span class="co"># Extra leaflet / mapview utilities</span></span>
-<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>  <span class="st">"leafpop"</span>,          <span class="co"># HTML popups for leaflet / mapview</span></span>
-<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>  <span class="st">"leafgl"</span>,           <span class="co"># WebGL rendering for large datasets in leaflet</span></span>
-<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>  <span class="st">"mapgl"</span>,            <span class="co"># MapLibre GL JS wrapper</span></span>
-<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>  <span class="st">"mapview"</span>,          <span class="co"># Quick interactive map previews</span></span>
-<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>  <span class="st">"ggiraph"</span>,          <span class="co"># Interactive ggplot2 graphics</span></span>
-<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Reference data</span></span>
-<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a>  <span class="st">"rnaturalearth"</span>,    <span class="co"># Country and region boundaries</span></span>
-<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>  <span class="st">"rnaturalearthdata"</span>,<span class="co"># Data for rnaturalearth</span></span>
-<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a>  <span class="st">"marmap"</span>,           <span class="co"># NOAA bathymetry data</span></span>
-<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Interpolation and geostatistics</span></span>
-<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a>  <span class="st">"gstat"</span>,            <span class="co"># Geostatistics and interpolation</span></span>
-<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a>  <span class="st">"automap"</span>,          <span class="co"># Automatic variogram fitting</span></span>
-<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a>  <span class="st">"mgcv"</span>,             <span class="co"># GAMs</span></span>
-<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Coordinate reference systems</span></span>
-<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a>  <span class="st">"crsuggest"</span>,        <span class="co"># CRS selection helper</span></span>
-<span id="cb2-40"><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-41"><a href="#cb2-41" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Input / output</span></span>
-<span id="cb2-42"><a href="#cb2-42" aria-hidden="true" tabindex="-1"></a>  <span class="st">"RPostgres"</span>,        <span class="co"># PostgreSQL / PostGIS connection</span></span>
-<span id="cb2-43"><a href="#cb2-43" aria-hidden="true" tabindex="-1"></a>  <span class="st">"rmapshaper"</span>,       <span class="co"># Simplify and modify vector geometries</span></span>
-<span id="cb2-44"><a href="#cb2-44" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-45"><a href="#cb2-45" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Utilities</span></span>
-<span id="cb2-46"><a href="#cb2-46" aria-hidden="true" tabindex="-1"></a>  <span class="st">"patchwork"</span>,        <span class="co"># Combining ggplot figures</span></span>
-<span id="cb2-47"><a href="#cb2-47" aria-hidden="true" tabindex="-1"></a>  <span class="st">"units"</span>,            <span class="co"># Physical units for spatial measurements</span></span>
-<span id="cb2-48"><a href="#cb2-48" aria-hidden="true" tabindex="-1"></a>  <span class="st">"htmlwidgets"</span>,      <span class="co"># Save interactive widgets as HTML</span></span>
-<span id="cb2-49"><a href="#cb2-49" aria-hidden="true" tabindex="-1"></a>  <span class="st">"shiny"</span>             <span class="co"># Interactive web applications</span></span>
-<span id="cb2-50"><a href="#cb2-50" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb2-51"><a href="#cb2-51" aria-hidden="true" tabindex="-1"></a>))</span>
-<span id="cb2-52"><a href="#cb2-52" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-53"><a href="#cb2-53" aria-hidden="true" tabindex="-1"></a><span class="co"># Requires QGIS (with the 'processing' plugin) to be installed:</span></span>
-<span id="cb2-54"><a href="#cb2-54" aria-hidden="true" tabindex="-1"></a><span class="co"># https://qgis.org/download/</span></span>
-<span id="cb2-55"><a href="#cb2-55" aria-hidden="true" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">"qgisprocess"</span>)</span>
-<span id="cb2-56"><a href="#cb2-56" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-57"><a href="#cb2-57" aria-hidden="true" tabindex="-1"></a><span class="co"># Requires GRASS GIS to be installed on your system first:</span></span>
-<span id="cb2-58"><a href="#cb2-58" aria-hidden="true" tabindex="-1"></a><span class="co"># https://grass.osgeo.org/download/</span></span>
-<span id="cb2-59"><a href="#cb2-59" aria-hidden="true" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">"rgrass"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>  <span class="st">"metR"</span>,             <span class="co"># Additional functions</span></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Interactive mapping</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>  <span class="st">"leaflet"</span>,          <span class="co"># Interactive maps</span></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>  <span class="st">"leaflet.extras"</span>,   <span class="co"># Extra leaflet plugins</span></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>  <span class="st">"leafem"</span>,           <span class="co"># Extra leaflet / mapview utilities</span></span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>  <span class="st">"leafpop"</span>,          <span class="co"># HTML popups for leaflet / mapview</span></span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>  <span class="st">"leafgl"</span>,           <span class="co"># WebGL rendering for large datasets in leaflet</span></span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>  <span class="st">"mapgl"</span>,            <span class="co"># MapLibre GL JS wrapper</span></span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>  <span class="st">"mapview"</span>,          <span class="co"># Quick interactive map previews</span></span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>  <span class="st">"ggiraph"</span>,          <span class="co"># Interactive ggplot2 graphics</span></span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Reference data</span></span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>  <span class="st">"rnaturalearth"</span>,    <span class="co"># Country and region boundaries</span></span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a>  <span class="st">"rnaturalearthdata"</span>,<span class="co"># Data for rnaturalearth</span></span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a>  <span class="st">"marmap"</span>,           <span class="co"># NOAA bathymetry data</span></span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Interpolation and geostatistics</span></span>
+<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a>  <span class="st">"gstat"</span>,            <span class="co"># Geostatistics and interpolation</span></span>
+<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a>  <span class="st">"automap"</span>,          <span class="co"># Automatic variogram fitting</span></span>
+<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a>  <span class="st">"mgcv"</span>,             <span class="co"># GAMs</span></span>
+<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Coordinate reference systems</span></span>
+<span id="cb2-40"><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a>  <span class="st">"crsuggest"</span>,        <span class="co"># CRS selection helper</span></span>
+<span id="cb2-41"><a href="#cb2-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-42"><a href="#cb2-42" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Input / output</span></span>
+<span id="cb2-43"><a href="#cb2-43" aria-hidden="true" tabindex="-1"></a>  <span class="st">"RPostgres"</span>,        <span class="co"># PostgreSQL / PostGIS connection</span></span>
+<span id="cb2-44"><a href="#cb2-44" aria-hidden="true" tabindex="-1"></a>  <span class="st">"rmapshaper"</span>,       <span class="co"># Simplify and modify vector geometries</span></span>
+<span id="cb2-45"><a href="#cb2-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-46"><a href="#cb2-46" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Utilities</span></span>
+<span id="cb2-47"><a href="#cb2-47" aria-hidden="true" tabindex="-1"></a>  <span class="st">"patchwork"</span>,        <span class="co"># Combining ggplot figures</span></span>
+<span id="cb2-48"><a href="#cb2-48" aria-hidden="true" tabindex="-1"></a>  <span class="st">"units"</span>,            <span class="co"># Physical units for spatial measurements</span></span>
+<span id="cb2-49"><a href="#cb2-49" aria-hidden="true" tabindex="-1"></a>  <span class="st">"htmlwidgets"</span>,      <span class="co"># Save interactive widgets as HTML</span></span>
+<span id="cb2-50"><a href="#cb2-50" aria-hidden="true" tabindex="-1"></a>  <span class="st">"shiny"</span>             <span class="co"># Interactive web applications</span></span>
+<span id="cb2-51"><a href="#cb2-51" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb2-52"><a href="#cb2-52" aria-hidden="true" tabindex="-1"></a>))</span>
+<span id="cb2-53"><a href="#cb2-53" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-54"><a href="#cb2-54" aria-hidden="true" tabindex="-1"></a><span class="co"># Requires QGIS (with the 'processing' plugin) to be installed:</span></span>
+<span id="cb2-55"><a href="#cb2-55" aria-hidden="true" tabindex="-1"></a><span class="co"># https://qgis.org/download/</span></span>
+<span id="cb2-56"><a href="#cb2-56" aria-hidden="true" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">"qgisprocess"</span>)</span>
+<span id="cb2-57"><a href="#cb2-57" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-58"><a href="#cb2-58" aria-hidden="true" tabindex="-1"></a><span class="co"># Requires GRASS GIS to be installed on your system first:</span></span>
+<span id="cb2-59"><a href="#cb2-59" aria-hidden="true" tabindex="-1"></a><span class="co"># https://grass.osgeo.org/download/</span></span>
+<span id="cb2-60"><a href="#cb2-60" aria-hidden="true" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">"rgrass"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
@@ -550,7 +494,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="callout-body-container callout-body">
 <ol type="1">
 <li>Create a new RStudio project for this course.</li>
-<li>Download the course data archive from <a href="https://heima.hafro.is/~julian/ftp/data.zip" class="uri">https://heima.hafro.is/~julian/ftp/data.zip</a> and unzip it into a <code>data/</code> folder inside your project.</li>
+<li>Download the course data. The code <a href="./data.html">here</a> should get the data files into a <code>data/</code> folder inside your project. If that does not work, you can manually create that folder and dowload the files in the “Data” folder in the course sharepoint.<br>
+</li>
 <li>Install the packages above and verify they load.</li>
 <li>Open a new Quarto document (<em>File → New File → Quarto Document</em>) and write a short code chunk that reads <code>is_smb.csv</code> from your data folder and prints the first few rows with <code>head()</code>. Render the document to make sure everything works end to end.</li>
 </ol>

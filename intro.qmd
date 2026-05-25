@@ -54,53 +54,7 @@ The chapters follow a logical progression from concepts to tools to applications
 
 # Datasets used in this course
 
-The same datasets reappear across multiple chapters, so it is worth knowing what they are from the start. All data files are available in the course data archive linked above.
-
-## Icelandic bottom trawl survey (SMB)
-
-The spring groundfish survey (*Spawning groundfish survey*, SMB) conducted annually by the Marine and Freshwater Research Institute (MFRI) of Iceland. The main files used are:
-
-- `is_smb.csv` — station data including tow positions, duration, and catch by species.
-- `is_smb_stations.csv` — station metadata.
-- `is_smb_biological.csv` — biological data (length, weight) by species and station.
-- `is_smb_vms2019.csv` — Vessel Monitoring System (VMS) positions for the 2019 survey, giving detailed vessel tracks.
-- `is_smb_cod_rbya.csv` — cod abundance by year, age, and station.
-
-This dataset is used to illustrate tow tracks, abundance mapping, spatial interpolation, and facetted maps across years.
-
-## ICES DATRAS surveys
-
-Trawl survey data from the ICES Database of Trawl Surveys (DATRAS), covering multiple European surveys in 2018:
-
-- `datras_2018_haul.csv` — haul (station) data including positions.
-- `datras_2018_length.csv` — length frequency data by species and haul.
-
-Used to illustrate spatial operations, interactive maps, and working with data from multiple surveys across a broad geographic area.
-
-## Minke whale sightings
-
-- `minke.csv` — positions and biological measurements of minke whales sampled in Icelandic waters.
-
-Used in mapping examples throughout the ggplot2 chapter.
-
-## Spatial boundary files
-
-Several vector boundary files are used as reference layers:
-
-- `iceland_coastline.gpkg` — Iceland coastline.
-- `iceland_contours.gpkg` — depth contours around Iceland.
-- `bormicon.gpkg` — Bormicon reporting areas for Icelandic fisheries.
-- `nephrops_fu.gpkg` — Nephrops functional units (ICES assessment areas).
-- `ices_ecoregions.gpkg` — ICES ecoregion boundaries.
-- `ices_rectangles.gpkg` — ICES statistical rectangles.
-- `helcom.gpkg` and `ospar.gpkg` — HELCOM and OSPAR regional sea boundaries.
-
-## Raster data
-
-- `Iceland_minbtemp.tif`, `Iceland_maxbtemp.tif` — minimum and maximum near-bottom temperature around Iceland (from the NISE project).
-- `Iceland_currentsp.tif` — near-bottom current speed (from Bio-ORACLE).
-- `nephrops.tif` — Nephrops trawl effort raster.
-- Bottom depth data accessed via the `marmap` package from NOAA's ETOPO1 database.
+The same datasets reappear across multiple chapters, so it is worth knowing what they are from the start.  You can find a description of the datasets in the [data](data.qmd) page. 
 
 ---
 
@@ -159,6 +113,7 @@ install.packages(c(
   "ggspatial",        # Scale bars, north arrows
   "tmap",             # Thematic maps (static and interactive)
   "maps",             # Basic country outlines as data frames
+  "metR",             # Additional functions
 
   # Interactive mapping
   "leaflet",          # Interactive maps
@@ -227,7 +182,7 @@ If these load without errors, you are ready to begin.
 ::: {.callout-note}
 ## Setup exercise
 1. Create a new RStudio project for this course.
-2. Download the course data archive from <https://heima.hafro.is/~julian/ftp/data.zip> and unzip it into a `data/` folder inside your project.
+2. Download the course data.  The code [here](data.qmd) should get the data files into a `data/` folder inside your project.  If that does not work, you can manually create that folder and dowload the files in the "Data" folder in the course sharepoint.  
 3. Install the packages above and verify they load.
 4. Open a new Quarto document (*File → New File → Quarto Document*) and write a short code chunk that reads `is_smb.csv` from your data folder and prints the first few rows with `head()`. Render the document to make sure everything works end to end.
 :::

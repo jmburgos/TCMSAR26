@@ -224,7 +224,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#small_vms.csv" id="toc-small_vms.csv" class="nav-link" data-scroll-target="#small_vms.csv"><code>small_vms.csv</code></a></li>
   <li><a href="#is_smb_stations.csv" id="toc-is_smb_stations.csv" class="nav-link" data-scroll-target="#is_smb_stations.csv"><code>is_smb_stations.csv</code></a></li>
   <li><a href="#is_smb_biological.csv" id="toc-is_smb_biological.csv" class="nav-link" data-scroll-target="#is_smb_biological.csv"><code>is_smb_biological.csv</code></a></li>
-  <li><a href="#smb_utbrteg.csv" id="toc-smb_utbrteg.csv" class="nav-link" data-scroll-target="#smb_utbrteg.csv"><code>smb_utbrteg.csv</code></a></li>
   <li><a href="#smb_summary.csv" id="toc-smb_summary.csv" class="nav-link" data-scroll-target="#smb_summary.csv"><code>smb_summary.csv</code></a></li>
   </ul></li>
   <li><a href="#spatial-vector-data" id="toc-spatial-vector-data" class="nav-link" data-scroll-target="#spatial-vector-data">Spatial vector data</a>
@@ -1039,96 +1038,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </table>
 <hr>
 </section>
-<section id="smb_utbrteg.csv" class="level3">
-<h3 class="anchored" data-anchor-id="smb_utbrteg.csv"><code>smb_utbrteg.csv</code></h3>
-<p><strong>Description:</strong> Raw Icelandic SMB trawl survey data with original Icelandic variable names. Used as input to generate <code>smb_summary.csv</code>. Contains tow-level catch totals for key commercial species.</p>
-<p>Read with: <code>read_csv("data/smb_utbrteg.csv")</code></p>
-<table class="caption-top table">
-<thead>
-<tr class="header">
-<th>Variable</th>
-<th>Type</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>ar</td>
-<td>dbl</td>
-<td>Year (Icelandic: <em>ár</em>)</td>
-</tr>
-<tr class="even">
-<td>reitur</td>
-<td>dbl</td>
-<td>ICES statistical square</td>
-</tr>
-<tr class="odd">
-<td>tog_nr</td>
-<td>dbl</td>
-<td>Tow number</td>
-</tr>
-<tr class="even">
-<td>lon1</td>
-<td>dbl</td>
-<td>Longitude at start of tow</td>
-</tr>
-<tr class="odd">
-<td>lat1</td>
-<td>dbl</td>
-<td>Latitude at start of tow</td>
-</tr>
-<tr class="even">
-<td>togtimi</td>
-<td>dbl</td>
-<td>Tow duration (minutes)</td>
-</tr>
-<tr class="odd">
-<td>torskur_kg</td>
-<td>dbl</td>
-<td>Cod catch weight (kg)</td>
-</tr>
-<tr class="even">
-<td>torskur_stk</td>
-<td>dbl</td>
-<td>Cod catch number</td>
-</tr>
-<tr class="odd">
-<td>ufsi_kg</td>
-<td>dbl</td>
-<td>Saithe catch weight (kg)</td>
-</tr>
-<tr class="even">
-<td>ufsi_stk</td>
-<td>dbl</td>
-<td>Saithe catch number</td>
-</tr>
-<tr class="odd">
-<td>ysa_kg</td>
-<td>dbl</td>
-<td>Haddock catch weight (kg)</td>
-</tr>
-<tr class="even">
-<td>ysa_stk</td>
-<td>dbl</td>
-<td>Haddock catch number</td>
-</tr>
-<tr class="odd">
-<td>hrognkelsi_kg</td>
-<td>dbl</td>
-<td>Lumpfish catch weight (kg)</td>
-</tr>
-<tr class="even">
-<td>hrognkelsi_stk</td>
-<td>dbl</td>
-<td>Lumpfish catch number</td>
-</tr>
-</tbody>
-</table>
-<hr>
-</section>
 <section id="smb_summary.csv" class="level3">
 <h3 class="anchored" data-anchor-id="smb_summary.csv"><code>smb_summary.csv</code></h3>
-<p><strong>Description:</strong> Processed version of <code>smb_utbrteg.csv</code> with English variable names, ICES rectangle centroid coordinates added, and a tidy structure. Covers tow-level catch summaries for cod, saithe, haddock, and lumpfish.</p>
+<p><strong>Description:</strong> Icelandic SMB trawl survey data with English variable names. Contain, ICES rectangle centroid coordinates added, and a tidy structure. Covers tow-level catch summaries for cod, saithe, haddock, and lumpfish.</p>
 <p>Read with: <code>read_csv("data/smb_summary.csv")</code></p>
 <p>Rows: 21,582 | Columns: 18</p>
 <table class="caption-top table">
