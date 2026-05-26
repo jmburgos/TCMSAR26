@@ -26,7 +26,7 @@ ylim <- c( 62.5,  67.5)
 depth <-
   getNOAA.bathy(lon1 = xlim[1], lon2 = xlim[2],
                 lat1 = ylim[1], lat2 = ylim[2],
-                resolution = 1) |>
+                resolution = 1,keep=TRUE, path="./data/") |>
   fortify() |>    # convert the bathy object to a plain data frame
   filter(z <= 0)  # keep only sea cells (negative depth)
 ```
@@ -88,18 +88,6 @@ Export to an image file with `ggsave()`. Always set `width`, `height`, and
 #| eval: false
 ggsave("minke.png", plot = p, width = 18, height = 12, units = "cm", dpi = 300)
 # see ?ggsave for all format and size options
-```
-
-Embed in another Quarto or R Markdown document:
-
-```{r}
-#| eval: false
-knitr::include_graphics("minke.png") 
-
-```
-
-```
-![](./img/old_map.jpg)
 ```
 
 
@@ -392,14 +380,32 @@ p_depth <- ggplot() +
   labs(title    = "Bathymetry around Iceland",
        caption  = "Source: NOAA ETOPO1 via marmap")
 
-p_depth +
+p_depth_contour <- p_depth +
   geom_contour(data = depth,
                aes(x = x, y = y, z = z),
                breaks    = c(-50, -100, -200, -400, -1000),
                linewidth = 0.3,
-               colour    = "white") +
-  labs(title = "Bathymetry with depth contours")
+               colour    = "white") 
+
+p_depth_contour 
 ```
+
+You can use the `geom_text_contour` function from the `metR`package to add labels to the contour lines.
+
+```{r}
+library(metR)
+p_depth_contour_labels <- p_depth_contour +
+  geom_text_contour(data = depth,
+                    aes(x = x, y = y, z = z),
+                    breaks    = c(-50, -100, -200, -400, -1000),
+                    colour    = "white",
+                    size      = 1,
+                    stroke    = 0.2,        # thin dark outline improves legibility
+                    rotate    = TRUE)
+
+p_depth_contour_labels
+```
+
 
 ::: {.callout-tip}
 ## Exercise
@@ -414,8 +420,7 @@ listing the depths shown.
 
 Sometimes you want to aggregate point observations to a regular lon–lat grid
 at a resolution that does not correspond to any pre-existing classification
-(such as ICES rectangles). The helper function below bins coordinates to a
-grid and returns the cell midpoint:
+(such as ICES rectangles). The helper function below bins coordinates to a grid and returns the cell midpoint:
 
 ```{r}
 grade <- function(x, dx) {

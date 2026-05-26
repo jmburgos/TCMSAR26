@@ -396,15 +396,15 @@ three-row grid remain legible, or would `facet_wrap()` be a better choice
 here?
 :::
 
----
-
-# Axis formatting
-
 ## Geographic degree labels
 
-`coord_sf()` draws graticule lines and labelled axes automatically. The
-default labels are plain numbers; the helper functions below format them with
-direction suffixes (N, S, E, W):
+`coord_sf()` formats axis labels automatically with degree symbols and
+cardinal direction suffixes (e.g. 25°W, 63°N). However, it delegates
+break placement to `sf::st_graticule()` internally and largely ignores
+`scale_x_continuous(breaks = ...)`, so there is no direct way to control
+where tick marks fall from within `coord_sf()`. The helper functions below
+work around this by overriding the scale layer directly, giving precise
+control over break positions:
 
 ```{r}
 scale_longitude <- function(min = -180, max = 180, step = 1, ...) {
@@ -429,111 +429,15 @@ ggplot() +
   scale_longitude(min = -25, max = -12, step = 2) +
   scale_latitude( min =  63, max =  67, step = 1) +
   theme_bw() +
-  labs(title = "Geographic degree labels")
+  labs(title = "Controlled degree-label breaks")
 ```
 
-## ICES statistical rectangle labels
-
-ICES rectangles use a notation such as "40G1" rather than decimal degrees.
-The functions below relabel axes accordingly. They require the **geo** package,
-which is maintained by MFRI and available from GitHub:
-
-```{r}
-#| eval: false
-
-# Install once:
-# install.packages("remotes")
-# remotes::install_github("hafro/geo")
-
-library(mapplots)
-
-d.ICES_rect <- expand.grid(
-  # fixed reference points
-  longitude = seq(-44 + 0.5, 68.5 - 0.5, 1),
-  latitude = seq(36 + 0.25, 84.5 - 0.25, 0.5)
-) |>
-  mutate(ICES.rect = ices.rect2(
-    d.ICES_rect$longitude, d.ICES_rect$latitude
-  ))
-
-f.plot_ICES <- function(
-    xmin = -25, xmax = -12,
-    ymin = 63, ymax = 67
-      ){
-  
-  # Subset to map size
-  d.ICES_rect_subset <- d.ICES_rect |>
-    filter(
-      between(longitude, xmin, xmax),
-      between(latitude, ymin, ymax)
-    ) |>
-    mutate(
-      long_ICES = stringr::str_sub(ICES.rect, start = 3, end = 4),
-      lat_ICES = stringr::str_sub(ICES.rect, start = 1, end = 2)
-    )
-  
-  # Axis labels
-  lon_ICES <- unique(d.ICES_rect_subset$long_ICES)
-  lat_ICES <- unique(d.ICES_rect_subset$lat_ICES)
-  
-  # Axis breaks
-  lon_unique <- unique(d.ICES_rect_subset$longitude)
-  lat_unique <- unique(d.ICES_rect_subset$latitude)
-  
-  # Gridding: vertical lines
-  d.v_lines <- data.frame(
-    longitude = seq(min(lon_unique) -0.5,
-                    max(lon_unique) +0.5,
-                    1) # every 1°!
-    ) |>
-    mutate(
-      latitude_min = min(lat_unique) -0.25,
-      latitude_max = max(lat_unique) +0.25
-      )
-  
-  # Gridding: horizontal lines
-  d.h_lines <- data.frame(
-    latitude = seq(min(lat_unique) -0.25,
-                   max(lat_unique) +0.25,
-                    0.5) # every 0.5°!
-  ) |>
-    mutate(
-      longitude_min = min(lon_unique) -0.5,
-      longitude_max = max(lon_unique) +0.5
-    )
-  
-  # Plot the plot
-  ggplot() +
-    geom_segment(
-      data = d.v_lines,
-      aes(x = longitude, xend = longitude, y = latitude_min, yend = latitude_max)
-    ) +
-    geom_segment(
-      data = d.h_lines,
-      aes(x = longitude_min, xend = longitude_max, y = latitude, yend = latitude)
-    ) +
-    geom_sf(data = iceland_sf, fill = "grey80") +
-    coord_sf(xlim = c(xmin, xmax), ylim = c(ymin, ymax)) +
-    scale_x_continuous(
-      breaks = lon_unique,
-      labels = lon_ICES
-    ) +
-    scale_y_continuous(
-      breaks = lat_unique,
-      labels = lat_ICES
-    ) +
-    theme_bw() +
-    theme(
-      axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1),
-      panel.grid.major = element_blank()
-    )
-  
-  
-}
-
-f.plot_ICES()
-f.plot_ICES(xmin = -40, xmax = -10, ymin = 50, ymax = 68)
-```
+::: {.callout-note}
+If the automatic break placement looks fine, you can suppress axis labels
+entirely with `scale_x_continuous(NULL, NULL)` and
+`scale_y_continuous(NULL, NULL)`, which is what the facet examples above do
+to save space.
+:::
 
 ---
 
