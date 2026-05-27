@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.9.37">
+<meta name="generator" content="quarto-1.9.38">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -74,7 +74,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="site_libs/quarto-html/anchor.min.js"></script>
 <link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-7f8f88aac4f3542376d5c11b86a4c14d.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="site_libs/bootstrap/bootstrap-6033a600180109c3731f6a886c29932c.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
@@ -228,6 +228,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#replacing-values" id="toc-replacing-values" class="nav-link" data-scroll-target="#replacing-values">Replacing values</a></li>
   <li><a href="#masks" id="toc-masks" class="nav-link" data-scroll-target="#masks">Masks</a></li>
   <li><a href="#extracting-raster-data-with-sf-objects" id="toc-extracting-raster-data-with-sf-objects" class="nav-link" data-scroll-target="#extracting-raster-data-with-sf-objects">Extracting raster data with sf objects</a></li>
+  <li><a href="#todo-add-example-of-how-to-attach-the-extracted-data-back-to-the-dataframe" id="toc-todo-add-example-of-how-to-attach-the-extracted-data-back-to-the-dataframe" class="nav-link" data-scroll-target="#todo-add-example-of-how-to-attach-the-extracted-data-back-to-the-dataframe">TODO Add example of how to attach the extracted data back to the dataframe</a></li>
   </ul></li>
   <li><a href="#raster-algebra" id="toc-raster-algebra" class="nav-link" data-scroll-target="#raster-algebra">Raster algebra</a></li>
   <li><a href="#moving-window-operations" id="toc-moving-window-operations" class="nav-link" data-scroll-target="#moving-window-operations">Moving window operations</a></li>
@@ -273,9 +274,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <hr>
 <p><strong>Packages needed for this tutorial</strong>:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)   <span class="co"># installs sweeps of packages</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(sf)          <span class="co"># working with sf objects in R</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(terra)       <span class="co"># working with rasters in R (replaces raster/rgdal)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(terra)       <span class="co"># working with rasters in R (replaces raster/rgdal)</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)   <span class="co"># installs sweeps of packages</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(sf)          <span class="co"># working with sf objects in R</span></span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyterra)   <span class="co"># ggplot2 integration for terra objects</span></span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(marmap)      <span class="co"># access global topography data</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
@@ -707,9 +708,9 @@ Iceland_maxbtemp 3.320894</code></pre>
 <span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>bt_poly   <span class="ot">&lt;-</span> <span class="fu">read_sf</span>(<span class="st">"./data/ice_polygon.gpkg"</span>)</span>
 <span id="cb48-4"><a href="#cb48-4" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb48-5"><a href="#cb48-5" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(mintemp)</span>
-<span id="cb48-6"><a href="#cb48-6" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(<span class="fu">vect</span>(bt_points), <span class="at">add =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb48-7"><a href="#cb48-7" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(<span class="fu">vect</span>(bt_lines),  <span class="at">add =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb48-8"><a href="#cb48-8" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(<span class="fu">vect</span>(bt_poly),   <span class="at">add =</span> <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb48-6"><a href="#cb48-6" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(bt_points, <span class="at">add =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb48-7"><a href="#cb48-7" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(bt_lines,  <span class="at">add =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb48-8"><a href="#cb48-8" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(bt_poly,   <span class="at">add =</span> <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -718,20 +719,23 @@ Iceland_maxbtemp 3.320894</code></pre>
 </div>
 </div>
 </div>
-<p>We use <code>terra::extract()</code> to extract raster values using sf objects (converted to SpatVector with <code>vect()</code>):</p>
+<p>We use <code>terra::extract()</code> to extract raster values using sf objects:</p>
 <ul>
 <li>For POINT geometry: values of the cells where the points are located.</li>
 <li>For LINESTRING geometry: values of the cells touched by the line.</li>
 <li>For POLYGON geometry: values of the cells whose centres fall within the polygon.</li>
 </ul>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>ex1 <span class="ot">&lt;-</span> terra<span class="sc">::</span><span class="fu">extract</span>(mintemp, <span class="fu">vect</span>(bt_points))  <span class="co"># data frame, one row per point</span></span>
-<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a>ex2 <span class="ot">&lt;-</span> terra<span class="sc">::</span><span class="fu">extract</span>(mintemp, <span class="fu">vect</span>(bt_lines))   <span class="co"># data frame, one row per cell touched</span></span>
-<span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a>ex3 <span class="ot">&lt;-</span> terra<span class="sc">::</span><span class="fu">extract</span>(mintemp, <span class="fu">vect</span>(bt_poly))    <span class="co"># data frame, one row per cell</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>ex1 <span class="ot">&lt;-</span> terra<span class="sc">::</span><span class="fu">extract</span>(mintemp, bt_points)  <span class="co"># data frame, one row per point</span></span>
+<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a>ex2 <span class="ot">&lt;-</span> terra<span class="sc">::</span><span class="fu">extract</span>(mintemp, bt_lines)   <span class="co"># data frame, one row per cell touched</span></span>
+<span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a>ex3 <span class="ot">&lt;-</span> terra<span class="sc">::</span><span class="fu">extract</span>(mintemp, bt_poly)    <span class="co"># data frame, one row per cell</span></span>
 <span id="cb49-4"><a href="#cb49-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb49-5"><a href="#cb49-5" aria-hidden="true" tabindex="-1"></a><span class="co"># With cell numbers</span></span>
-<span id="cb49-6"><a href="#cb49-6" aria-hidden="true" tabindex="-1"></a>ex3_cells <span class="ot">&lt;-</span> terra<span class="sc">::</span><span class="fu">extract</span>(mintemp, <span class="fu">vect</span>(bt_poly), <span class="at">cells =</span> <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb49-5"><a href="#cb49-5" aria-hidden="true" tabindex="-1"></a><span class="co"># With cell numbers and coordinates</span></span>
+<span id="cb49-6"><a href="#cb49-6" aria-hidden="true" tabindex="-1"></a>ex3_cells <span class="ot">&lt;-</span> terra<span class="sc">::</span><span class="fu">extract</span>(mintemp, bt_poly, <span class="at">cells =</span> <span class="cn">TRUE</span>, <span class="at">xy =</span> <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
+</section>
+<section id="todo-add-example-of-how-to-attach-the-extracted-data-back-to-the-dataframe" class="level2">
+<h2 class="anchored" data-anchor-id="todo-add-example-of-how-to-attach-the-extracted-data-back-to-the-dataframe">TODO Add example of how to attach the extracted data back to the dataframe</h2>
 <p>We can also use an sf object as a cookie cutter to mask a raster with <code>mask()</code>. Make sure that they share the same CRS.</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>temp_masked     <span class="ot">&lt;-</span> <span class="fu">mask</span>(mintemp, <span class="fu">vect</span>(bt_poly))</span>
@@ -804,7 +808,7 @@ Iceland_maxbtemp 3.320894</code></pre>
 <span id="cb54-5"><a href="#cb54-5" aria-hidden="true" tabindex="-1"></a>depth <span class="ot">&lt;-</span></span>
 <span id="cb54-6"><a href="#cb54-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">getNOAA.bathy</span>(<span class="at">lon1 =</span> xlim[<span class="dv">1</span>], <span class="at">lon2 =</span> xlim[<span class="dv">2</span>],</span>
 <span id="cb54-7"><a href="#cb54-7" aria-hidden="true" tabindex="-1"></a>                <span class="at">lat1 =</span> ylim[<span class="dv">1</span>], <span class="at">lat2 =</span> ylim[<span class="dv">2</span>],</span>
-<span id="cb54-8"><a href="#cb54-8" aria-hidden="true" tabindex="-1"></a>                <span class="at">resolution =</span> <span class="dv">1</span>, <span class="at">keep =</span> <span class="cn">TRUE</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb54-8"><a href="#cb54-8" aria-hidden="true" tabindex="-1"></a>                <span class="at">resolution =</span> <span class="dv">1</span>, <span class="at">keep =</span> <span class="cn">TRUE</span>, <span class="at">path=</span><span class="st">"./data/"</span>) <span class="sc">|&gt;</span> </span>
 <span id="cb54-9"><a href="#cb54-9" aria-hidden="true" tabindex="-1"></a>  marmap<span class="sc">::</span><span class="fu">as.raster</span>() <span class="sc">|&gt;</span>    <span class="co"># marmap still returns a raster object</span></span>
 <span id="cb54-10"><a href="#cb54-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rast</span>()                    <span class="co"># convert to terra SpatRaster</span></span>
 <span id="cb54-11"><a href="#cb54-11" aria-hidden="true" tabindex="-1"></a></span>
@@ -814,13 +818,13 @@ Iceland_maxbtemp 3.320894</code></pre>
 <span id="cb54-15"><a href="#cb54-15" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb54-16"><a href="#cb54-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Small scale depth variability: 3x3 window</span></span>
 <span id="cb54-17"><a href="#cb54-17" aria-hidden="true" tabindex="-1"></a>depth_var_ss <span class="ot">&lt;-</span> <span class="fu">focal</span>(depth,</span>
-<span id="cb54-18"><a href="#cb54-18" aria-hidden="true" tabindex="-1"></a>                      <span class="at">w =</span> <span class="fu">matrix</span>(<span class="dv">1</span><span class="sc">/</span><span class="dv">9</span>, <span class="at">nrow =</span> <span class="dv">3</span>),</span>
+<span id="cb54-18"><a href="#cb54-18" aria-hidden="true" tabindex="-1"></a>                      <span class="at">w =</span> <span class="fu">matrix</span>(<span class="dv">1</span><span class="sc">/</span><span class="dv">9</span>, <span class="at">ncol=</span><span class="dv">3</span>, <span class="at">nrow =</span> <span class="dv">3</span>),</span>
 <span id="cb54-19"><a href="#cb54-19" aria-hidden="true" tabindex="-1"></a>                      <span class="at">fun =</span> var,</span>
 <span id="cb54-20"><a href="#cb54-20" aria-hidden="true" tabindex="-1"></a>                      <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
 <span id="cb54-21"><a href="#cb54-21" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb54-22"><a href="#cb54-22" aria-hidden="true" tabindex="-1"></a><span class="co"># Large scale depth variability: 15x15 window</span></span>
 <span id="cb54-23"><a href="#cb54-23" aria-hidden="true" tabindex="-1"></a>depth_var_ls <span class="ot">&lt;-</span> <span class="fu">focal</span>(depth,</span>
-<span id="cb54-24"><a href="#cb54-24" aria-hidden="true" tabindex="-1"></a>                      <span class="at">w =</span> <span class="fu">matrix</span>(<span class="dv">1</span><span class="sc">/</span><span class="dv">225</span>, <span class="at">nrow =</span> <span class="dv">15</span>),</span>
+<span id="cb54-24"><a href="#cb54-24" aria-hidden="true" tabindex="-1"></a>                      <span class="at">w =</span> <span class="fu">matrix</span>(<span class="dv">1</span><span class="sc">/</span><span class="dv">225</span>, <span class="at">ncol=</span><span class="dv">15</span>, <span class="at">nrow =</span> <span class="dv">15</span>),</span>
 <span id="cb54-25"><a href="#cb54-25" aria-hidden="true" tabindex="-1"></a>                      <span class="at">fun =</span> var,</span>
 <span id="cb54-26"><a href="#cb54-26" aria-hidden="true" tabindex="-1"></a>                      <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
 <span id="cb54-27"><a href="#cb54-27" aria-hidden="true" tabindex="-1"></a></span>

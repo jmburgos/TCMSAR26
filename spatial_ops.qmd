@@ -180,7 +180,7 @@ nephrops_kattegat_old <- nephrops %>% # Using the tidyverse pipe here!
   filter(st_within(x = ., y = nfu_kattegat, sparse = FALSE))
 ```
 
-Prefer `st_filter()` for new code — it is more readable and works correctly with both the magrittr (`|>`) and native (`|>`) pipes.
+Prefer `st_filter()` for new code — it is more readable and works correctly with both the magrittr (`%>%`) and native (`|>`) pipes.
 
 ---
 

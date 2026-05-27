@@ -60,7 +60,7 @@
     "href": "rasters.html",
     "title": "Rasters",
     "section": "",
-    "text": "Packages needed for this tutorial:\n\nlibrary(tidyverse)   # installs sweeps of packages\nlibrary(sf)          # working with sf objects in R\nlibrary(terra)       # working with rasters in R (replaces raster/rgdal)\nlibrary(tidyterra)   # ggplot2 integration for terra objects\nlibrary(marmap)      # access global topography data\n\n\n\n\n\n\n\nNote\n\n\n\nThis chapter uses terra, which replaced the older raster and rgdal packages. The API is similar – differences are noted throughout. For the full background, see the Spatial data concepts chapter."
+    "text": "Packages needed for this tutorial:\n\nlibrary(terra)       # working with rasters in R (replaces raster/rgdal)\nlibrary(tidyverse)   # installs sweeps of packages\nlibrary(sf)          # working with sf objects in R\nlibrary(tidyterra)   # ggplot2 integration for terra objects\nlibrary(marmap)      # access global topography data\n\n\n\n\n\n\n\nNote\n\n\n\nThis chapter uses terra, which replaced the older raster and rgdal packages. The API is similar – differences are noted throughout. For the full background, see the Spatial data concepts chapter."
   },
   {
     "objectID": "rasters.html#extracting-values-from-a-raster",
@@ -88,7 +88,14 @@
     "href": "rasters.html#extracting-raster-data-with-sf-objects",
     "title": "Rasters",
     "section": "Extracting raster data with sf objects",
-    "text": "Extracting raster data with sf objects\n\nbt_points &lt;- read_sf(\"./data/ice_points.gpkg\")\nbt_lines  &lt;- read_sf(\"./data/ice_lines.gpkg\")\nbt_poly   &lt;- read_sf(\"./data/ice_polygon.gpkg\")\n\nplot(mintemp)\nplot(vect(bt_points), add = TRUE)\nplot(vect(bt_lines),  add = TRUE)\nplot(vect(bt_poly),   add = TRUE)\n\n\n\n\n\n\n\n\nWe use terra::extract() to extract raster values using sf objects (converted to SpatVector with vect()):\n\nFor POINT geometry: values of the cells where the points are located.\nFor LINESTRING geometry: values of the cells touched by the line.\nFor POLYGON geometry: values of the cells whose centres fall within the polygon.\n\n\nex1 &lt;- terra::extract(mintemp, vect(bt_points))  # data frame, one row per point\nex2 &lt;- terra::extract(mintemp, vect(bt_lines))   # data frame, one row per cell touched\nex3 &lt;- terra::extract(mintemp, vect(bt_poly))    # data frame, one row per cell\n\n# With cell numbers\nex3_cells &lt;- terra::extract(mintemp, vect(bt_poly), cells = TRUE)\n\nWe can also use an sf object as a cookie cutter to mask a raster with mask(). Make sure that they share the same CRS.\n\ntemp_masked     &lt;- mask(mintemp, vect(bt_poly))\ntemp_masked_inv &lt;- mask(mintemp, vect(bt_poly), inverse = TRUE)\n\npar(mfrow = c(1, 2))\nplot(temp_masked)\nplot(temp_masked_inv)"
+    "text": "Extracting raster data with sf objects\n\nbt_points &lt;- read_sf(\"./data/ice_points.gpkg\")\nbt_lines  &lt;- read_sf(\"./data/ice_lines.gpkg\")\nbt_poly   &lt;- read_sf(\"./data/ice_polygon.gpkg\")\n\nplot(mintemp)\nplot(bt_points, add = TRUE)\nplot(bt_lines,  add = TRUE)\nplot(bt_poly,   add = TRUE)\n\n\n\n\n\n\n\n\nWe use terra::extract() to extract raster values using sf objects:\n\nFor POINT geometry: values of the cells where the points are located.\nFor LINESTRING geometry: values of the cells touched by the line.\nFor POLYGON geometry: values of the cells whose centres fall within the polygon.\n\n\nex1 &lt;- terra::extract(mintemp, bt_points)  # data frame, one row per point\nex2 &lt;- terra::extract(mintemp, bt_lines)   # data frame, one row per cell touched\nex3 &lt;- terra::extract(mintemp, bt_poly)    # data frame, one row per cell\n\n# With cell numbers and coordinates\nex3_cells &lt;- terra::extract(mintemp, bt_poly, cells = TRUE, xy = TRUE)"
+  },
+  {
+    "objectID": "rasters.html#todo-add-example-of-how-to-attach-the-extracted-data-back-to-the-dataframe",
+    "href": "rasters.html#todo-add-example-of-how-to-attach-the-extracted-data-back-to-the-dataframe",
+    "title": "Rasters",
+    "section": "TODO Add example of how to attach the extracted data back to the dataframe",
+    "text": "TODO Add example of how to attach the extracted data back to the dataframe\nWe can also use an sf object as a cookie cutter to mask a raster with mask(). Make sure that they share the same CRS.\n\ntemp_masked     &lt;- mask(mintemp, vect(bt_poly))\ntemp_masked_inv &lt;- mask(mintemp, vect(bt_poly), inverse = TRUE)\n\npar(mfrow = c(1, 2))\nplot(temp_masked)\nplot(temp_masked_inv)"
   },
   {
     "objectID": "rasters.html#modify-the-extent-and-origin",
@@ -459,7 +466,7 @@
     "href": "spatial_ops.html#the-older-filter-approach",
     "title": "Spatial operations with sf objects",
     "section": "The older filter() approach",
-    "text": "The older filter() approach\nFor reference, the older pattern using filter() with sparse = FALSE still works and appears in older code:\n\n# Equivalent to st_filter() with .predicate = st_within\nnephrops_kattegat_old &lt;- nephrops %&gt;% # Using the tidyverse pipe here!\n  filter(st_within(x = ., y = nfu_kattegat, sparse = FALSE))\n\nPrefer st_filter() for new code — it is more readable and works correctly with both the magrittr (|&gt;) and native (|&gt;) pipes."
+    "text": "The older filter() approach\nFor reference, the older pattern using filter() with sparse = FALSE still works and appears in older code:\n\n# Equivalent to st_filter() with .predicate = st_within\nnephrops_kattegat_old &lt;- nephrops %&gt;% # Using the tidyverse pipe here!\n  filter(st_within(x = ., y = nfu_kattegat, sparse = FALSE))\n\nPrefer st_filter() for new code — it is more readable and works correctly with both the magrittr (%&gt;%) and native (|&gt;) pipes."
   },
   {
     "objectID": "spatial_ops.html#points-into-polygons",

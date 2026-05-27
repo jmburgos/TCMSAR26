@@ -7,9 +7,9 @@ ___
 
 **Packages needed for this tutorial**:
 ```{r setup}
+library(terra)       # working with rasters in R (replaces raster/rgdal)
 library(tidyverse)   # installs sweeps of packages
 library(sf)          # working with sf objects in R
-library(terra)       # working with rasters in R (replaces raster/rgdal)
 library(tidyterra)   # ggplot2 integration for terra objects
 library(marmap)      # access global topography data
 ```
@@ -153,6 +153,7 @@ ggplot() +
   
 ```
 
+
 # Manipulation of raster objects
 
 ## Extracting values from a raster
@@ -214,31 +215,35 @@ plot(rst_masked)
 
 ## Extracting raster data with sf objects
 
+
 ```{r}
 bt_points <- read_sf("./data/ice_points.gpkg")
 bt_lines  <- read_sf("./data/ice_lines.gpkg")
 bt_poly   <- read_sf("./data/ice_polygon.gpkg")
 
 plot(mintemp)
-plot(vect(bt_points), add = TRUE)
-plot(vect(bt_lines),  add = TRUE)
-plot(vect(bt_poly),   add = TRUE)
+plot(bt_points, add = TRUE)
+plot(bt_lines,  add = TRUE)
+plot(bt_poly,   add = TRUE)
 ```
 
-We use `terra::extract()` to extract raster values using sf objects (converted to SpatVector with `vect()`):
+We use `terra::extract()` to extract raster values using sf objects:
 
 - For POINT geometry: values of the cells where the points are located.
 - For LINESTRING geometry: values of the cells touched by the line.
 - For POLYGON geometry: values of the cells whose centres fall within the polygon.
 
 ```{r}
-ex1 <- terra::extract(mintemp, vect(bt_points))  # data frame, one row per point
-ex2 <- terra::extract(mintemp, vect(bt_lines))   # data frame, one row per cell touched
-ex3 <- terra::extract(mintemp, vect(bt_poly))    # data frame, one row per cell
+ex1 <- terra::extract(mintemp, bt_points)  # data frame, one row per point
+ex2 <- terra::extract(mintemp, bt_lines)   # data frame, one row per cell touched
+ex3 <- terra::extract(mintemp, bt_poly)    # data frame, one row per cell
 
-# With cell numbers
-ex3_cells <- terra::extract(mintemp, vect(bt_poly), cells = TRUE)
+# With cell numbers and coordinates
+ex3_cells <- terra::extract(mintemp, bt_poly, cells = TRUE, xy = TRUE)
 ```
+
+## TODO Add example of how to attach the extracted data back to the dataframe
+
 
 We can also use an sf object as a cookie cutter to mask a raster with `mask()`. Make sure that they share the same CRS.
 
@@ -289,7 +294,7 @@ ylim <- c(62.5, 67.5)
 depth <-
   getNOAA.bathy(lon1 = xlim[1], lon2 = xlim[2],
                 lat1 = ylim[1], lat2 = ylim[2],
-                resolution = 1, keep = TRUE) |> 
+                resolution = 1, keep = TRUE, path="./data/") |> 
   marmap::as.raster() |>    # marmap still returns a raster object
   rast()                    # convert to terra SpatRaster
 
@@ -299,13 +304,13 @@ depth[depth > 0] <- NA  # Ignore land
 
 # Small scale depth variability: 3x3 window
 depth_var_ss <- focal(depth,
-                      w = matrix(1/9, nrow = 3),
+                      w = matrix(1/9, ncol=3, nrow = 3),
                       fun = var,
                       na.rm = TRUE)
 
 # Large scale depth variability: 15x15 window
 depth_var_ls <- focal(depth,
-                      w = matrix(1/225, nrow = 15),
+                      w = matrix(1/225, ncol=15, nrow = 15),
                       fun = var,
                       na.rm = TRUE)
 
