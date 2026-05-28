@@ -5,6 +5,7 @@
 .positai
 
 /.quarto/
+/_freeze/
 **/*.quarto_ipynb
 /_site/
 *.xlsx
@@ -14,3 +15,5 @@ qgis_map.qgz
 TCMSAR26.org
 to_delete.R
 content_notes.md
+/data/gadm
+/data/sdmpredictors

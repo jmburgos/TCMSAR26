@@ -99,6 +99,16 @@ ext(mintemp)    # replaces extent()
 st_bbox(mintemp)   # an bbox object compatible with sf
 ```
 
+The values in the extent object are in the coordinate reference system of the raster.  Sometimes is useful to get an (approximate) extent in latitude and longitude
+
+
+```{r}
+project(ext(mintemp),
+        from=crs(mintemp),
+        to="EPSG:4326")
+```
+
+
 # Summary statistics
 
 The function `global()` computes summary statistics of a *SpatRaster* object. This replaces `cellStats()` from the old **raster** package.
@@ -439,10 +449,10 @@ stations <- read_csv("./data/is_smb_stations.csv") |>
   st_as_sf(coords = c("lon1", "lat1"), crs = 4326)
 
 # Rasterize: count of stations per cell
-station_rst1 <- rasterize(vect(stations), target, fun = "count")
+station_rst1 <- rasterize(stations, target, fun = "count")
 
 # Rasterize: sum of a field
-station_rst2 <- rasterize(vect(stations), target,
+station_rst2 <- rasterize(stations, target,
                            field = "duration", fun = "sum")
 
 par(mfrow = c(1, 2))

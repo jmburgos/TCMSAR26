@@ -32,6 +32,8 @@ website:
         file: rasters.qmd
       - text: "Reading and writing spatial data"
         file: input_output.qmd
+      - text: "Data sources"
+        file: data_sources.qmd
       - text: "R and QGIS"
         file: qgis.qmd
       - text: "Interactive maps"
@@ -44,6 +46,7 @@ website:
 execute:
   message: false
   warning: false
+  freeze: auto
 
 format:
   html:
