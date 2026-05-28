@@ -17,3 +17,4 @@ to_delete.R
 content_notes.md
 /data/gadm
 /data/sdmpredictors
+/data/north_sea_sst_aug2024.rds
