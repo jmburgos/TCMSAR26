@@ -34,12 +34,13 @@ website:
         file: input_output.qmd
       - text: "Data sources"
         file: data_sources.qmd
+      - text: "Interactive maps"
+        file: interactive.qmd 
+      - text: "Interpolation"
+        file: interpolation.qmd        
       - text: "R and QGIS"
         file: qgis.qmd
-      - text: "Interactive maps"
-        file: interactive.qmd
-      - text: "Interpolation"
-        file: interpolation.qmd
+
     - icon: github
       href: https://github.com/jmburgos/TCMSAR26
 
