@@ -387,6 +387,9 @@ cms_cite_product("GLOBAL_ANALYSISFORECAST_PHY_001_024")$doi
 dt <- cms_product_details("GLOBAL_ANALYSISFORECAST_PHY_001_024") 
 dt <- dt$properties
 
+# This gets the variable name
+dt$thumbnailMeta$layerId
+
 region <- c(-5, 51, 10, 62)  # xmin, ymin, xmax, ymax
 
 ```

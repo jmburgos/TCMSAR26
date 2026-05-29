@@ -34,10 +34,10 @@ website:
         file: input_output.qmd
       - text: "Data sources"
         file: data_sources.qmd
+      - text: "Interpolation"
+        file: interpolation.qmd
       - text: "Interactive maps"
         file: interactive.qmd 
-      - text: "Interpolation"
-        file: interpolation.qmd        
       - text: "R and QGIS"
         file: qgis.qmd
 

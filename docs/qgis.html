@@ -185,12 +185,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  <span class="dropdown-text">Data sources</span></a>
   </li>  
         <li>
-    <a class="dropdown-item" href="./interactive.html">
- <span class="dropdown-text">Interactive maps</span></a>
-  </li>  
-        <li>
     <a class="dropdown-item" href="./interpolation.html">
  <span class="dropdown-text">Interpolation</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./interactive.html">
+ <span class="dropdown-text">Interactive maps</span></a>
   </li>  
         <li>
     <a class="dropdown-item" href="./qgis.html">
@@ -219,13 +219,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#writing-from-r-for-use-in-qgis" id="toc-writing-from-r-for-use-in-qgis" class="nav-link active" data-scroll-target="#writing-from-r-for-use-in-qgis">Writing from R for use in QGIS</a></li>
-  <li><a href="#reading-into-r-from-qgis" id="toc-reading-into-r-from-qgis" class="nav-link" data-scroll-target="#reading-into-r-from-qgis">Reading into R from QGIS</a></li>
+  <li><a href="#the-shared-foundation-gdal" id="toc-the-shared-foundation-gdal" class="nav-link active" data-scroll-target="#the-shared-foundation-gdal">The shared foundation: GDAL</a></li>
+  <li><a href="#file-exchange" id="toc-file-exchange" class="nav-link" data-scroll-target="#file-exchange">File exchange</a>
+  <ul class="collapse">
+  <li><a href="#configuring-qgisprocess" id="toc-configuring-qgisprocess" class="nav-link" data-scroll-target="#configuring-qgisprocess">Configuring qgisprocess</a></li>
   <li><a href="#checking-your-setup" id="toc-checking-your-setup" class="nav-link" data-scroll-target="#checking-your-setup">Checking your setup</a></li>
   <li><a href="#discovering-available-algorithms" id="toc-discovering-available-algorithms" class="nav-link" data-scroll-target="#discovering-available-algorithms">Discovering available algorithms</a></li>
   <li><a href="#a-worked-example-buffering-survey-stations" id="toc-a-worked-example-buffering-survey-stations" class="nav-link" data-scroll-target="#a-worked-example-buffering-survey-stations">A worked example: buffering survey stations</a></li>
   <li><a href="#another-example-dissolving-polygons-by-attribute" id="toc-another-example-dissolving-polygons-by-attribute" class="nav-link" data-scroll-target="#another-example-dissolving-polygons-by-attribute">Another example: dissolving polygons by attribute</a></li>
   <li><a href="#chaining-algorithms" id="toc-chaining-algorithms" class="nav-link" data-scroll-target="#chaining-algorithms">Chaining algorithms</a></li>
+  </ul></li>
   <li><a href="#grass-gis-from-r-rgrass" id="toc-grass-gis-from-r-rgrass" class="nav-link" data-scroll-target="#grass-gis-from-r-rgrass">GRASS GIS from R: <code>rgrass</code></a></li>
   <li><a href="#choosing-the-right-approach" id="toc-choosing-the-right-approach" class="nav-link" data-scroll-target="#choosing-the-right-approach">Choosing the right approach</a></li>
   <li><a href="#further-reading" id="toc-further-reading" class="nav-link" data-scroll-target="#further-reading">Further reading</a></li>
@@ -257,7 +260,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>R and QGIS are complementary tools, and many practitioners use both in the same workflow. QGIS excels at interactive, exploratory work: visually inspecting data, digitising features, and quick one-off queries. R excels at reproducible, scripted analysis that can be run end-to-end by anyone with the same data. There is no need to choose between them.</p>
 <p>This chapter covers three ways to connect the two: simple file exchange, calling QGIS processing algorithms directly from R, and accessing GRASS GIS through R.</p>
 <hr>
-<p># The shared foundation: GDAL</p>
+<section id="the-shared-foundation-gdal" class="level1">
+<h1>The shared foundation: GDAL</h1>
 <p>R and QGIS are both built on <a href="https://gdal.org/">GDAL</a>, the Geospatial Data Abstraction Library. This means they can read and write the same file formats, and a file written by one can always be opened by the other. You do not need any special integration layer to move data between them — a GeoPackage is a GeoPackage whether you created it in R or in QGIS.</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
@@ -265,37 +269,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(terra)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <hr>
-<p># File exchange</p>
-<p>The simplest and most reliable way to combine R and QGIS in a workflow is to write files from R that QGIS can open, and to read files prepared in QGIS back into R.</p>
-<p><strong>GeoPackage</strong> (<code>.gpkg</code>) is the recommended format for this. It is an open standard supported natively by both tools, stores multiple layers in a single file, and avoids the limitations of shapefiles. GeoTIFF (<code>.tif</code>) is the equivalent for rasters.</p>
-<section id="writing-from-r-for-use-in-qgis" class="level2">
-<h2 class="anchored" data-anchor-id="writing-from-r-for-use-in-qgis">Writing from R for use in QGIS</h2>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Write a processed sf object — open this directly in QGIS</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">write_sf</span>(my_sf, <span class="st">"output/survey_results.gpkg"</span>)</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Write a raster — open in QGIS as a layer</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="fu">writeRaster</span>(my_raster, <span class="st">"output/interpolated_temp.tif"</span>,</span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>            <span class="at">overwrite =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="co"># A GeoPackage can hold multiple layers</span></span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="fu">write_sf</span>(stations_sf, <span class="st">"output/survey.gpkg"</span>, <span class="at">layer =</span> <span class="st">"stations"</span>)</span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="fu">write_sf</span>(tracks_sf,   <span class="st">"output/survey.gpkg"</span>, <span class="at">layer =</span> <span class="st">"tracks"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</div>
 </section>
-<section id="reading-into-r-from-qgis" class="level2">
-<h2 class="anchored" data-anchor-id="reading-into-r-from-qgis">Reading into R from QGIS</h2>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Read a layer prepared or digitised in QGIS</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>study_areas <span class="ot">&lt;-</span> <span class="fu">read_sf</span>(<span class="st">"qgis_work/study_areas.gpkg"</span>)</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co"># If the GeoPackage has multiple layers, inspect first</span></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="fu">st_layers</span>(<span class="st">"qgis_work/study_areas.gpkg"</span>)</span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Then read the layer you need</span></span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>exclusion_zones <span class="ot">&lt;-</span> <span class="fu">read_sf</span>(<span class="st">"qgis_work/study_areas.gpkg"</span>,</span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>                           <span class="at">layer =</span> <span class="st">"exclusion_zones"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</div>
+<section id="file-exchange" class="level1">
+<h1>File exchange</h1>
+<p>The simplest and most reliable way to combine R and QGIS in a workflow is to write files from R that QGIS can open, and to read files prepared in QGIS back into R.</p>
+<p><strong>GeoPackage</strong> (<code>.gpkg</code>) is the recommended format for this. It is an open standard supported natively by both tools, stores multiple layers in a single file, and avoids the limitations of shapefiles. <strong>GeoTIFF</strong> (<code>.tif</code>) is the equivalent for rasters.</p>
 <div class="callout callout-style-default callout-tip callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -313,56 +291,257 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p># Calling QGIS algorithms from R: <code>qgisprocess</code></p>
 <p>The <strong>qgisprocess</strong> package (Dunnington et al.) lets you run QGIS processing algorithms directly from an R script, passing <code>sf</code> and <code>terra</code> objects as inputs and getting results back as R objects. This is the current recommended approach for tight R–QGIS integration.</p>
 <p>It requires a local QGIS installation (version 3.14 or later), and it wraps the <code>qgis_process</code> command-line tool that QGIS provides. All providers available in your QGIS installation are accessible: native QGIS algorithms, GDAL, GRASS, and SAGA.</p>
+<section id="configuring-qgisprocess" class="level2">
+<h2 class="anchored" data-anchor-id="configuring-qgisprocess">Configuring qgisprocess</h2>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># install.packages("qgisprocess")</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(qgisprocess)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">"qgisprocess"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+The downloaded binary packages are in
+    /var/folders/ms/tz_yp8bn7y76txqjyzydcb5r0000gp/T//Rtmp3rWhSP/downloaded_packages</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(qgisprocess)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Point to qgis_process in a Mac</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">qgisprocess.path =</span> <span class="st">"/Applications/QGIS-4.0.1.app/Contents/MacOS/qgis_process"</span>)</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="co"># In Windows is a bat file commonly found at a location like this:</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="co"># C:\Program Files\QGIS 3.x\bin\qgis_process-qgis.bat</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="fu">qgis_configure</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="checking-your-setup" class="level2">
 <h2 class="anchored" data-anchor-id="checking-your-setup">Checking your setup</h2>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Verify that qgisprocess can find your QGIS installation</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">qgis_path</span>()</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="fu">qgis_version</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">qgis_path</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "/Applications/QGIS-4.0.1.app/Contents/MacOS/qgis_process"</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">qgis_version</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "4.0.1-Norrköping"</code></pre>
+</div>
 </div>
 </section>
 <section id="discovering-available-algorithms" class="level2">
 <h2 class="anchored" data-anchor-id="discovering-available-algorithms">Discovering available algorithms</h2>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># List all available algorithms</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">qgis_algorithms</span>()</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Search by keyword</span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="fu">qgis_algorithms</span>() <span class="sc">|&gt;</span></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">grepl</span>(<span class="st">"buffer"</span>, algorithm, <span class="at">ignore.case =</span> <span class="cn">TRUE</span>)) <span class="sc">|&gt;</span></span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(provider, algorithm, algorithm_title)</span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Get the full documentation for one algorithm</span></span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="fu">qgis_show_help</span>(<span class="st">"native:buffer"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># List all available algorithms</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="fu">qgis_algorithms</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 756 × 25
+   provider provider_title algorithm                algorithm_id algorithm_title
+   &lt;chr&gt;    &lt;chr&gt;          &lt;chr&gt;                    &lt;chr&gt;        &lt;chr&gt;          
+ 1 3d       QGIS (3D)      3d:tessellate            tessellate   Tessellate     
+ 2 gdal     GDAL           gdal:aspect              aspect       Aspect         
+ 3 gdal     GDAL           gdal:assignprojection    assignproje… Assign project…
+ 4 gdal     GDAL           gdal:buffervectors       buffervecto… Buffer vectors 
+ 5 gdal     GDAL           gdal:buildvirtualraster  buildvirtua… Build virtual …
+ 6 gdal     GDAL           gdal:buildvirtualvector  buildvirtua… Build virtual …
+ 7 gdal     GDAL           gdal:cliprasterbyextent  cliprasterb… Clip raster by…
+ 8 gdal     GDAL           gdal:cliprasterbymaskla… cliprasterb… Clip raster by…
+ 9 gdal     GDAL           gdal:clipvectorbyextent  clipvectorb… Clip vector by…
+10 gdal     GDAL           gdal:clipvectorbypolygon clipvectorb… Clip vector by…
+# ℹ 746 more rows
+# ℹ 20 more variables: provider_can_be_activated &lt;lgl&gt;,
+#   provider_is_active &lt;lgl&gt;, provider_long_name &lt;chr&gt;, provider_version &lt;chr&gt;,
+#   provider_warning &lt;chr&gt;, can_cancel &lt;lgl&gt;, deprecated &lt;lgl&gt;, group &lt;chr&gt;,
+#   has_known_issues &lt;lgl&gt;, help_url &lt;chr&gt;, requires_matching_crs &lt;lgl&gt;,
+#   short_description &lt;chr&gt;, tags &lt;list&gt;, default_raster_file_format &lt;chr&gt;,
+#   default_raster_file_extension &lt;chr&gt;, default_vector_file_extension &lt;chr&gt;, …</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Search by keyword</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="fu">qgis_algorithms</span>() <span class="sc">|&gt;</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">grepl</span>(<span class="st">"buffer"</span>, algorithm, <span class="at">ignore.case =</span> <span class="cn">TRUE</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(provider, algorithm, algorithm_title)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 12 × 3
+   provider algorithm                      algorithm_title                      
+   &lt;chr&gt;    &lt;chr&gt;                          &lt;chr&gt;                                
+ 1 gdal     gdal:buffervectors             Buffer vectors                       
+ 2 gdal     gdal:onesidebuffer             One side buffer                      
+ 3 grass    grass:r.buffer                 r.buffer                             
+ 4 grass    grass:r.buffer.lowmem          r.buffer.lowmem                      
+ 5 grass    grass:v.buffer                 v.buffer                             
+ 6 native   native:buffer                  Buffer                               
+ 7 native   native:bufferbym               Variable width buffer (by M value)   
+ 8 native   native:multiringconstantbuffer Multi-ring buffer (constant distance)
+ 9 native   native:singlesidedbuffer       Single sided buffer                  
+10 native   native:taperedbuffer           Tapered buffers                      
+11 native   native:wedgebuffers            Create wedge buffers                 
+12 qgis     qgis:variabledistancebuffer    Variable distance buffer             </code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Get the full documentation for one algorithm</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="fu">qgis_show_help</span>(<span class="st">"native:buffer"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Buffer (native:buffer)
+
+----------------
+Description
+----------------
+Computes a buffer area for all the features in an input layer, using a fixed or dynamic distance.
+This algorithm computes a buffer area for all the features in an input layer, using a fixed or dynamic distance.
+
+The segments parameter controls the number of line segments to use to approximate a quarter circle when creating rounded offsets.
+
+The end cap style parameter controls how line endings are handled in the buffer.
+
+The join style parameter specifies whether round, miter or beveled joins should be used when offsetting corners in a line.
+
+The miter limit parameter is only applicable for miter join styles, and controls the maximum distance from the offset curve to use when creating a mitered join.
+
+----------------
+Notes
+----------------
+
+ - This algorithm may drop existing primary keys or FID values and regenerate them in output layers, depending on the input parameters.
+
+----------------
+Arguments
+----------------
+
+INPUT: Input layer
+    Argument type:  source
+    Acceptable values:
+        - Path to a vector layer
+DISTANCE: Distance
+    Default value:  10
+    Argument type:  distance
+    Acceptable values:
+        - A numeric value
+        - field:FIELD_NAME to use a data defined value taken from the FIELD_NAME field
+        - expression:SOME EXPRESSION to use a data defined value calculated using a custom QGIS expression
+SEGMENTS: Segments
+    Default value:  5
+    The segments parameter controls the number of line segments to use to approximate a quarter circle when creating rounded offsets.
+    Argument type:  number
+    Acceptable values:
+        - A numeric value
+        - field:FIELD_NAME to use a data defined value taken from the FIELD_NAME field
+        - expression:SOME EXPRESSION to use a data defined value calculated using a custom QGIS expression
+END_CAP_STYLE: End cap style
+    Default value:  0
+    Argument type:  enum
+    Available values:
+        - 0: Round
+        - 1: Flat
+        - 2: Square
+    Acceptable values:
+        - Number of selected option, e.g. '1'
+        - Comma separated list of options, e.g. '1,3'
+JOIN_STYLE: Join style
+    Default value:  0
+    Argument type:  enum
+    Available values:
+        - 0: Round
+        - 1: Miter
+        - 2: Bevel
+    Acceptable values:
+        - Number of selected option, e.g. '1'
+        - Comma separated list of options, e.g. '1,3'
+MITER_LIMIT: Miter limit
+    Default value:  2
+    Argument type:  number
+    Acceptable values:
+        - A numeric value
+        - field:FIELD_NAME to use a data defined value taken from the FIELD_NAME field
+        - expression:SOME EXPRESSION to use a data defined value calculated using a custom QGIS expression
+DISSOLVE: Dissolve result
+    Default value:  false
+    Argument type:  boolean
+    Acceptable values:
+        - 1 for true/yes
+        - 0 for false/no
+        - field:FIELD_NAME to use a data defined value taken from the FIELD_NAME field
+        - expression:SOME EXPRESSION to use a data defined value calculated using a custom QGIS expression
+SEPARATE_DISJOINT: Keep disjoint results separate
+    Default value:  false
+    If checked, then any disjoint parts in the buffer results will be output as separate single-part features.
+    Argument type:  boolean
+    Acceptable values:
+        - 1 for true/yes
+        - 0 for false/no
+        - field:FIELD_NAME to use a data defined value taken from the FIELD_NAME field
+        - expression:SOME EXPRESSION to use a data defined value calculated using a custom QGIS expression
+OUTPUT: Buffered
+    Argument type:  sink
+    Acceptable values:
+        - Path for new vector layer
+
+----------------
+Outputs
+----------------
+
+OUTPUT: &lt;outputVector&gt;
+    Buffered</code></pre>
+</div>
 </div>
 </section>
 <section id="a-worked-example-buffering-survey-stations" class="level2">
 <h2 class="anchored" data-anchor-id="a-worked-example-buffering-survey-stations">A worked example: buffering survey stations</h2>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load survey stations</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>stations <span class="ot">&lt;-</span> <span class="fu">read_sf</span>(<span class="st">"./data/is_smb_stations.csv"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="co"># (already an sf object with geometry)</span></span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_transform</span>(<span class="dv">3057</span>)   <span class="co"># reproject to ISN93 (metres) for buffering</span></span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Run the QGIS buffer algorithm</span></span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>result <span class="ot">&lt;-</span> <span class="fu">qgis_run_algorithm</span>(</span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">algorithm =</span> <span class="st">"native:buffer"</span>,</span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">INPUT     =</span> stations,</span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">DISTANCE  =</span> <span class="dv">5000</span>,    <span class="co"># 5 km buffer, in the CRS units (metres)</span></span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">SEGMENTS  =</span> <span class="dv">16</span>,</span>
-<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">DISSOLVE  =</span> <span class="cn">FALSE</span></span>
-<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert the output back to an sf object</span></span>
-<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>station_buffers <span class="ot">&lt;-</span> sf<span class="sc">::</span><span class="fu">read_sf</span>(<span class="fu">qgis_output</span>(result, <span class="st">"OUTPUT"</span>))</span>
-<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Inspect</span></span>
-<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(station_buffers)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load survey stations</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>stations <span class="ot">&lt;-</span> <span class="fu">read_sf</span>(<span class="st">"./data/is_smb_stations.csv"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_as_sf</span>(<span class="at">coords=</span><span class="fu">c</span>(<span class="st">"lon1"</span>,<span class="st">"lat1"</span>),<span class="at">crs=</span><span class="dv">4326</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_transform</span>(<span class="dv">3057</span>)   <span class="co"># reproject for buffering</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Run the QGIS buffer algorithm</span></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>result <span class="ot">&lt;-</span> <span class="fu">qgis_run_algorithm</span>(</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">algorithm =</span> <span class="st">"native:buffer"</span>,</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">INPUT     =</span> stations,</span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">DISTANCE  =</span> <span class="dv">5000</span>,    <span class="co"># 5 km buffer, in the CRS units (metres)</span></span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">SEGMENTS  =</span> <span class="dv">16</span>,</span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">DISSOLVE  =</span> <span class="cn">FALSE</span></span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert the output back to an sf object</span></span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a>station_buffers <span class="ot">&lt;-</span> sf<span class="sc">::</span><span class="fu">read_sf</span>(<span class="fu">qgis_extract_output</span>(result, <span class="st">"OUTPUT"</span>))</span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Inspect</span></span>
+<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(station_buffers)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Rows: 19,846
+Columns: 27
+$ id             &lt;chr&gt; "44929", "44928", "44927", "44926", "44925", "44922", "…
+$ date           &lt;chr&gt; "1990-03-16", "1990-03-16", "1990-03-16", "1990-03-16",…
+$ year           &lt;chr&gt; "1990", "1990", "1990", "1990", "1990", "1990", "1990",…
+$ vid            &lt;chr&gt; "1307", "1307", "1307", "1307", "1307", "1307", "1307",…
+$ tow_id         &lt;chr&gt; "670-15", "670-13", "670-12", "670-1", "670-2", "720-1"…
+$ t1             &lt;chr&gt; "1990-03-16T05:05:00Z", "1990-03-16T07:48:00Z", "1990-0…
+$ t2             &lt;chr&gt; "1990-03-16T06:05:00Z", "1990-03-16T08:51:00Z", "1990-0…
+$ lon2           &lt;chr&gt; "-20.73166666666667", "-20.5335", "-20.290833333333335"…
+$ lat2           &lt;chr&gt; "66.59166666666667", "66.57583333333334", "66.6155", "6…
+$ ir             &lt;chr&gt; "62C9", "62C9", "62C9", "62C9", "62D0", "63C9", "63C9",…
+$ ir_lon         &lt;chr&gt; "-20.5", "-20.5", "-20.5", "-20.5", "-19.5", "-20.5", "…
+$ ir_lat         &lt;chr&gt; "66.75", "66.75", "66.75", "66.75", "66.75", "67.25", "…
+$ z1             &lt;chr&gt; "297", "302", "205", "88", "129", "249", "332", "244", …
+$ z2             &lt;chr&gt; "330", "314", "291", "117", "172", "307", "360", "256",…
+$ temp_s         &lt;chr&gt; "1.1", "1.1", "1", "1.1", "0.9", "1.3", "1.2", "1.2", "…
+$ temp_b         &lt;chr&gt; "NA", "1", "NA", "1", "1.1", "1", "-0.5", "0.9", "0.9",…
+$ speed          &lt;chr&gt; "4", "3.8", "3.2", "4", "4.1", "4.1", "3.9", "3.8", "3.…
+$ duration       &lt;chr&gt; "60", "63", "74", "60", "59", "59", "61", "64", "62", "…
+$ towlength      &lt;chr&gt; "4", "4", "4", "4", "4", "4", "4", "4", "4", "4", "4", …
+$ horizontal     &lt;chr&gt; "NA", "NA", "NA", "NA", "NA", "NA", "NA", "NA", "NA", "…
+$ verical        &lt;chr&gt; "2", "3", "2.4", "2.6", "NA", "NA", "NA", "2.2", "2", "…
+$ wind           &lt;chr&gt; "15", "15", "15", "15", "12", "9", "9", "7", "7", "5", …
+$ wind_direction &lt;chr&gt; "5", "5", "5", "9", "9", "9", "9", "9", "9", "14", "14"…
+$ bormicon       &lt;chr&gt; "3", "3", "3", "3", "3", "3", "3", "3", "3", "3", "3", …
+$ oldstrata      &lt;chr&gt; "34", "34", "34", "34", "34", "33", "36", "33", "33", "…
+$ newstrata      &lt;chr&gt; "31", "31", "31", "32", "32", "18", "37", "18", "18", "…
+$ geom           &lt;MULTIPOLYGON [m]&gt; MULTIPOLYGON (((429219.9 67..., MULTIPOLYG…</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Quick plot</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>() <span class="sc">+</span> </span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_sf</span>(<span class="at">data=</span>station_buffers <span class="sc">|&gt;</span> <span class="fu">st_geometry</span>())</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="qgis_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
 </div>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
@@ -381,30 +560,101 @@ Note
 <section id="another-example-dissolving-polygons-by-attribute" class="level2">
 <h2 class="anchored" data-anchor-id="another-example-dissolving-polygons-by-attribute">Another example: dissolving polygons by attribute</h2>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>eez <span class="ot">&lt;-</span> <span class="fu">read_sf</span>(<span class="st">"./data/eez.gpkg"</span>)</span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>result <span class="ot">&lt;-</span> <span class="fu">qgis_run_algorithm</span>(</span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">algorithm =</span> <span class="st">"native:dissolve"</span>,</span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">INPUT     =</span> eez,</span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">FIELD     =</span> <span class="st">"country"</span></span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>eez_dissolved <span class="ot">&lt;-</span> sf<span class="sc">::</span><span class="fu">read_sf</span>(<span class="fu">qgis_output</span>(result, <span class="st">"OUTPUT"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">qgis_show_help</span>(<span class="st">"native:dissolve"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Dissolve (native:dissolve)
+
+----------------
+Description
+----------------
+Combines features of a vector layer into new features, optionally grouped by common attributes.
+This algorithm takes a vector layer and combines their features into new features. One or more attributes can be specified to dissolve features belonging to the same class (having the same value for the specified attributes), alternatively all features can be dissolved in a single one.
+
+All output geometries will be converted to multi geometries. In case the input is a polygon layer, common boundaries of adjacent polygons being dissolved will get erased.
+
+If enabled, the optional "Keep disjoint features separate" setting will cause features and parts that do not overlap or touch to be exported as separate features (instead of parts of a single multipart feature).
+
+----------------
+Notes
+----------------
+
+ - This algorithm drops existing primary keys or FID values and regenerates them in output layers.
+
+----------------
+Arguments
+----------------
+
+INPUT: Input layer
+    Argument type:  source
+    Acceptable values:
+        - Path to a vector layer
+FIELD: Dissolve field(s) (optional)
+    Argument type:  field
+    Acceptable values:
+        - The name of an existing field
+        - ; delimited list of existing field names
+SEPARATE_DISJOINT: Keep disjoint features separate
+    Default value:  false
+    Argument type:  boolean
+    Acceptable values:
+        - 1 for true/yes
+        - 0 for false/no
+        - field:FIELD_NAME to use a data defined value taken from the FIELD_NAME field
+        - expression:SOME EXPRESSION to use a data defined value calculated using a custom QGIS expression
+OUTPUT: Dissolved
+    Argument type:  sink
+    Acceptable values:
+        - Path for new vector layer
+
+----------------
+Outputs
+----------------
+
+OUTPUT: &lt;outputVector&gt;
+    Dissolved</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>ospar.sr <span class="ot">&lt;-</span> <span class="fu">read_sf</span>(<span class="st">"./data/ospar.gpkg"</span>) </span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a><span class="fu">sf_use_s2</span>(<span class="cn">FALSE</span>)</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>sq <span class="ot">&lt;-</span> <span class="fu">read_sf</span>(<span class="st">"./data/OSPAR_intensity_Otter_2015.gpkg"</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_join</span>(ospar.sr) <span class="sc">|&gt;</span> </span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(subregion) <span class="sc">|&gt;</span> </span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_transform</span>(<span class="dv">3035</span>)</span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a><span class="fu">sf_use_s2</span>(<span class="cn">TRUE</span>)</span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a>result <span class="ot">&lt;-</span> <span class="fu">qgis_run_algorithm</span>(</span>
+<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">algorithm =</span> <span class="st">"native:dissolve"</span>,</span>
+<span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">INPUT     =</span> sq,</span>
+<span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">FIELD     =</span> <span class="st">"subregion"</span></span>
+<span id="cb20-15"><a href="#cb20-15" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb20-16"><a href="#cb20-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-17"><a href="#cb20-17" aria-hidden="true" tabindex="-1"></a>sq_dissolved <span class="ot">&lt;-</span> <span class="fu">read_sf</span>(<span class="fu">qgis_extract_output</span>(result, <span class="st">"OUTPUT"</span>))</span>
+<span id="cb20-18"><a href="#cb20-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-19"><a href="#cb20-19" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>()<span class="sc">+</span></span>
+<span id="cb20-20"><a href="#cb20-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_sf</span>(<span class="at">data=</span>sq_dissolved, <span class="fu">aes</span>(<span class="at">fill=</span>subregion))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="qgis_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
 </div>
 </section>
 <section id="chaining-algorithms" class="level2">
 <h2 class="anchored" data-anchor-id="chaining-algorithms">Chaining algorithms</h2>
 <p><code>qgisprocess</code> results can be passed directly as inputs to the next algorithm without converting back to <code>sf</code> at each step:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Buffer, then dissolve, in one chain</span></span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>buffered <span class="ot">&lt;-</span> <span class="fu">qgis_run_algorithm</span>(<span class="st">"native:buffer"</span>,</span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>                                <span class="at">INPUT    =</span> stations,</span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>                                <span class="at">DISTANCE =</span> <span class="dv">5000</span>)</span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>dissolved <span class="ot">&lt;-</span> <span class="fu">qgis_run_algorithm</span>(<span class="st">"native:dissolve"</span>,</span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>                                 <span class="at">INPUT =</span> <span class="fu">qgis_output</span>(buffered, <span class="st">"OUTPUT"</span>))</span>
-<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>final <span class="ot">&lt;-</span> sf<span class="sc">::</span><span class="fu">read_sf</span>(<span class="fu">qgis_output</span>(dissolved, <span class="st">"OUTPUT"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Buffer, then dissolve, in one chain</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>buffered <span class="ot">&lt;-</span> <span class="fu">qgis_run_algorithm</span>(<span class="st">"native:buffer"</span>,</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>                                <span class="at">INPUT    =</span> stations,</span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>                                <span class="at">DISTANCE =</span> <span class="dv">5000</span>)</span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>dissolved <span class="ot">&lt;-</span> <span class="fu">qgis_run_algorithm</span>(<span class="st">"native:dissolve"</span>,</span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>                                 <span class="at">INPUT =</span> <span class="fu">qgis_extract_output</span>(buffered, <span class="st">"OUTPUT"</span>))</span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>final <span class="ot">&lt;-</span> <span class="fu">read_sf</span>(<span class="fu">qgis_extract_output</span>(dissolved, <span class="st">"OUTPUT"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="callout callout-style-default callout-warning callout-titled">
 <div class="callout-header d-flex align-content-center">
@@ -422,30 +672,31 @@ Note
 </div>
 <hr>
 </section>
+</section>
 <section id="grass-gis-from-r-rgrass" class="level1">
 <h1>GRASS GIS from R: <code>rgrass</code></h1>
 <p><a href="https://grass.osgeo.org/">GRASS GIS</a> is a powerful open-source GIS that includes algorithms not available in QGIS or R, particularly for terrain analysis (watershed delineation, viewshed, least-cost paths) and advanced raster processing. The <strong>rgrass</strong> package provides a direct interface between R and GRASS.</p>
 <p><code>qgisprocess</code> can also access GRASS algorithms if GRASS is installed alongside QGIS, so for many purposes you do not need <code>rgrass</code> directly. Use <code>rgrass</code> when you need fine-grained control over the GRASS environment, or when you are working with workflows built around GRASS natively.</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># install.packages("rgrass")</span></span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rgrass)</span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Initialise a GRASS session (requires GRASS to be installed)</span></span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="fu">initGRASS</span>(<span class="at">gisBase  =</span> <span class="st">"/usr/lib/grass82"</span>,   <span class="co"># path to your GRASS installation</span></span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>          <span class="at">home     =</span> <span class="fu">tempdir</span>(),</span>
-<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>          <span class="at">override =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Write an sf object into the GRASS environment</span></span>
-<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a><span class="fu">write_VECT</span>(my_sf, <span class="at">vname =</span> <span class="st">"my_layer"</span>, <span class="at">v.in.ogr_flags =</span> <span class="st">"overwrite"</span>)</span>
-<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Run a GRASS command</span></span>
-<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a><span class="fu">execGRASS</span>(<span class="st">"v.buffer"</span>,</span>
-<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>          <span class="at">input    =</span> <span class="st">"my_layer"</span>,</span>
-<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>          <span class="at">output   =</span> <span class="st">"my_layer_buffered"</span>,</span>
-<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>          <span class="at">distance =</span> <span class="dv">5000</span>)</span>
-<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Read the result back into R as an sf object</span></span>
-<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>result <span class="ot">&lt;-</span> <span class="fu">read_VECT</span>(<span class="st">"my_layer_buffered"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co"># install.packages("rgrass")</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rgrass)</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Initialise a GRASS session (requires GRASS to be installed)</span></span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a><span class="fu">initGRASS</span>(<span class="at">gisBase  =</span> <span class="st">"/usr/lib/grass82"</span>,   <span class="co"># path to your GRASS installation</span></span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>          <span class="at">home     =</span> <span class="fu">tempdir</span>(),</span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>          <span class="at">override =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Write an sf object into the GRASS environment</span></span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a><span class="fu">write_VECT</span>(my_sf, <span class="at">vname =</span> <span class="st">"my_layer"</span>, <span class="at">v.in.ogr_flags =</span> <span class="st">"overwrite"</span>)</span>
+<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Run a GRASS command</span></span>
+<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a><span class="fu">execGRASS</span>(<span class="st">"v.buffer"</span>,</span>
+<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a>          <span class="at">input    =</span> <span class="st">"my_layer"</span>,</span>
+<span id="cb22-15"><a href="#cb22-15" aria-hidden="true" tabindex="-1"></a>          <span class="at">output   =</span> <span class="st">"my_layer_buffered"</span>,</span>
+<span id="cb22-16"><a href="#cb22-16" aria-hidden="true" tabindex="-1"></a>          <span class="at">distance =</span> <span class="dv">5000</span>)</span>
+<span id="cb22-17"><a href="#cb22-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-18"><a href="#cb22-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Read the result back into R as an sf object</span></span>
+<span id="cb22-19"><a href="#cb22-19" aria-hidden="true" tabindex="-1"></a>result <span class="ot">&lt;-</span> <span class="fu">read_VECT</span>(<span class="st">"my_layer_buffered"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>For most participants on this course, <code>qgisprocess</code> will be sufficient. The <code>rgrass</code> documentation is at <a href="https://rsbivand.github.io/rgrass/" class="uri">https://rsbivand.github.io/rgrass/</a>.</p>
 <hr>

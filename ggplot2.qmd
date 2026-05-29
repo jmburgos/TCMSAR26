@@ -4,7 +4,7 @@ title: "Mapping with ggplot2 — part 2"
 
 # Setup
 
-## Libraries
+## Needed libraries
 
 ```{r setup}
 library(tidyverse)

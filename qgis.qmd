@@ -1,10 +1,8 @@
 ---
 title: "R and QGIS"
-execute:
-  enabled: false
 ---
   
-  R and QGIS are complementary tools, and many practitioners use both in the same 
+R and QGIS are complementary tools, and many practitioners use both in the same 
 workflow. QGIS excels at interactive, exploratory work: visually inspecting data, 
 digitising features, and quick one-off queries. R excels at reproducible, scripted 
 analysis that can be run end-to-end by anyone with the same data. There is no 
@@ -15,9 +13,9 @@ QGIS processing algorithms directly from R, and accessing GRASS GIS through R.
 
 ---
   
-  # The shared foundation: GDAL
+# The shared foundation: GDAL
   
-  R and QGIS are both built on [GDAL](https://gdal.org/), the Geospatial Data 
+R and QGIS are both built on [GDAL](https://gdal.org/), the Geospatial Data 
 Abstraction Library. This means they can read and write the same file formats, 
 and a file written by one can always be opened by the other. You do not need any 
 special integration layer to move data between them — a GeoPackage is a 
@@ -31,45 +29,17 @@ library(terra)
 
 ---
   
-  # File exchange
+# File exchange
   
-  The simplest and most reliable way to combine R and QGIS in a workflow is to 
+The simplest and most reliable way to combine R and QGIS in a workflow is to 
 write files from R that QGIS can open, and to read files prepared in QGIS back 
 into R.
 
 **GeoPackage** (`.gpkg`) is the recommended format for this. It is an open 
 standard supported natively by both tools, stores multiple layers in a single 
-file, and avoids the limitations of shapefiles. GeoTIFF (`.tif`) is the 
+file, and avoids the limitations of shapefiles. **GeoTIFF** (`.tif`) is the 
 equivalent for rasters.
 
-## Writing from R for use in QGIS
-
-```{r}
-# Write a processed sf object — open this directly in QGIS
-write_sf(my_sf, "output/survey_results.gpkg")
-
-# Write a raster — open in QGIS as a layer
-writeRaster(my_raster, "output/interpolated_temp.tif",
-            overwrite = TRUE)
-
-# A GeoPackage can hold multiple layers
-write_sf(stations_sf, "output/survey.gpkg", layer = "stations")
-write_sf(tracks_sf,   "output/survey.gpkg", layer = "tracks")
-```
-
-## Reading into R from QGIS
-
-```{r}
-# Read a layer prepared or digitised in QGIS
-study_areas <- read_sf("qgis_work/study_areas.gpkg")
-
-# If the GeoPackage has multiple layers, inspect first
-st_layers("qgis_work/study_areas.gpkg")
-
-# Then read the layer you need
-exclusion_zones <- read_sf("qgis_work/study_areas.gpkg",
-                           layer = "exclusion_zones")
-```
 
 ::: {.callout-tip}
 ## Organise your project folders clearly
@@ -82,8 +52,8 @@ direction of data flow obvious.
   ---
   
   # Calling QGIS algorithms from R: `qgisprocess`
-  
-  The **qgisprocess** package (Dunnington et al.) lets you run QGIS processing 
+
+The **qgisprocess** package (Dunnington et al.) lets you run QGIS processing 
 algorithms directly from an R script, passing `sf` and `terra` objects as inputs 
 and getting results back as R objects. This is the current recommended approach 
 for tight R--QGIS integration.
@@ -93,9 +63,23 @@ It requires a local QGIS installation (version 3.14 or later), and it wraps the
 your QGIS installation are accessible: native QGIS algorithms, GDAL, GRASS, and 
 SAGA.
 
+
+
+## Configuring qgisprocess
+
 ```{r}
-# install.packages("qgisprocess")
+install.packages("qgisprocess")
+
 library(qgisprocess)
+
+# Point to qgis_process in a Mac
+options(qgisprocess.path = "/Applications/QGIS-4.0.1.app/Contents/MacOS/qgis_process")
+
+# In Windows is a bat file commonly found at a location like this:
+# C:\Program Files\QGIS 3.x\bin\qgis_process-qgis.bat
+
+qgis_configure()
+
 ```
 
 ## Checking your setup
@@ -126,8 +110,8 @@ qgis_show_help("native:buffer")
 ```{r}
 # Load survey stations
 stations <- read_sf("./data/is_smb_stations.csv") |>
-  # (already an sf object with geometry)
-  st_transform(3057)   # reproject to ISN93 (metres) for buffering
+  st_as_sf(coords=c("lon1","lat1"),crs=4326) |> 
+  st_transform(3057)   # reproject for buffering
 
 # Run the QGIS buffer algorithm
 result <- qgis_run_algorithm(
@@ -139,10 +123,14 @@ result <- qgis_run_algorithm(
 )
 
 # Convert the output back to an sf object
-station_buffers <- sf::read_sf(qgis_output(result, "OUTPUT"))
+station_buffers <- sf::read_sf(qgis_extract_output(result, "OUTPUT"))
 
 # Inspect
 glimpse(station_buffers)
+
+# Quick plot
+ggplot() + 
+  geom_sf(data=station_buffers |> st_geometry())
 ```
 
 ::: {.callout-note}
@@ -154,15 +142,30 @@ degrees.
 ## Another example: dissolving polygons by attribute
 
 ```{r}
-eez <- read_sf("./data/eez.gpkg")
+
+qgis_show_help("native:dissolve")
+
+ospar.sr <- read_sf("./data/ospar.gpkg") 
+
+sf_use_s2(FALSE)
+sq <- read_sf("./data/OSPAR_intensity_Otter_2015.gpkg") |> 
+  st_join(ospar.sr) |> 
+  select(subregion) |> 
+  st_transform(3035)
+sf_use_s2(TRUE)
+
 
 result <- qgis_run_algorithm(
   algorithm = "native:dissolve",
-  INPUT     = eez,
-  FIELD     = "country"
+  INPUT     = sq,
+  FIELD     = "subregion"
 )
 
-eez_dissolved <- sf::read_sf(qgis_output(result, "OUTPUT"))
+sq_dissolved <- read_sf(qgis_extract_output(result, "OUTPUT"))
+
+ggplot()+
+  geom_sf(data=sq_dissolved, aes(fill=subregion))
+
 ```
 
 ## Chaining algorithms
@@ -177,9 +180,9 @@ buffered <- qgis_run_algorithm("native:buffer",
                                 DISTANCE = 5000)
 
 dissolved <- qgis_run_algorithm("native:dissolve",
-                                 INPUT = qgis_output(buffered, "OUTPUT"))
+                                 INPUT = qgis_extract_output(buffered, "OUTPUT"))
 
-final <- sf::read_sf(qgis_output(dissolved, "OUTPUT"))
+final <- read_sf(qgis_extract_output(dissolved, "OUTPUT"))
 ```
 
 ::: {.callout-warning}
@@ -209,6 +212,8 @@ you need fine-grained control over the GRASS environment, or when you are workin
 with workflows built around GRASS natively.
 
 ```{r}
+#| eval: false
+
 # install.packages("rgrass")
 library(rgrass)
 
